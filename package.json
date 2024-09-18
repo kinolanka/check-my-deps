@@ -1,6 +1,6 @@
 {
   "name": "@kinolanka/check-my-deps",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Easily manage and monitor project dependencies.",
   "license": "MIT",
   "keywords": [
