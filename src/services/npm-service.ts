@@ -31,20 +31,21 @@ class NpmService {
       const jsonResult = JSON.parse(result.toString());
       const installedVersionsAndSources: InstalledVersionsAndSources = {};
 
-      const extractVersionsAndSources = (deps: Record<string, any>, depType: Dependencies) => {
-        for (const [name, info] of Object.entries(deps)) {
-          const version = info.version;
-          const source = this.determineSource(depType[name]);
-          installedVersionsAndSources[name] = { version, source };
-          if (info.dependencies) {
-            extractVersionsAndSources(info.dependencies, depType);
-          }
-        }
-      };
-
-      extractVersionsAndSources(jsonResult.dependencies, dependencies);
-      extractVersionsAndSources(jsonResult.dependencies, devDependencies);
-      extractVersionsAndSources(jsonResult.dependencies, peerDependencies);
+      this._extractVersionsAndSources(
+        jsonResult.dependencies,
+        dependencies,
+        installedVersionsAndSources
+      );
+      this._extractVersionsAndSources(
+        jsonResult.dependencies,
+        devDependencies,
+        installedVersionsAndSources
+      );
+      this._extractVersionsAndSources(
+        jsonResult.dependencies,
+        peerDependencies,
+        installedVersionsAndSources
+      );
       return installedVersionsAndSources;
     } catch {
       return {};
@@ -83,7 +84,22 @@ class NpmService {
     }
   }
 
-  private determineSource(dependency: string): string {
+  private _extractVersionsAndSources = (
+    deps: Record<string, any>,
+    depType: Dependencies,
+    installedVersionsAndSources: InstalledVersionsAndSources
+  ) => {
+    for (const [name, info] of Object.entries(deps)) {
+      const version = info.version;
+      const source = this._determineSource(depType[name]);
+      installedVersionsAndSources[name] = { version, source };
+      if (info.dependencies) {
+        this._extractVersionsAndSources(info.dependencies, depType, installedVersionsAndSources);
+      }
+    }
+  };
+
+  private _determineSource(dependency: string): string {
     if (
       dependency.startsWith('http') ||
       dependency.startsWith('git+http') ||

@@ -35,6 +35,7 @@ async function main() {
         const peerDependencies: Dependencies = packageJson.peerDependencies || {};
 
         const npmService = new NpmService(options.cwd);
+
         const installedVersionsAndSources = npmService.getInstalledVersionsAndSources(
           dependencies,
           devDependencies,

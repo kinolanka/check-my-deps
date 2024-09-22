@@ -2,6 +2,7 @@ import ExcelJS from 'exceljs';
 
 import NpmService from '@/services/npm-service';
 import { Dependencies, InstalledVersionsAndSources } from '@/utils/types';
+import extractRootDomain from '@/utils/helpers/extract-root-domain';
 
 class ExcelService {
   private workbook: ExcelJS.Workbook;
@@ -33,7 +34,7 @@ class ExcelService {
         source: 'N/A',
       };
 
-      const rootDomain = source !== 'N/A' ? this.extractRootDomain(source) : 'N/A';
+      const rootDomain = source !== 'N/A' ? extractRootDomain(source) : 'N/A';
       const { lastMinorVersion, latestVersion } =
         installedVersion !== 'N/A'
           ? NpmService.getLastMinorAndLatestVersion(packageName, installedVersion)
@@ -75,15 +76,6 @@ class ExcelService {
 
   public async saveToFile(filePath: string) {
     await this.workbook.xlsx.writeFile(filePath);
-  }
-
-  private extractRootDomain(url: string): string {
-    try {
-      const { hostname } = new URL(url);
-      return hostname;
-    } catch {
-      return url;
-    }
   }
 }
 
