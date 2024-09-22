@@ -1,12 +1,12 @@
-import fs from 'fs';
 import path from 'path';
 import { Command } from 'commander';
 
 import NpmService from '@/services/npm-service';
 import ExcelService from '@/services/excel-service';
+import OutputService from '@/services/output-service';
+import PackageFileService from '@/services/package-file-service';
 import sanitizeFileName from '@/utils/helpers/sanitize-file-name';
 import { Dependencies } from '@/utils/types';
-import OutputService from '@/services/output-service';
 
 const exportCommand = new Command()
   .name('export')
@@ -19,14 +19,12 @@ const exportCommand = new Command()
   .action(async (options) => {
     const outputService = new OutputService();
 
-    const packageJsonPath = path.resolve(options.cwd, 'package.json');
     try {
-      const content = fs.readFileSync(packageJsonPath, 'utf-8');
-      const packageJson = JSON.parse(content);
+      const packageFileService = new PackageFileService(options.cwd);
 
-      const dependencies: Dependencies = packageJson.dependencies || {};
-      const devDependencies: Dependencies = packageJson.devDependencies || {};
-      const peerDependencies: Dependencies = packageJson.peerDependencies || {};
+      const dependencies: Dependencies = packageFileService.getDeps('dependencies') || {};
+      const devDependencies: Dependencies = packageFileService.getDeps('devDependencies') || {};
+      const peerDependencies: Dependencies = packageFileService.getDeps('peerDependencies') || {};
 
       const npmService = new NpmService(options.cwd);
 
@@ -56,7 +54,7 @@ const exportCommand = new Command()
         npmService
       );
 
-      const packageName = sanitizeFileName(packageJson.name || 'package');
+      const packageName = sanitizeFileName(packageFileService.getName() || 'package');
       const filePath = path.resolve(options.cwd, `${packageName}-deps-check.xlsx`);
       await excelService.saveToFile(filePath);
 
