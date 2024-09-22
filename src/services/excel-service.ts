@@ -1,7 +1,9 @@
 import ExcelJS from 'exceljs';
-import NpmService from './npm-service';
 
-export default class ExcelService {
+import NpmService from '@/services/npm-service';
+import { Dependencies, InstalledVersionsAndSources } from '@/utils/types';
+
+class ExcelService {
   private workbook: ExcelJS.Workbook;
   private worksheet: ExcelJS.Worksheet;
 
@@ -20,9 +22,9 @@ export default class ExcelService {
   }
 
   public addDependenciesToSheet(
-    dependencies: Record<string, string>,
+    dependencies: Dependencies,
     type: string,
-    installedVersionsAndSources: Record<string, { version: string; source: string }>,
+    installedVersionsAndSources: InstalledVersionsAndSources,
     NpmService: NpmService
   ) {
     for (const [packageName, curVersion] of Object.entries(dependencies)) {
@@ -84,3 +86,5 @@ export default class ExcelService {
     }
   }
 }
+
+export default ExcelService;

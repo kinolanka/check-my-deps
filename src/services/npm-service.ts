@@ -2,7 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import { execSync } from 'child_process';
 
-export default class NpmService {
+import { Dependencies, InstalledVersionsAndSources, VersionInfo } from '@/utils/types';
+
+class NpmService {
   private cwd: string;
 
   constructor(cwd: string) {
@@ -10,10 +12,10 @@ export default class NpmService {
   }
 
   public getInstalledVersionsAndSources(
-    dependencies: Record<string, string>,
-    devDependencies: Record<string, string>,
-    peerDependencies: Record<string, string>
-  ): Record<string, { version: string; source: string }> {
+    dependencies: Dependencies,
+    devDependencies: Dependencies,
+    peerDependencies: Dependencies
+  ): InstalledVersionsAndSources {
     try {
       let result;
       if (fs.existsSync(path.resolve(this.cwd, 'package-lock.json'))) {
@@ -27,12 +29,9 @@ export default class NpmService {
       }
 
       const jsonResult = JSON.parse(result.toString());
-      const installedVersionsAndSources: Record<string, { version: string; source: string }> = {};
+      const installedVersionsAndSources: InstalledVersionsAndSources = {};
 
-      const extractVersionsAndSources = (
-        deps: Record<string, any>,
-        depType: Record<string, string>
-      ) => {
+      const extractVersionsAndSources = (deps: Record<string, any>, depType: Dependencies) => {
         for (const [name, info] of Object.entries(deps)) {
           const version = info.version;
           const source = this.determineSource(depType[name]);
@@ -52,10 +51,7 @@ export default class NpmService {
     }
   }
 
-  public getLastMinorAndLatestVersion(
-    packageName: string,
-    installedVersion: string
-  ): { lastMinorVersion: string | null; latestVersion: string | null } {
+  public getLastMinorAndLatestVersion(packageName: string, installedVersion: string): VersionInfo {
     try {
       const result = execSync(`npm view ${packageName} versions --json`, { cwd: this.cwd });
       const versions = JSON.parse(result.toString());
@@ -105,3 +101,5 @@ export default class NpmService {
     }
   }
 }
+
+export default NpmService;

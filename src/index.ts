@@ -4,9 +4,10 @@ import path from 'path';
 import chalk from 'chalk';
 import { Command } from 'commander';
 
-import NpmService from './services/npm-service';
-import ExcelService from './services/excel-service';
-import sanitizeFileName from './helpers/sanitize-file-name';
+import NpmService from '@/services/npm-service';
+import ExcelService from '@/services/excel-service';
+import sanitizeFileName from '@/helpers/sanitize-file-name';
+import { Dependencies } from '@/utils/types';
 
 process.on('SIGINT', () => process.exit(0));
 process.on('SIGTERM', () => process.exit(0));
@@ -29,9 +30,9 @@ async function main() {
         const content = fs.readFileSync(packageJsonPath, 'utf-8');
         const packageJson = JSON.parse(content);
 
-        const dependencies = packageJson.dependencies || {};
-        const devDependencies = packageJson.devDependencies || {};
-        const peerDependencies = packageJson.peerDependencies || {};
+        const dependencies: Dependencies = packageJson.dependencies || {};
+        const devDependencies: Dependencies = packageJson.devDependencies || {};
+        const peerDependencies: Dependencies = packageJson.peerDependencies || {};
 
         const npmService = new NpmService(options.cwd);
         const installedVersionsAndSources = npmService.getInstalledVersionsAndSources(
