@@ -1,12 +1,12 @@
 import fs from 'fs';
 import path from 'path';
-import chalk from 'chalk';
 import { Command } from 'commander';
 
 import NpmService from '@/services/npm-service';
 import ExcelService from '@/services/excel-service';
 import sanitizeFileName from '@/utils/helpers/sanitize-file-name';
 import { Dependencies } from '@/utils/types';
+import OutputService from '@/services/output-service';
 
 const exportCommand = new Command()
   .name('export')
@@ -17,6 +17,8 @@ const exportCommand = new Command()
     process.cwd()
   )
   .action(async (options) => {
+    const outputService = new OutputService();
+
     const packageJsonPath = path.resolve(options.cwd, 'package.json');
     try {
       const content = fs.readFileSync(packageJsonPath, 'utf-8');
@@ -58,9 +60,9 @@ const exportCommand = new Command()
       const filePath = path.resolve(options.cwd, `${packageName}-deps-check.xlsx`);
       await excelService.saveToFile(filePath);
 
-      console.log(chalk.green(`Excel file created at ${filePath}`));
+      outputService.msg(`Excel file created at ${filePath}`);
     } catch (error) {
-      console.error(chalk.red('An error occurred while processing the package.json file.'));
+      outputService.error((error as Error).message);
     }
   });
 
