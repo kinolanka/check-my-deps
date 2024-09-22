@@ -6,7 +6,7 @@ import { Command } from 'commander';
 
 import NpmService from '@/services/npm-service';
 import ExcelService from '@/services/excel-service';
-import sanitizeFileName from '@/helpers/sanitize-file-name';
+import sanitizeFileName from '@/utils/helpers/sanitize-file-name';
 import { Dependencies } from '@/utils/types';
 
 process.on('SIGINT', () => process.exit(0));
