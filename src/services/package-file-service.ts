@@ -4,6 +4,7 @@ import path from 'path';
 import { PackageJson } from 'type-fest';
 
 import Service, { ServiceType } from '@/services/service';
+import sanitizeFileName from '@/utils/helpers/sanitize-file-name';
 
 class PackageFileService extends Service {
   private packageFileName = 'package.json';
@@ -24,6 +25,14 @@ class PackageFileService extends Service {
 
   public getDeps(type: string): Dependencies {
     return this.packageJson[type] as Dependencies;
+  }
+
+  public getExportFilePath(): string {
+    const packageName = sanitizeFileName(this.getName() || 'package');
+
+    const filePath = path.resolve(this.ctx.cwd, `${packageName}-deps-check`);
+
+    return filePath;
   }
 }
 

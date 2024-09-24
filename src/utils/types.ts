@@ -6,3 +6,13 @@ export type VersionInfo = {
   lastMinorVersion: string | null;
   latestVersion: string | null;
 };
+
+export type PackageData = {
+  packageName: string;
+  type: string;
+  curVersion: string;
+  installedVersion: string;
+  lastMinorVersion: string;
+  latestVersion: string;
+  source: string;
+};

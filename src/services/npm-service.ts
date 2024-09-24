@@ -3,11 +3,56 @@ import path from 'path';
 import { execSync } from 'child_process';
 
 import Service, { ServiceType } from '@/services/service';
-import { Dependencies, InstalledVersionsAndSources, VersionInfo } from '@/utils/types';
+import PackageFileService from '@/services/package-file-service';
+import { Dependencies, InstalledVersionsAndSources, PackageData, VersionInfo } from '@/utils/types';
 
 class NpmService extends Service {
-  constructor(ctx: ServiceType) {
+  private packageFileService: PackageFileService;
+
+  private depsKeys = ['dependencies', 'devDependencies', 'peerDependencies'];
+
+  private list: PackageData[] | null = null;
+
+  constructor(packageFileService: PackageFileService, ctx: ServiceType) {
     super(ctx);
+
+    this.packageFileService = packageFileService;
+  }
+
+  private _setDependenciesList() {
+    const list = [];
+
+    for (const key of this.depsKeys) {
+      const deps = this.packageFileService.getDeps(key);
+
+      if (deps) {
+        for (const [name, version] of Object.entries(deps)) {
+          list.push({
+            packageName: name,
+            type: key,
+            curVersion: version,
+            installedVersion: '',
+            lastMinorVersion: '',
+            latestVersion: '',
+            source: '',
+          });
+        }
+      }
+    }
+
+    this.list = list;
+  }
+
+  public init() {
+    this._setDependenciesList();
+  }
+
+  public getList(): PackageData[] {
+    if (!this.list) {
+      throw new Error('You must call init() before calling getList()');
+    }
+
+    return this.list;
   }
 
   public getInstalledVersionsAndSources(
