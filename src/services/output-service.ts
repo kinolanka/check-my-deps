@@ -7,16 +7,26 @@ class OutputService {
     this.silent = silent;
   }
 
-  public msg(message: string): void {
+  private _log(message: string): void {
     if (!this.silent) {
-      console.log(chalk.green(message));
+      console.log(message);
     }
   }
 
-  public error(message: string): void {
-    if (!this.silent) {
-      console.error(chalk.red(message));
-    }
+  public msg(message: string): void {
+    this._log(chalk.blue(message));
+  }
+
+  public successMsg(message: string): void {
+    this._log(chalk.green(message));
+  }
+
+  public errorMsg(message: string): void {
+    this._log(chalk.red(message));
+  }
+
+  public error(error: Error): void {
+    console.log(error);
   }
 }
 
