@@ -38,6 +38,7 @@ const exportCommand = new Command()
       );
 
       const excelService = new ExcelService(ctx);
+
       excelService.addDependenciesToSheet(
         dependencies,
         'dependencies',
@@ -61,9 +62,9 @@ const exportCommand = new Command()
       const filePath = path.resolve(options.cwd, `${packageName}-deps-check.xlsx`);
       await excelService.saveToFile(filePath);
 
-      outputService.msg(`Excel file created at ${filePath}`);
+      outputService.successMsg(`Excel file created at ${filePath}`);
     } catch (error) {
-      outputService.error((error as Error).message);
+      outputService.error(error as Error);
     }
   });
 

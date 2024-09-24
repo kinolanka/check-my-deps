@@ -18,16 +18,25 @@ class NpmService extends Service {
     try {
       let result;
       if (fs.existsSync(path.resolve(this.ctx.cwd, 'package-lock.json'))) {
+        this.ctx.outputService.msg('Found package-lock.json');
+
         result = execSync(`npm list --json`, { cwd: this.ctx.cwd });
       } else if (fs.existsSync(path.resolve(this.ctx.cwd, 'yarn.lock'))) {
+        this.ctx.outputService.msg('Found yarn.lock');
+
         result = execSync(`yarn list --json`, { cwd: this.ctx.cwd });
       } else if (fs.existsSync(path.resolve(this.ctx.cwd, 'pnpm-lock.yaml'))) {
+        this.ctx.outputService.msg('Found pnpm-lock.yaml');
+
         result = execSync(`pnpm list --json`, { cwd: this.ctx.cwd });
       } else {
-        throw new Error('No lock file found. Please use npm, yarn, or pnpm.');
+        this.ctx.outputService.errorMsg('No lock file found. Please use npm, yarn, or pnpm.');
+
+        throw new Error();
       }
 
       const jsonResult = JSON.parse(result.toString());
+
       const installedVersionsAndSources: InstalledVersionsAndSources = {};
 
       this._extractVersionsAndSources(
@@ -45,8 +54,11 @@ class NpmService extends Service {
         peerDependencies,
         installedVersionsAndSources
       );
+
       return installedVersionsAndSources;
-    } catch {
+    } catch (err) {
+      this.ctx.outputService.error(err as Error);
+
       return {};
     }
   }
@@ -90,8 +102,11 @@ class NpmService extends Service {
   ) => {
     for (const [name, info] of Object.entries(deps)) {
       const version = info.version;
+
       const source = this._determineSource(depType[name]);
+
       installedVersionsAndSources[name] = { version, source };
+
       if (info.dependencies) {
         this._extractVersionsAndSources(info.dependencies, depType, installedVersionsAndSources);
       }
@@ -99,6 +114,10 @@ class NpmService extends Service {
   };
 
   private _determineSource(dependency: string): string {
+    if (!dependency) {
+      return 'https://registry.npmjs.org';
+    }
+
     if (
       dependency.startsWith('http') ||
       dependency.startsWith('git+http') ||
