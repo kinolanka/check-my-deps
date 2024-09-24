@@ -1,14 +1,17 @@
 import ExcelJS from 'exceljs';
 
+import Service, { ServiceType } from '@/services/service';
 import NpmService from '@/services/npm-service';
 import { Dependencies, InstalledVersionsAndSources } from '@/utils/types';
 import extractRootDomain from '@/utils/helpers/extract-root-domain';
 
-class ExcelService {
+class ExcelService extends Service {
   private workbook: ExcelJS.Workbook;
   private worksheet: ExcelJS.Worksheet;
 
-  constructor() {
+  constructor(ctx: ServiceType) {
+    super(ctx);
+
     this.workbook = new ExcelJS.Workbook();
     this.worksheet = this.workbook.addWorksheet('Dependencies');
     this.worksheet.columns = [

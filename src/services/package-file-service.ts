@@ -3,17 +3,17 @@ import fs from 'fs-extra';
 import path from 'path';
 import { PackageJson } from 'type-fest';
 
-class PackageFileService {
-  private packageFileName = 'package.json';
+import Service, { ServiceType } from '@/services/service';
 
-  private cwd: string;
+class PackageFileService extends Service {
+  private packageFileName = 'package.json';
 
   private packageJson: PackageJson;
 
-  constructor(cwd: string) {
-    this.cwd = cwd;
+  constructor(ctx: ServiceType) {
+    super(ctx);
 
-    const packageJsonPath = path.resolve(this.cwd, this.packageFileName);
+    const packageJsonPath = path.resolve(this.ctx.cwd, this.packageFileName);
 
     this.packageJson = fs.readJSONSync(packageJsonPath) as PackageJson;
   }

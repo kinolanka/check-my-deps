@@ -2,13 +2,12 @@ import fs from 'fs-extra';
 import path from 'path';
 import { execSync } from 'child_process';
 
+import Service, { ServiceType } from '@/services/service';
 import { Dependencies, InstalledVersionsAndSources, VersionInfo } from '@/utils/types';
 
-class NpmService {
-  private cwd: string;
-
-  constructor(cwd: string) {
-    this.cwd = cwd;
+class NpmService extends Service {
+  constructor(ctx: ServiceType) {
+    super(ctx);
   }
 
   public getInstalledVersionsAndSources(
@@ -18,12 +17,12 @@ class NpmService {
   ): InstalledVersionsAndSources {
     try {
       let result;
-      if (fs.existsSync(path.resolve(this.cwd, 'package-lock.json'))) {
-        result = execSync(`npm list --json`, { cwd: this.cwd });
-      } else if (fs.existsSync(path.resolve(this.cwd, 'yarn.lock'))) {
-        result = execSync(`yarn list --json`, { cwd: this.cwd });
-      } else if (fs.existsSync(path.resolve(this.cwd, 'pnpm-lock.yaml'))) {
-        result = execSync(`pnpm list --json`, { cwd: this.cwd });
+      if (fs.existsSync(path.resolve(this.ctx.cwd, 'package-lock.json'))) {
+        result = execSync(`npm list --json`, { cwd: this.ctx.cwd });
+      } else if (fs.existsSync(path.resolve(this.ctx.cwd, 'yarn.lock'))) {
+        result = execSync(`yarn list --json`, { cwd: this.ctx.cwd });
+      } else if (fs.existsSync(path.resolve(this.ctx.cwd, 'pnpm-lock.yaml'))) {
+        result = execSync(`pnpm list --json`, { cwd: this.ctx.cwd });
       } else {
         throw new Error('No lock file found. Please use npm, yarn, or pnpm.');
       }
@@ -54,7 +53,7 @@ class NpmService {
 
   public getLastMinorAndLatestVersion(packageName: string, installedVersion: string): VersionInfo {
     try {
-      const result = execSync(`npm view ${packageName} versions --json`, { cwd: this.cwd });
+      const result = execSync(`npm view ${packageName} versions --json`, { cwd: this.ctx.cwd });
       const versions = JSON.parse(result.toString());
       const [major, minor] = installedVersion.split('.').map(Number);
       const productionVersions = versions.filter((version: string) => !version.includes('-'));

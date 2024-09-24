@@ -5,6 +5,7 @@ import NpmService from '@/services/npm-service';
 import ExcelService from '@/services/excel-service';
 import OutputService from '@/services/output-service';
 import PackageFileService from '@/services/package-file-service';
+import ServiceCtx from '@/services/service-ctx';
 import sanitizeFileName from '@/utils/helpers/sanitize-file-name';
 import { Dependencies } from '@/utils/types';
 
@@ -20,13 +21,15 @@ const exportCommand = new Command()
     const outputService = new OutputService();
 
     try {
-      const packageFileService = new PackageFileService(options.cwd);
+      const ctx = new ServiceCtx({ cwd: options.cwd, outputService });
+
+      const packageFileService = new PackageFileService(ctx);
 
       const dependencies: Dependencies = packageFileService.getDeps('dependencies') || {};
       const devDependencies: Dependencies = packageFileService.getDeps('devDependencies') || {};
       const peerDependencies: Dependencies = packageFileService.getDeps('peerDependencies') || {};
 
-      const npmService = new NpmService(options.cwd);
+      const npmService = new NpmService(ctx);
 
       const installedVersionsAndSources = npmService.getInstalledVersionsAndSources(
         dependencies,
@@ -34,7 +37,7 @@ const exportCommand = new Command()
         peerDependencies
       );
 
-      const excelService = new ExcelService();
+      const excelService = new ExcelService(ctx);
       excelService.addDependenciesToSheet(
         dependencies,
         'dependencies',
