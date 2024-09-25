@@ -1,4 +1,3 @@
-import { Dependencies } from '@/utils/types';
 import fs from 'fs-extra';
 import path from 'path';
 import { PackageJson } from 'type-fest';
@@ -8,6 +7,8 @@ import sanitizeFileName from '@/utils/helpers/sanitize-file-name';
 
 class PackageFileService extends Service {
   private packageFileName = 'package.json';
+
+  private depsTypes = ['dependencies', 'devDependencies', 'peerDependencies'];
 
   private packageJson: PackageJson;
 
@@ -23,8 +24,24 @@ class PackageFileService extends Service {
     return this.packageJson.name || '';
   }
 
-  public getDeps(type: string): Dependencies {
-    return this.packageJson[type] as Dependencies;
+  public getPackages() {
+    const list = [];
+
+    for (const depType of this.depsTypes) {
+      const deps = this.packageJson[depType];
+
+      if (deps) {
+        for (const [packageName, curVersion] of Object.entries(deps)) {
+          list.push({
+            packageName,
+            depType,
+            curVersion,
+          });
+        }
+      }
+    }
+
+    return list;
   }
 
   public getExportFilePath(): string {

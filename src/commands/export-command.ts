@@ -22,42 +22,13 @@ const exportCommand = new Command()
 
       const packageFileService = new PackageFileService(ctx);
 
-      // const dependencies: Dependencies = packageFileService.getDeps('dependencies') || {};
-      // const devDependencies: Dependencies = packageFileService.getDeps('devDependencies') || {};
-      // const peerDependencies: Dependencies = packageFileService.getDeps('peerDependencies') || {};
+      const packages = packageFileService.getPackages();
 
-      const npmService = new NpmService(packageFileService, ctx);
+      const npmService = new NpmService(packages, ctx);
 
-      npmService.init();
+      const exportList = npmService.getList();
 
-      const exportData = npmService.getList();
-
-      // const installedVersionsAndSources = npmService.getInstalledVersionsAndSources(
-      //   dependencies,
-      //   devDependencies,
-      //   peerDependencies
-      // );
-
-      // excelService.addDependenciesToSheet(
-      //   dependencies,
-      //   'dependencies',
-      //   installedVersionsAndSources,
-      //   npmService
-      // );
-      // excelService.addDependenciesToSheet(
-      //   devDependencies,
-      //   'devdependencies',
-      //   installedVersionsAndSources,
-      //   npmService
-      // );
-      // excelService.addDependenciesToSheet(
-      //   peerDependencies,
-      //   'peerdependencies',
-      //   installedVersionsAndSources,
-      //   npmService
-      // );
-
-      const excelService = new ExcelService(exportData, ctx);
+      const excelService = new ExcelService(exportList, ctx);
 
       const filePath = packageFileService.getExportFilePath();
 
