@@ -18,7 +18,7 @@ class PackageInfoService extends Service {
 
   private source: PackageSpec['source'] = '';
 
-  private packageStatus: PackageSpec['packageStatus'];
+  private packageStatus: PackageSpec['packageStatus'] = 'upToDate';
 
   private npmListDepItem?: NpmListDepItem;
 

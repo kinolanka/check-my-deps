@@ -1,5 +1,7 @@
 type GenericObject<T extends Record<string, unknown>> = Record<string, unknown> & T;
 
+export type PackageStatus = 'upToDate' | 'major' | 'minor' | 'patch';
+
 export type PackageSpec = {
   packageName: string;
   depType: string;
@@ -8,7 +10,7 @@ export type PackageSpec = {
   lastMinorVersion?: string;
   latestVersion?: string;
   source?: string;
-  packageStatus?: 'upToDate' | 'minor' | 'major' | 'patch';
+  packageStatus?: PackageStatus;
 };
 
 export type NpmListDepItem = GenericObject<{
@@ -30,3 +32,7 @@ export type NpmViewData = GenericObject<{
   homepage: string;
   repository: string | GenericObject<{ url: string }>;
 }>;
+
+export type SummaryStats = Record<PackageStatus | 'total', number>;
+
+export type Summary = Record<string, SummaryStats>;

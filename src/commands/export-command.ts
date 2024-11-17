@@ -5,6 +5,7 @@ import ExcelService from '@/services/excel-service';
 import OutputService from '@/services/output-service';
 import PackageFileService from '@/services/package-file-service';
 import ServiceCtx from '@/services/service-ctx';
+import SummaryService from '@/services/summary-service';
 
 const exportCommand = new Command()
   .name('export')
@@ -28,7 +29,9 @@ const exportCommand = new Command()
 
       const exportList = npmService.getList();
 
-      const excelService = new ExcelService(exportList, ctx);
+      const summary = new SummaryService(exportList, ctx);
+
+      const excelService = new ExcelService(exportList, summary, ctx);
 
       const filePath = packageFileService.getExportFilePath();
 
