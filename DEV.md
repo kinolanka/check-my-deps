@@ -3,7 +3,6 @@
 ## Test commands locally
 
 ```sh
-
 # get the version of package
 npm run start -- check-my-deps -v
 # or short

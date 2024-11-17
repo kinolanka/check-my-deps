@@ -8,6 +8,7 @@ export type PackageSpec = {
   lastMinorVersion?: string;
   latestVersion?: string;
   source?: string;
+  packageStatus?: 'upToDate' | 'minor' | 'major' | 'patch';
 };
 
 export type NpmListDepItem = GenericObject<{

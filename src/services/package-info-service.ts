@@ -18,6 +18,8 @@ class PackageInfoService extends Service {
 
   private source: PackageSpec['source'] = '';
 
+  private packageStatus: PackageSpec['packageStatus'];
+
   private npmListDepItem?: NpmListDepItem;
 
   private npmViewData: NpmViewData;
@@ -53,6 +55,33 @@ class PackageInfoService extends Service {
     this._setLatestVersion();
 
     this._setSource();
+
+    this._setPackageStatus();
+  }
+
+  private _setPackageStatus() {
+    if (!this.installedVersion || !this.latestVersion) {
+      return;
+    }
+
+    const [installedMajor, installedMinor, installedPatch] = this.installedVersion
+      .split('.')
+      .map(Number);
+    const [latestMajor, latestMinor, latestPatch] = this.latestVersion.split('.').map(Number);
+
+    if (
+      installedMajor === latestMajor &&
+      installedMinor === latestMinor &&
+      installedPatch === latestPatch
+    ) {
+      this.packageStatus = 'upToDate';
+    } else if (installedMajor === latestMajor && installedMinor === latestMinor) {
+      this.packageStatus = 'patch';
+    } else if (installedMajor === latestMajor) {
+      this.packageStatus = 'minor';
+    } else {
+      this.packageStatus = 'major';
+    }
   }
 
   private _setInstalledVersion() {
@@ -140,6 +169,7 @@ class PackageInfoService extends Service {
       lastMinorVersion: this.lastMinorVersion,
       latestVersion: this.latestVersion,
       source: this.source,
+      packageStatus: this.packageStatus,
     };
   }
 }
