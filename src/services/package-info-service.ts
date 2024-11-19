@@ -130,33 +130,11 @@ class PackageInfoService extends Service {
     try {
       const resolvedUrl = this.npmListDepItem?.resolved;
 
-      let result: string;
-
-      if (!resolvedUrl) {
-        result = '';
-      } else if (resolvedUrl.startsWith('file:')) {
-        result = 'local';
-      } else if (resolvedUrl.includes('npmjs.org')) {
-        result = 'npmjs.com';
-      } else if (resolvedUrl.startsWith('http')) {
-        result = extractRootDomain(resolvedUrl);
-      } else if (resolvedUrl.startsWith('git+http') || resolvedUrl.startsWith('git+ssh')) {
-        result = resolvedUrl;
-      } else if (resolvedUrl.startsWith('github:')) {
-        result = 'github.com';
-      } else if (resolvedUrl.startsWith('gitlab:')) {
-        result = 'gitlab.com';
-      } else if (resolvedUrl.startsWith('bitbucket:')) {
-        result = 'bitbucket.org';
-      } else {
-        result = resolvedUrl;
+      if (resolvedUrl) {
+        this.source = extractRootDomain(resolvedUrl);
       }
-
-      this.source = result;
     } catch (error) {
       this.ctx.outputService.error(error as Error);
-
-      this.source = '';
     }
   }
 
