@@ -16,6 +16,8 @@ class PackageInfoService extends Service {
 
   private lastMinorVersion: PackageSpec['lastMinorVersion'] = '';
 
+  private lastMinorVersionReleaseDate: PackageSpec['lastMinorVersionReleaseDate'] = '';
+
   private latestVersion: PackageSpec['latestVersion'] = '';
 
   private latestVersionReleaseDate: PackageSpec['latestVersionReleaseDate'] = '';
@@ -125,6 +127,8 @@ class PackageInfoService extends Service {
 
     if (lastMinorVersion) {
       this.lastMinorVersion = lastMinorVersion;
+
+      this.lastMinorVersionReleaseDate = this.npmViewData.time?.[this.lastMinorVersion] || '';
     }
   }
 
@@ -158,6 +162,7 @@ class PackageInfoService extends Service {
       installedVersion: this.installedVersion,
       installedVersionReleaseDate: this.installedVersionReleaseDate,
       lastMinorVersion: this.lastMinorVersion,
+      lastMinorVersionReleaseDate: this.lastMinorVersionReleaseDate,
       latestVersion: this.latestVersion,
       latestVersionReleaseDate: this.latestVersionReleaseDate,
       source: this.source,

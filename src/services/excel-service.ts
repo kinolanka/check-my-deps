@@ -97,14 +97,15 @@ class ExcelService extends Service {
 
     worksheetDeps.columns = [
       { header: 'Package', key: 'packageName', width: 30 },
-      { header: 'Status', key: 'packageStatus', width: 20 },
-      { header: 'Current Version', key: 'curVersion', width: 15 },
-      { header: 'Installed Version', key: 'installedVersion', width: 15 },
-      { header: 'Installed Version Release Date', key: 'installedVersionReleaseDate', width: 15 },
-      { header: 'Last Minor Version', key: 'lastMinorVersion', width: 20 },
-      { header: 'Last Version', key: 'latestVersion', width: 20 },
-      { header: 'Last Version Release Date', key: 'latestVersionReleaseDate', width: 20 },
-      { header: 'Source', key: 'source', width: 30 },
+      { header: 'Status', key: 'packageStatus', width: 10 },
+      { header: 'Current Version', key: 'curVersion', width: 10 },
+      { header: 'Installed Version', key: 'installedVersion', width: 10 },
+      { header: 'Installed Version Release Date', key: 'installedVersionReleaseDate', width: 10 },
+      { header: 'Last Minor Version', key: 'lastMinorVersion', width: 10 },
+      { header: 'Last Minor Version Release Date', key: 'lastMinorVersionReleaseDate', width: 10 },
+      { header: 'Last Version', key: 'latestVersion', width: 10 },
+      { header: 'Last Version Release Date', key: 'latestVersionReleaseDate', width: 10 },
+      { header: 'Source', key: 'source', width: 20 },
       { header: 'Dependency Type', key: 'depType', width: 20 },
     ];
 
@@ -119,6 +120,8 @@ class ExcelService extends Service {
         installedVersionReleaseDate:
           row.installedVersionReleaseDate && convertDate(row.installedVersionReleaseDate),
         lastMinorVersion: row.lastMinorVersion,
+        lastMinorVersionReleaseDate:
+          row.lastMinorVersionReleaseDate && convertDate(row.lastMinorVersionReleaseDate),
         latestVersion: row.latestVersion,
         latestVersionReleaseDate:
           row.latestVersionReleaseDate && convertDate(row.latestVersionReleaseDate),
