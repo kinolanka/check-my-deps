@@ -100,6 +100,7 @@ class ExcelService extends Service {
       { header: 'Status', key: 'packageStatus', width: 20 },
       { header: 'Current Version', key: 'curVersion', width: 15 },
       { header: 'Installed Version', key: 'installedVersion', width: 15 },
+      { header: 'Installed Version Release Date', key: 'installedVersionReleaseDate', width: 15 },
       { header: 'Last Minor Version', key: 'lastMinorVersion', width: 20 },
       { header: 'Last Version', key: 'latestVersion', width: 20 },
       { header: 'Last Version Release Date', key: 'latestVersionReleaseDate', width: 20 },
@@ -115,6 +116,8 @@ class ExcelService extends Service {
         depType: row.depType,
         curVersion: row.curVersion,
         installedVersion: row.installedVersion,
+        installedVersionReleaseDate:
+          row.installedVersionReleaseDate && convertDate(row.installedVersionReleaseDate),
         lastMinorVersion: row.lastMinorVersion,
         latestVersion: row.latestVersion,
         latestVersionReleaseDate:

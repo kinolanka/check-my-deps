@@ -7,6 +7,7 @@ export type PackageSpec = {
   depType: string;
   curVersion: string;
   installedVersion?: string;
+  installedVersionReleaseDate?: string;
   lastMinorVersion?: string;
   latestVersion?: string;
   latestVersionReleaseDate?: string;

@@ -12,6 +12,8 @@ class PackageInfoService extends Service {
 
   private installedVersion: PackageSpec['installedVersion'] = '';
 
+  private installedVersionReleaseDate: PackageSpec['installedVersionReleaseDate'] = '';
+
   private lastMinorVersion: PackageSpec['lastMinorVersion'] = '';
 
   private latestVersion: PackageSpec['latestVersion'] = '';
@@ -88,6 +90,10 @@ class PackageInfoService extends Service {
 
   private _setInstalledVersion() {
     this.installedVersion = this.npmListDepItem?.version || '';
+
+    if (this.installedVersion) {
+      this.installedVersionReleaseDate = this.npmViewData.time?.[this.installedVersion] || '';
+    }
   }
 
   private _filterProductionVersions(versions: string[]) {
@@ -128,7 +134,7 @@ class PackageInfoService extends Service {
     this.latestVersion = productionVersions.pop() || '';
 
     if (this.latestVersion) {
-      this.latestVersionReleaseDate = this.npmViewData.time[this.latestVersion] || '';
+      this.latestVersionReleaseDate = this.npmViewData.time?.[this.latestVersion] || '';
     }
   }
 
@@ -150,6 +156,7 @@ class PackageInfoService extends Service {
       depType: this.depType,
       curVersion: this.curVersion,
       installedVersion: this.installedVersion,
+      installedVersionReleaseDate: this.installedVersionReleaseDate,
       lastMinorVersion: this.lastMinorVersion,
       latestVersion: this.latestVersion,
       latestVersionReleaseDate: this.latestVersionReleaseDate,
