@@ -16,6 +16,8 @@ class PackageInfoService extends Service {
 
   private latestVersion: PackageSpec['latestVersion'] = '';
 
+  private latestVersionReleaseDate: PackageSpec['latestVersionReleaseDate'] = '';
+
   private source: PackageSpec['source'] = '';
 
   private packageStatus: PackageSpec['packageStatus'] = 'upToDate';
@@ -123,7 +125,11 @@ class PackageInfoService extends Service {
   private _setLatestVersion() {
     const productionVersions = this._filterProductionVersions(this.npmViewData.versions);
 
-    this.latestVersion = productionVersions.pop();
+    this.latestVersion = productionVersions.pop() || '';
+
+    if (this.latestVersion) {
+      this.latestVersionReleaseDate = this.npmViewData.time[this.latestVersion] || '';
+    }
   }
 
   private _setSource() {
@@ -146,6 +152,7 @@ class PackageInfoService extends Service {
       installedVersion: this.installedVersion,
       lastMinorVersion: this.lastMinorVersion,
       latestVersion: this.latestVersion,
+      latestVersionReleaseDate: this.latestVersionReleaseDate,
       source: this.source,
       packageStatus: this.packageStatus,
     };

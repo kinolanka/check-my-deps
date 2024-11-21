@@ -4,6 +4,7 @@ import Service, { ServiceType } from '@/services/service';
 import PackageInfoService from '@/services/package-info-service';
 import SummaryService from '@/services/summary-service';
 import { PackageStatus } from '@/utils/types';
+import convertDate from '@/utils/helpers/convert-date';
 
 class ExcelService extends Service {
   private workbook: ExcelJS.Workbook;
@@ -101,6 +102,7 @@ class ExcelService extends Service {
       { header: 'Installed Version', key: 'installedVersion', width: 15 },
       { header: 'Last Minor Version', key: 'lastMinorVersion', width: 20 },
       { header: 'Last Version', key: 'latestVersion', width: 20 },
+      { header: 'Last Version Release Date', key: 'latestVersionReleaseDate', width: 20 },
       { header: 'Source', key: 'source', width: 30 },
       { header: 'Dependency Type', key: 'depType', width: 20 },
     ];
@@ -115,6 +117,8 @@ class ExcelService extends Service {
         installedVersion: row.installedVersion,
         lastMinorVersion: row.lastMinorVersion,
         latestVersion: row.latestVersion,
+        latestVersionReleaseDate:
+          row.latestVersionReleaseDate && convertDate(row.latestVersionReleaseDate),
         packageStatus: row.packageStatus,
         source: row.source,
       });

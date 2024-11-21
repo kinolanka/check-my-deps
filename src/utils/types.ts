@@ -9,6 +9,7 @@ export type PackageSpec = {
   installedVersion?: string;
   lastMinorVersion?: string;
   latestVersion?: string;
+  latestVersionReleaseDate?: string;
   source?: string;
   packageStatus?: PackageStatus;
 };
