@@ -24,6 +24,10 @@ class PackageFileService extends Service {
     return this.packageJson.name || '';
   }
 
+  public getVersion(): string {
+    return this.packageJson.version || '0.0.0';
+  }
+
   public getPackages() {
     const list = [];
 
@@ -46,8 +50,10 @@ class PackageFileService extends Service {
 
   public getExportFilePath(): string {
     const packageName = sanitizeFileName(this.getName() || 'package');
+    // Replace dots in version with hyphens for better cross-OS compatibility
+    const version = this.getVersion().replace(/\./g, '-');
 
-    const filePath = path.resolve(this.ctx.cwd, `${packageName}-deps-check`);
+    const filePath = path.resolve(this.ctx.cwd, `${packageName}-v${version}-dependencies`);
 
     return filePath;
   }
