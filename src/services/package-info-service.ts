@@ -4,29 +4,29 @@ import extractRootDomain from '@/utils/helpers/extract-root-domain';
 import { NpmListDepItem, NpmViewData, PackageSpec } from '@/utils/types';
 
 class PackageInfoService extends Service {
-  private packageName: PackageSpec['packageName'];
+  private packageName: string;
 
-  private depType: PackageSpec['depType'];
+  private depType: string;
 
-  private curVersion: PackageSpec['curVersion'];
+  private reqVersion: string;
 
-  private installedVersion: PackageSpec['installedVersion'] = '';
+  private installedVersion?: string;
 
-  private installedVersionReleaseDate: PackageSpec['installedVersionReleaseDate'] = '';
+  private installDate?: string;
 
-  private lastMinorVersion: PackageSpec['lastMinorVersion'] = '';
+  private latestMinor?: string;
 
-  private lastMinorVersionReleaseDate: PackageSpec['lastMinorVersionReleaseDate'] = '';
+  private latestMinorDate?: string;
 
-  private latestVersion: PackageSpec['latestVersion'] = '';
+  private latestVersion?: string;
 
-  private latestVersionReleaseDate: PackageSpec['latestVersionReleaseDate'] = '';
+  private latestVersionDate?: string;
 
-  private source: PackageSpec['source'] = '';
+  private regSource?: string;
 
-  private packageStatus: PackageSpec['packageStatus'] = 'upToDate';
+  private updateStatus: PackageSpec['updateStatus'] = 'upToDate';
 
-  private deprecated: PackageSpec['deprecated'] = false;
+  private deprecated = false;
 
   private npmListDepItem?: NpmListDepItem;
 
@@ -46,7 +46,7 @@ class PackageInfoService extends Service {
 
     this.depType = args.package.depType;
 
-    this.curVersion = args.package.curVersion;
+    this.reqVersion = args.package.reqVersion;
 
     this.npmListDepItem = args.npmListDepItem;
 
@@ -84,13 +84,13 @@ class PackageInfoService extends Service {
       installedMinor === latestMinor &&
       installedPatch === latestPatch
     ) {
-      this.packageStatus = 'upToDate';
+      this.updateStatus = 'upToDate';
     } else if (installedMajor === latestMajor && installedMinor === latestMinor) {
-      this.packageStatus = 'patch';
+      this.updateStatus = 'patch';
     } else if (installedMajor === latestMajor) {
-      this.packageStatus = 'minor';
+      this.updateStatus = 'minor';
     } else {
-      this.packageStatus = 'major';
+      this.updateStatus = 'major';
     }
   }
 
@@ -98,7 +98,7 @@ class PackageInfoService extends Service {
     this.installedVersion = this.npmListDepItem?.version || '';
 
     if (this.installedVersion) {
-      this.installedVersionReleaseDate = this.npmViewData.time?.[this.installedVersion] || '';
+      this.installDate = this.npmViewData.time?.[this.installedVersion] || '';
     }
   }
 
@@ -130,9 +130,9 @@ class PackageInfoService extends Service {
       .pop();
 
     if (lastMinorVersion) {
-      this.lastMinorVersion = lastMinorVersion;
+      this.latestMinor = lastMinorVersion;
 
-      this.lastMinorVersionReleaseDate = this.npmViewData.time?.[this.lastMinorVersion] || '';
+      this.latestMinorDate = this.npmViewData.time?.[this.latestMinor] || '';
     }
   }
 
@@ -142,7 +142,7 @@ class PackageInfoService extends Service {
     this.latestVersion = productionVersions.pop() || '';
 
     if (this.latestVersion) {
-      this.latestVersionReleaseDate = this.npmViewData.time?.[this.latestVersion] || '';
+      this.latestVersionDate = this.npmViewData.time?.[this.latestVersion] || '';
     }
   }
 
@@ -151,7 +151,7 @@ class PackageInfoService extends Service {
       const resolvedUrl = this.npmListDepItem?.resolved;
 
       if (resolvedUrl) {
-        this.source = extractRootDomain(resolvedUrl);
+        this.regSource = extractRootDomain(resolvedUrl);
       }
     } catch (error) {
       this.ctx.outputService.error(error as Error);
@@ -166,15 +166,15 @@ class PackageInfoService extends Service {
     return {
       packageName: this.packageName,
       depType: this.depType,
-      curVersion: this.curVersion,
+      reqVersion: this.reqVersion,
       installedVersion: this.installedVersion,
-      installedVersionReleaseDate: this.installedVersionReleaseDate,
-      lastMinorVersion: this.lastMinorVersion,
-      lastMinorVersionReleaseDate: this.lastMinorVersionReleaseDate,
+      installDate: this.installDate,
+      latestMinor: this.latestMinor,
+      latestMinorDate: this.latestMinorDate,
       latestVersion: this.latestVersion,
-      latestVersionReleaseDate: this.latestVersionReleaseDate,
-      source: this.source,
-      packageStatus: this.packageStatus,
+      latestVersionDate: this.latestVersionDate,
+      regSource: this.regSource,
+      updateStatus: this.updateStatus,
       deprecated: this.deprecated,
     };
   }

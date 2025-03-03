@@ -41,14 +41,20 @@ class SummaryService extends Service {
 
       if (!summary[row.depType]) {
         summary[row.depType] = {
-          ...summaryStats,
+          total: 0,
+          upToDate: 0,
+          patch: 0,
+          minor: 0,
+          major: 0,
+          deprecated: 0,
         };
       }
 
+      // Increment the total count for this dependency type
       summary[row.depType].total += 1;
 
-      if (row.packageStatus) {
-        summary[row.depType][row.packageStatus] += 1;
+      if (row.updateStatus) {
+        summary[row.depType][row.updateStatus] += 1;
       }
 
       if (row.deprecated) {
