@@ -14,6 +14,7 @@ export type PackageSpec = {
   latestVersionReleaseDate?: string;
   source?: string;
   packageStatus?: PackageStatus;
+  deprecated?: boolean;
 };
 
 export type NpmListDepItem = GenericObject<{
@@ -34,8 +35,9 @@ export type NpmViewData = GenericObject<{
   time: Record<string, string>;
   homepage: string;
   repository: string | GenericObject<{ url: string }>;
+  deprecated?: boolean;
 }>;
 
-export type SummaryStats = Record<PackageStatus | 'total', number>;
+export type SummaryStats = Record<PackageStatus | 'total' | 'deprecated', number>;
 
 export type Summary = Record<string, SummaryStats>;

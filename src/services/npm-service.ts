@@ -39,7 +39,7 @@ class NpmService extends Service {
 
   private _getNpmViewData(packageName: string) {
     const npmViewDataBuffer = execSync(
-      `npm view ${packageName} versions time homepage repository --json`,
+      `npm view ${packageName} versions time homepage repository deprecated --json`,
       { cwd: this.ctx.cwd }
     );
 

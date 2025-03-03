@@ -31,6 +31,7 @@ class SummaryService extends Service {
       minor: 0,
       major: 0,
       patch: 0,
+      deprecated: 0,
     };
 
     const summary: Summary = {};
@@ -48,6 +49,10 @@ class SummaryService extends Service {
 
       if (row.packageStatus) {
         summary[row.depType][row.packageStatus] += 1;
+      }
+
+      if (row.deprecated) {
+        summary[row.depType].deprecated += 1;
       }
     }
 
