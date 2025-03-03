@@ -17,6 +17,7 @@ class ExcelService extends Service {
     major: 'FF0000', // Red color
     minor: 'FFA500', // Orange color
     patch: 'ADD8E6', // Blue color
+    upToDate: '00FF00', // Green color
   };
 
   constructor(list: PackageInfoService[], summary: SummaryService, ctx: ServiceType) {
@@ -47,7 +48,9 @@ class ExcelService extends Service {
 
   private _handlePackageStatus(cell: ExcelJS.Cell, status?: PackageStatus) {
     if (status === 'upToDate') {
-      cell.value = '';
+      cell.value = 'up-to-date';
+      
+      cell.fill = this._getCellBgColorConfig(this.bgColors.upToDate);
     } else {
       cell.value = status;
 
