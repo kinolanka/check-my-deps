@@ -5,15 +5,15 @@ export type PackageStatus = 'upToDate' | 'major' | 'minor' | 'patch';
 export type PackageSpec = {
   packageName: string;
   depType: string;
-  curVersion: string;
+  reqVersion: string;
   installedVersion?: string;
-  installedVersionReleaseDate?: string;
-  lastMinorVersion?: string;
-  lastMinorVersionReleaseDate?: string;
+  installDate?: string;
+  latestMinor?: string;
+  latestMinorDate?: string;
   latestVersion?: string;
-  latestVersionReleaseDate?: string;
-  source?: string;
-  packageStatus?: PackageStatus;
+  latestVersionDate?: string;
+  regSource?: string;
+  updateStatus?: PackageStatus;
   deprecated?: boolean;
 };
 

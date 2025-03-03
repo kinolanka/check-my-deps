@@ -31,11 +31,11 @@ class PackageFileService extends Service {
       const deps = this.packageJson[depType];
 
       if (deps) {
-        for (const [packageName, curVersion] of Object.entries(deps)) {
+        for (const [packageName, reqVersion] of Object.entries(deps)) {
           list.push({
             packageName,
             depType,
-            curVersion,
+            reqVersion,
           });
         }
       }

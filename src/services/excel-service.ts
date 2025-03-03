@@ -46,17 +46,21 @@ class ExcelService extends Service {
     };
   }
 
-  private _handlePackageStatus(cell: ExcelJS.Cell, status?: PackageStatus) {
-    if (status === 'upToDate') {
-      cell.value = 'up-to-date';
-      
-      cell.fill = this._getCellBgColorConfig(this.bgColors.upToDate);
-    } else {
-      cell.value = status;
+  private _handleUpdateStatus(cell: ExcelJS.Cell, status?: PackageStatus) {
+    if (!status) {
+      return;
+    }
 
-      if (status && status in this.bgColors) {
-        cell.fill = this._getCellBgColorConfig(this.bgColors[status]);
-      }
+    cell.value = status;
+
+    if (status === 'upToDate') {
+      cell.fill = this._getCellBgColorConfig(this.bgColors.upToDate);
+    } else if (status === 'patch') {
+      cell.fill = this._getCellBgColorConfig(this.bgColors.patch);
+    } else if (status === 'minor') {
+      cell.fill = this._getCellBgColorConfig(this.bgColors.minor);
+    } else if (status === 'major') {
+      cell.fill = this._getCellBgColorConfig(this.bgColors.major);
     }
   }
 
@@ -64,16 +68,6 @@ class ExcelService extends Service {
     const worksheetSum = this.workbook.addWorksheet('Summary');
 
     const summary = this.summary.getSummary();
-
-    // Add header row
-    // const headerRow = worksheetSum.addRow([
-    //   'Dependency Type',
-    //   'Total',
-    //   'Up-to-Date',
-    //   'Major',
-    //   'Minor',
-    //   'Patch',
-    // ]);
 
     worksheetSum.columns = [
       { header: 'Dependency Type', width: 20 },
@@ -103,13 +97,6 @@ class ExcelService extends Service {
       cell.font = { bold: true };
     });
 
-    // Set header row background color
-    // headerRow.getCell(4).fill = this._getCellBgColorConfig(this.bgColors.major);
-
-    // headerRow.getCell(5).fill = this._getCellBgColorConfig(this.bgColors.minor);
-
-    // headerRow.getCell(6).fill = this._getCellBgColorConfig(this.bgColors.patch);
-
     // Track totals for all columns
     let totalPackages = 0;
     let totalUpToDate = 0;
@@ -122,7 +109,7 @@ class ExcelService extends Service {
     // Add summary data
     for (const [depType, stats] of Object.entries(summary)) {
       const outdatedCount = stats.major + stats.minor + stats.patch;
-      
+
       worksheetSum.addRow([
         depType,
         stats.total,
@@ -169,29 +156,29 @@ class ExcelService extends Service {
     const worksheetDeps = this.workbook.addWorksheet('Dependencies');
 
     worksheetDeps.columns = [
-      { header: 'Package', key: 'packageName', width: 30 },
-      { header: 'Status', key: 'packageStatus', width: 10 },
-      { header: 'Deprecated', key: 'deprecated', width: 10 },
-      { header: 'Current Version', key: 'curVersion', width: 10 },
+      { header: 'Package Name', key: 'packageName', width: 30 },
+      { header: 'Update Status', key: 'updateStatus', width: 10 },
+      { header: 'Is Deprecated', key: 'deprecated', width: 10 },
+      { header: 'Required Version', key: 'reqVersion', width: 10 },
       { header: 'Installed Version', key: 'installedVersion', width: 10 },
       {
-        header: 'Installed Version Release Date',
-        key: 'installedVersionReleaseDate',
-        width: 10,
+        header: 'Installed Version Published Date',
+        key: 'installDate',
+        width: 15,
       },
-      { header: 'Last Minor Version', key: 'lastMinorVersion', width: 10 },
+      { header: 'Latest Minor Version', key: 'latestMinor', width: 10 },
       {
-        header: 'Last Minor Version Release Date',
-        key: 'lastMinorVersionReleaseDate',
-        width: 10,
+        header: 'Latest Minor Version Published Date',
+        key: 'latestMinorDate',
+        width: 15,
       },
-      { header: 'Last Version', key: 'latestVersion', width: 10 },
+      { header: 'Latest Available Version', key: 'latestVersion', width: 15 },
       {
-        header: 'Last Version Release Date',
-        key: 'latestVersionReleaseDate',
-        width: 10,
+        header: 'Latest Version Published Date',
+        key: 'latestVersionDate',
+        width: 15,
       },
-      { header: 'Source', key: 'source', width: 20 },
+      { header: 'Registry Source', key: 'regSource', width: 20 },
       { header: 'Dependency Type', key: 'depType', width: 20 },
     ];
 
@@ -202,7 +189,7 @@ class ExcelService extends Service {
 
     // Freeze the first row and first column so they remain visible when scrolling
     worksheetDeps.views = [
-      { state: 'frozen', xSplit: 1, ySplit: 1, topLeftCell: 'B2', activeCell: 'B2' }
+      { state: 'frozen', xSplit: 1, ySplit: 1, topLeftCell: 'B2', activeCell: 'B2' },
     ];
 
     for (const packageInfo of this.list) {
@@ -211,24 +198,21 @@ class ExcelService extends Service {
       const newRow = worksheetDeps.addRow({
         packageName: row.packageName,
         depType: row.depType,
-        curVersion: row.curVersion,
+        reqVersion: row.reqVersion,
         installedVersion: row.installedVersion,
-        installedVersionReleaseDate:
-          row.installedVersionReleaseDate && convertDate(row.installedVersionReleaseDate),
-        lastMinorVersion: row.lastMinorVersion,
-        lastMinorVersionReleaseDate:
-          row.lastMinorVersionReleaseDate && convertDate(row.lastMinorVersionReleaseDate),
+        installDate: row.installDate && convertDate(row.installDate),
+        latestMinor: row.latestMinor,
+        latestMinorDate: row.latestMinorDate && convertDate(row.latestMinorDate),
         latestVersion: row.latestVersion,
-        latestVersionReleaseDate:
-          row.latestVersionReleaseDate && convertDate(row.latestVersionReleaseDate),
-        packageStatus: row.packageStatus,
-        source: row.source,
+        latestVersionDate: row.latestVersionDate && convertDate(row.latestVersionDate),
+        updateStatus: row.updateStatus,
+        regSource: row.regSource,
         deprecated: row.deprecated ? 'yes' : 'no',
       });
 
-      const packageStatusCell = newRow.getCell('packageStatus');
-      this._handlePackageStatus(packageStatusCell, row.packageStatus);
-      
+      const packageStatusCell = newRow.getCell('updateStatus');
+      this._handleUpdateStatus(packageStatusCell, row.updateStatus);
+
       // Highlight deprecated packages with a red background
       if (row.deprecated) {
         const deprecatedCell = newRow.getCell('deprecated');
