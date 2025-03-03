@@ -104,6 +104,14 @@ class ExcelService extends Service {
 
     // headerRow.getCell(6).fill = this._getCellBgColorConfig(this.bgColors.patch);
 
+    // Track totals for all columns
+    let totalPackages = 0;
+    let totalUpToDate = 0;
+    let totalOutdated = 0;
+    let totalMajor = 0;
+    let totalMinor = 0;
+    let totalPatch = 0;
+
     // Add summary data
     for (const [depType, stats] of Object.entries(summary)) {
       const outdatedCount = stats.major + stats.minor + stats.patch;
@@ -117,7 +125,34 @@ class ExcelService extends Service {
         stats.minor,
         stats.patch,
       ]);
+
+      // Accumulate totals
+      totalPackages += stats.total;
+      totalUpToDate += stats.upToDate;
+      totalOutdated += outdatedCount;
+      totalMajor += stats.major;
+      totalMinor += stats.minor;
+      totalPatch += stats.patch;
     }
+
+    // Add empty row
+    worksheetSum.addRow([]);
+
+    // Add total row with bold formatting
+    const totalRow = worksheetSum.addRow([
+      'Total',
+      totalPackages,
+      totalUpToDate,
+      totalOutdated,
+      totalMajor,
+      totalMinor,
+      totalPatch,
+    ]);
+
+    // Apply bold formatting to the total row
+    totalRow.eachCell((cell) => {
+      cell.font = { bold: true };
+    });
   }
 
   private _handleDependenciesWorksheet() {
