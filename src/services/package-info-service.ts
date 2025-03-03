@@ -26,6 +26,8 @@ class PackageInfoService extends Service {
 
   private packageStatus: PackageSpec['packageStatus'] = 'upToDate';
 
+  private deprecated: PackageSpec['deprecated'] = false;
+
   private npmListDepItem?: NpmListDepItem;
 
   private npmViewData: NpmViewData;
@@ -63,6 +65,8 @@ class PackageInfoService extends Service {
     this._setSource();
 
     this._setPackageStatus();
+
+    this._setDeprecated();
   }
 
   private _setPackageStatus() {
@@ -154,6 +158,10 @@ class PackageInfoService extends Service {
     }
   }
 
+  private _setDeprecated() {
+    this.deprecated = !!this.npmViewData.deprecated;
+  }
+
   public getInfo(): PackageSpec {
     return {
       packageName: this.packageName,
@@ -167,6 +175,7 @@ class PackageInfoService extends Service {
       latestVersionReleaseDate: this.latestVersionReleaseDate,
       source: this.source,
       packageStatus: this.packageStatus,
+      deprecated: this.deprecated,
     };
   }
 }

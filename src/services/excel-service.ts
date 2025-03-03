@@ -83,17 +83,18 @@ class ExcelService extends Service {
       {
         header: 'Major',
         width: 10,
-        fill: this._getCellBgColorConfig(this.bgColors.major),
       },
       {
         header: 'Minor',
         width: 10,
-        fill: this._getCellBgColorConfig(this.bgColors.minor),
       },
       {
         header: 'Patch',
         width: 10,
-        fill: this._getCellBgColorConfig(this.bgColors.patch),
+      },
+      {
+        header: 'Deprecated',
+        width: 10,
       },
     ];
 
@@ -116,6 +117,7 @@ class ExcelService extends Service {
     let totalMajor = 0;
     let totalMinor = 0;
     let totalPatch = 0;
+    let totalDeprecated = 0;
 
     // Add summary data
     for (const [depType, stats] of Object.entries(summary)) {
@@ -129,6 +131,7 @@ class ExcelService extends Service {
         stats.major,
         stats.minor,
         stats.patch,
+        stats.deprecated,
       ]);
 
       // Accumulate totals
@@ -138,6 +141,7 @@ class ExcelService extends Service {
       totalMajor += stats.major;
       totalMinor += stats.minor;
       totalPatch += stats.patch;
+      totalDeprecated += stats.deprecated;
     }
 
     // Add empty row
@@ -152,6 +156,7 @@ class ExcelService extends Service {
       totalMajor,
       totalMinor,
       totalPatch,
+      totalDeprecated,
     ]);
 
     // Apply bold formatting to the total row
@@ -166,6 +171,7 @@ class ExcelService extends Service {
     worksheetDeps.columns = [
       { header: 'Package', key: 'packageName', width: 30 },
       { header: 'Status', key: 'packageStatus', width: 10 },
+      { header: 'Deprecated', key: 'deprecated', width: 10 },
       { header: 'Current Version', key: 'curVersion', width: 10 },
       { header: 'Installed Version', key: 'installedVersion', width: 10 },
       {
@@ -217,10 +223,17 @@ class ExcelService extends Service {
           row.latestVersionReleaseDate && convertDate(row.latestVersionReleaseDate),
         packageStatus: row.packageStatus,
         source: row.source,
+        deprecated: row.deprecated ? 'yes' : 'no',
       });
 
       const packageStatusCell = newRow.getCell('packageStatus');
       this._handlePackageStatus(packageStatusCell, row.packageStatus);
+      
+      // Highlight deprecated packages with a red background
+      if (row.deprecated) {
+        const deprecatedCell = newRow.getCell('deprecated');
+        deprecatedCell.fill = this._getCellBgColorConfig('FF0000'); // Red color
+      }
     }
   }
 
