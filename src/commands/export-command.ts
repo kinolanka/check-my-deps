@@ -17,26 +17,37 @@ const exportCommand = new Command()
   )
   .action(async (options) => {
     const outputService = new OutputService();
+    outputService.startLoading('Analyzing dependencies...');
 
     try {
+      outputService.updateLoadingText('Reading package.json...');
       const ctx = new ServiceCtx({ cwd: options.cwd, outputService });
 
       const packageFileService = new PackageFileService(ctx);
 
+      outputService.updateLoadingText('Extracting package information...');
       const packages = packageFileService.getPackages();
 
+      outputService.updateLoadingText('Fetching npm registry data...');
       const npmService = new NpmService(packages, ctx);
 
+      outputService.updateLoadingText('Processing dependency information...');
       const exportList = npmService.getList();
 
+      outputService.updateLoadingText('Generating summary...');
       const summary = new SummaryService(exportList, ctx);
 
+      outputService.updateLoadingText('Creating Excel report...');
       const excelService = new ExcelService(exportList, summary, ctx);
 
       const filePath = packageFileService.getExportFilePath();
 
+      outputService.updateLoadingText(`Saving Excel file to ${filePath}...`);
       await excelService.saveToFile(filePath);
+
+      outputService.stopLoadingSuccess('Export completed!');
     } catch (error) {
+      outputService.stopLoadingError('Export failed');
       outputService.error(error as Error);
     }
   });
