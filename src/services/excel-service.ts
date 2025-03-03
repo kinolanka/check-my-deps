@@ -76,6 +76,7 @@ class ExcelService extends Service {
       { header: 'Dependency Type', width: 20, font: { bold: true } },
       { header: 'Total', width: 10 },
       { header: 'Up-to-Date', width: 15 },
+      { header: 'Outdated', width: 15, font: { bold: true } },
       {
         header: 'Major',
         width: 10,
@@ -105,10 +106,13 @@ class ExcelService extends Service {
 
     // Add summary data
     for (const [depType, stats] of Object.entries(summary)) {
+      const outdatedCount = stats.major + stats.minor + stats.patch;
+      
       worksheetSum.addRow([
         depType,
         stats.total,
         stats.upToDate,
+        outdatedCount,
         stats.major,
         stats.minor,
         stats.patch,
