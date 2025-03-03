@@ -73,29 +73,31 @@ class ExcelService extends Service {
     // ]);
 
     worksheetSum.columns = [
-      { header: 'Dependency Type', width: 20, font: { bold: true } },
+      { header: 'Dependency Type', width: 20 },
       { header: 'Total', width: 10 },
       { header: 'Up-to-Date', width: 15 },
-      { header: 'Outdated', width: 15, font: { bold: true } },
+      { header: 'Outdated', width: 15 },
       {
         header: 'Major',
         width: 10,
         fill: this._getCellBgColorConfig(this.bgColors.major),
-        font: { bold: true },
       },
       {
         header: 'Minor',
         width: 10,
         fill: this._getCellBgColorConfig(this.bgColors.minor),
-        font: { bold: true },
       },
       {
         header: 'Patch',
         width: 10,
         fill: this._getCellBgColorConfig(this.bgColors.patch),
-        font: { bold: true },
       },
     ];
+
+    // Make the header row bold
+    worksheetSum.getRow(1).eachCell((cell) => {
+      cell.font = { bold: true };
+    });
 
     // Set header row background color
     // headerRow.getCell(4).fill = this._getCellBgColorConfig(this.bgColors.major);
@@ -159,33 +161,35 @@ class ExcelService extends Service {
     const worksheetDeps = this.workbook.addWorksheet('Dependencies');
 
     worksheetDeps.columns = [
-      { header: 'Package', key: 'packageName', width: 30, font: { bold: true } },
-      { header: 'Status', key: 'packageStatus', width: 10, font: { bold: true } },
-      { header: 'Current Version', key: 'curVersion', width: 10, font: { bold: true } },
-      { header: 'Installed Version', key: 'installedVersion', width: 10, font: { bold: true } },
+      { header: 'Package', key: 'packageName', width: 30 },
+      { header: 'Status', key: 'packageStatus', width: 10 },
+      { header: 'Current Version', key: 'curVersion', width: 10 },
+      { header: 'Installed Version', key: 'installedVersion', width: 10 },
       {
         header: 'Installed Version Release Date',
         key: 'installedVersionReleaseDate',
         width: 10,
-        font: { bold: true },
       },
-      { header: 'Last Minor Version', key: 'lastMinorVersion', width: 10, font: { bold: true } },
+      { header: 'Last Minor Version', key: 'lastMinorVersion', width: 10 },
       {
         header: 'Last Minor Version Release Date',
         key: 'lastMinorVersionReleaseDate',
         width: 10,
-        font: { bold: true },
       },
-      { header: 'Last Version', key: 'latestVersion', width: 10, font: { bold: true } },
+      { header: 'Last Version', key: 'latestVersion', width: 10 },
       {
         header: 'Last Version Release Date',
         key: 'latestVersionReleaseDate',
         width: 10,
-        font: { bold: true },
       },
-      { header: 'Source', key: 'source', width: 20, font: { bold: true } },
-      { header: 'Dependency Type', key: 'depType', width: 20, font: { bold: true } },
+      { header: 'Source', key: 'source', width: 20 },
+      { header: 'Dependency Type', key: 'depType', width: 20 },
     ];
+
+    // Make the header row bold
+    worksheetDeps.getRow(1).eachCell((cell) => {
+      cell.font = { bold: true };
+    });
 
     for (const packageInfo of this.list) {
       const row = packageInfo.getInfo();
