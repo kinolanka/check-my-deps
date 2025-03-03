@@ -194,6 +194,11 @@ class ExcelService extends Service {
       cell.font = { bold: true };
     });
 
+    // Freeze the first row and first column so they remain visible when scrolling
+    worksheetDeps.views = [
+      { state: 'frozen', xSplit: 1, ySplit: 1, topLeftCell: 'B2', activeCell: 'B2' }
+    ];
+
     for (const packageInfo of this.list) {
       const row = packageInfo.getInfo();
 
