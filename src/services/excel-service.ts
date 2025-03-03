@@ -5,6 +5,7 @@ import PackageInfoService from '@/services/package-info-service';
 import SummaryService from '@/services/summary-service';
 import { PackageStatus } from '@/utils/types';
 import convertDate from '@/utils/helpers/convert-date';
+import { PACKAGE_NAME, WEBSITE_URL, NPM_URL, GITHUB_URL } from '@/utils/constants';
 
 class ExcelService extends Service {
   private workbook: ExcelJS.Workbook;
@@ -62,6 +63,64 @@ class ExcelService extends Service {
     } else if (status === 'major') {
       cell.fill = this._getCellBgColorConfig(this.bgColors.major);
     }
+  }
+
+  /**
+   * Adds a URL row to the worksheet with a label and clickable URL
+   * @param worksheet The worksheet to add the row to
+   * @param label The label for the URL (e.g., "Website", "NPM", "GitHub")
+   * @param url The URL to make clickable
+   * @param tooltip The tooltip to display when hovering over the URL
+   * @returns The row that was added
+   */
+  private _addUrlRow(
+    worksheet: ExcelJS.Worksheet,
+    label: string,
+    url: string,
+    tooltip: string
+  ): ExcelJS.Row {
+    const row = worksheet.addRow([label, url]);
+    
+    // Style the label cell
+    const labelCell = row.getCell(1);
+    labelCell.font = { italic: true, color: { argb: '666666' } };
+    labelCell.alignment = { horizontal: 'left' };
+    
+    // Style the URL cell and make it clickable
+    const urlCell = row.getCell(2);
+    urlCell.font = { italic: true, color: { argb: '0000FF' }, underline: true };
+    urlCell.value = {
+      text: url,
+      hyperlink: url,
+      tooltip,
+    };
+    urlCell.alignment = { horizontal: 'left' };
+    
+    return row;
+  }
+
+  /**
+   * Adds package information and URLs to the summary worksheet
+   * @param worksheet The summary worksheet
+   */
+  private _addPackageInfoToSummary(worksheet: ExcelJS.Worksheet): void {
+    // Add empty rows for spacing
+    worksheet.addRow([]);
+    worksheet.addRow([]);
+    
+    // Add information about the package
+    const infoRow = worksheet.addRow([`This report was created using npm package ${PACKAGE_NAME}`]);
+    
+    // Merge cells for the info text and apply styling
+    worksheet.mergeCells(infoRow.number, 1, infoRow.number, 8);
+    const infoCell = infoRow.getCell(1);
+    infoCell.font = { italic: true, color: { argb: '666666' } };
+    infoCell.alignment = { horizontal: 'left' };
+    
+    // Add URL rows with two columns each (label and URL)
+    this._addUrlRow(worksheet, 'Website', WEBSITE_URL, 'Visit website');
+    this._addUrlRow(worksheet, 'NPM', NPM_URL, 'Visit NPM package page');
+    this._addUrlRow(worksheet, 'GitHub', GITHUB_URL, 'Visit GitHub repository');
   }
 
   private _handleSummaryWorksheet() {
@@ -150,6 +209,9 @@ class ExcelService extends Service {
     totalRow.eachCell((cell) => {
       cell.font = { bold: true };
     });
+    
+    // Add package information and URLs to the summary worksheet
+    this._addPackageInfoToSummary(worksheetSum);
   }
 
   private _handleDependenciesWorksheet() {
