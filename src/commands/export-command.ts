@@ -35,7 +35,7 @@ const exportCommand = new Command()
       const exportList = npmService.getList();
 
       outputService.updateLoadingText('Generating summary...');
-      const summary = new SummaryService(exportList, ctx);
+      const summary = new SummaryService(exportList, packageFileService, ctx);
 
       outputService.updateLoadingText('Creating Excel report...');
       const excelService = new ExcelService(exportList, summary, ctx);
