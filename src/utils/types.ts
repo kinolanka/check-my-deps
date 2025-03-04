@@ -40,4 +40,11 @@ export type NpmViewData = GenericObject<{
 
 export type SummaryStats = Record<PackageStatus | 'total' | 'deprecated', number>;
 
-export type Summary = Record<string, SummaryStats>;
+export type SummaryTotals = SummaryStats & {
+  outdated: number; // Sum of major, minor, and patch
+};
+
+export type Summary = {
+  byType: Record<string, SummaryStats>;
+  totals: SummaryTotals;
+};

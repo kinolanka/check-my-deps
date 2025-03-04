@@ -156,17 +156,8 @@ class ExcelService extends Service {
       cell.font = { bold: true };
     });
 
-    // Track totals for all columns
-    let totalPackages = 0;
-    let totalUpToDate = 0;
-    let totalOutdated = 0;
-    let totalMajor = 0;
-    let totalMinor = 0;
-    let totalPatch = 0;
-    let totalDeprecated = 0;
-
-    // Add summary data
-    for (const [depType, stats] of Object.entries(summary)) {
+    // Add summary data for each dependency type
+    for (const [depType, stats] of Object.entries(summary.byType)) {
       const outdatedCount = stats.major + stats.minor + stats.patch;
 
       worksheetSum.addRow([
@@ -179,30 +170,24 @@ class ExcelService extends Service {
         stats.patch,
         stats.deprecated,
       ]);
-
-      // Accumulate totals
-      totalPackages += stats.total;
-      totalUpToDate += stats.upToDate;
-      totalOutdated += outdatedCount;
-      totalMajor += stats.major;
-      totalMinor += stats.minor;
-      totalPatch += stats.patch;
-      totalDeprecated += stats.deprecated;
     }
 
     // Add empty row
     worksheetSum.addRow([]);
 
+    // Get totals from the summary object
+    const { totals } = summary;
+
     // Add total row with bold formatting
     const totalRow = worksheetSum.addRow([
       'Total',
-      totalPackages,
-      totalUpToDate,
-      totalOutdated,
-      totalMajor,
-      totalMinor,
-      totalPatch,
-      totalDeprecated,
+      totals.total,
+      totals.upToDate,
+      totals.outdated,
+      totals.major,
+      totals.minor,
+      totals.patch,
+      totals.deprecated,
     ]);
 
     // Apply bold formatting to the total row
