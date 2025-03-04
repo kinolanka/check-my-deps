@@ -2,7 +2,6 @@
 
 Easily manage and monitor project dependencies.
 
-
 ## Usage
 
 ### Basic Usage
@@ -22,35 +21,35 @@ When you run check-my-deps with the Excel output format, you'll receive a compre
 
 This worksheet provides detailed information about each individual dependency in your project.
 
-| Column Header | Internal Name | Description |
-|---------------|--------------|-------------|
-| Package Name | `packageName` | The name of the npm package as listed in your package.json file. |
-| Update Status | `updateStatus` | Indicates whether the package is up-to-date or needs an update. Possible values: "upToDate", "patch", "minor", or "major". Color-coded for easy identification (green for up-to-date, blue for patch updates, orange for minor updates, red for major updates). |
-| Is Deprecated | `deprecated` | Indicates whether the package has been deprecated by its maintainers. Values are "yes" or "no". Deprecated packages are highlighted in red. |
-| Required Version | `reqVersion` | The version or version range specified in your package.json file. |
-| Installed Version | `installedVersion` | The actual version installed in your node_modules directory. |
-| Installed Version Published Date | `installDate` | The date when the installed version was published to the npm registry. |
-| Latest Minor Version | `latestMinor` | The latest available version that maintains the same major version as your installed package. |
-| Latest Minor Version Published Date | `latestMinorDate` | The date when the latest minor version was published to the npm registry. |
-| Latest Available Version | `latestVersion` | The most recent version available on the npm registry, regardless of major version changes. |
-| Latest Version Published Date | `latestVersionDate` | The date when the latest available version was published to the npm registry. |
-| Registry Source | `regSource` | The source registry from which the package was downloaded (e.g., "npmjs.com", "github.com"). |
-| Dependency Type | `depType` | The type of dependency as defined in your package.json (e.g., "dependencies", "devDependencies"). |
+| Column Header                       | Internal Name       | Description                                                                                                                                                                                                                                                     |
+| ----------------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Package Name                        | `packageName`       | The name of the npm package as listed in your package.json file.                                                                                                                                                                                                |
+| Update Status                       | `updateStatus`      | Indicates whether the package is up-to-date or needs an update. Possible values: "upToDate", "patch", "minor", or "major". Color-coded for easy identification (green for up-to-date, blue for patch updates, orange for minor updates, red for major updates). |
+| Is Deprecated                       | `deprecated`        | Indicates whether the package has been deprecated by its maintainers. Values are "yes" or "no". Deprecated packages are highlighted in red.                                                                                                                     |
+| Required Version                    | `reqVersion`        | The version or version range specified in your package.json file.                                                                                                                                                                                               |
+| Installed Version                   | `installedVersion`  | The actual version installed in your node_modules directory.                                                                                                                                                                                                    |
+| Installed Version Published Date    | `installDate`       | The date when the installed version was published to the npm registry.                                                                                                                                                                                          |
+| Latest Minor Version                | `latestMinor`       | The latest available version that maintains the same major version as your installed package.                                                                                                                                                                   |
+| Latest Minor Version Published Date | `latestMinorDate`   | The date when the latest minor version was published to the npm registry.                                                                                                                                                                                       |
+| Latest Available Version            | `latestVersion`     | The most recent version available on the npm registry, regardless of major version changes.                                                                                                                                                                     |
+| Latest Version Published Date       | `latestVersionDate` | The date when the latest available version was published to the npm registry.                                                                                                                                                                                   |
+| Registry Source                     | `regSource`         | The source registry from which the package was downloaded (e.g., "npmjs.com", "github.com").                                                                                                                                                                    |
+| Dependency Type                     | `depType`           | The type of dependency as defined in your package.json (e.g., "dependencies", "devDependencies").                                                                                                                                                               |
 
 ### Summary Worksheet
 
 This worksheet provides an aggregated overview of your project's dependencies.
 
-| Column Header | Internal Name | Description |
-|---------------|--------------|-------------|
-| Dependency Type | N/A | The category of dependency (e.g., "dependencies", "devDependencies"). |
-| Total | `total` | The total number of packages in each dependency category. |
-| Up-to-Date | `upToDate` | The number of packages that are already using the latest version. |
-| Outdated | N/A | The total number of packages that need updates (sum of major, minor, and patch updates). |
-| Major | `major` | The number of packages that have major version updates available. These updates may include breaking changes. |
-| Minor | `minor` | The number of packages that have minor version updates available. These typically add new features without breaking changes. |
-| Patch | `patch` | The number of packages that have patch version updates available. These typically include bug fixes and security patches. |
-| Deprecated | `deprecated` | The number of packages that have been deprecated by their maintainers. |
+| Column Header   | Internal Name | Description                                                                                                                  |
+| --------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Dependency Type | N/A           | The category of dependency (e.g., "dependencies", "devDependencies").                                                        |
+| Total           | `total`       | The total number of packages in each dependency category.                                                                    |
+| Up-to-Date      | `upToDate`    | The number of packages that are already using the latest version.                                                            |
+| Outdated        | N/A           | The total number of packages that need updates (sum of major, minor, and patch updates).                                     |
+| Major           | `major`       | The number of packages that have major version updates available. These updates may include breaking changes.                |
+| Minor           | `minor`       | The number of packages that have minor version updates available. These typically add new features without breaking changes. |
+| Patch           | `patch`       | The number of packages that have patch version updates available. These typically include bug fixes and security patches.    |
+| Deprecated      | `deprecated`  | The number of packages that have been deprecated by their maintainers.                                                       |
 
 ## Color Coding
 
@@ -168,6 +167,7 @@ npx @kinolanka/check-my-deps --output-format excel
 ```
 
 The Excel format provides the most comprehensive view with visual indicators, making it ideal for:
+
 - Detailed dependency analysis
 - Sharing reports with team members
 - Long-term dependency tracking
@@ -180,6 +180,7 @@ npx @kinolanka/check-my-deps --output-format json
 ```
 
 The JSON format is perfect for:
+
 - Integrating with other tools or scripts
 - Automated processing of dependency information
 - CI/CD pipelines
@@ -192,6 +193,7 @@ npx @kinolanka/check-my-deps --output-format csv
 ```
 
 The CSV format offers:
+
 - Compatibility with a wide range of data processing tools
 - Easy import into spreadsheet applications other than Excel
 - Simplified data structure for quick analysis
@@ -204,6 +206,7 @@ npx @kinolanka/check-my-deps
 ```
 
 The default console output provides:
+
 - Immediate visibility in your terminal
 - Quick overview of dependency status
 - No additional files generated

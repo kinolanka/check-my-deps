@@ -44,14 +44,19 @@ export type SummaryTotals = SummaryStats & {
   outdated: number; // Sum of major, minor, and patch
 };
 
-export type Summary = {
-  byType: Record<string, SummaryStats>;
-  totals: SummaryTotals;
-};
-
 export type ReportInfo = {
   date: string;
   time: string;
   projectName: string;
   projectVersion: string;
+};
+
+export type Summary = {
+  byType: Record<string, SummaryStats>;
+  totals: SummaryTotals;
+  reportInfo: ReportInfo;
+  sourceInfo?: {
+    info: string;
+    urls: Array<{ label: string; url: string }>;
+  };
 };

@@ -3,7 +3,7 @@ import ExcelJS from 'exceljs';
 import Service, { ServiceType } from '@/services/service';
 import PackageInfoService from '@/services/package-info-service';
 import SummaryService from '@/services/summary-service';
-import { PackageStatus } from '@/utils/types';
+import { PackageStatus, Summary } from '@/utils/types';
 import convertDate from '@/utils/helpers/convert-date';
 
 class ExcelService extends Service {
@@ -11,7 +11,7 @@ class ExcelService extends Service {
 
   private list: PackageInfoService[];
 
-  private summary: SummaryService;
+  private summary: Summary;
 
   private bgColors = {
     major: 'FF0000', // Red color
@@ -27,18 +27,18 @@ class ExcelService extends Service {
 
     this.list = list;
 
-    this.summary = summary;
+    this.summary = summary.getSummary();
 
-    this._init();
+    this.init();
   }
 
-  private _init() {
-    this._handleSummaryWorksheet();
+  private init() {
+    this.handleSummaryWorksheet();
 
-    this._handleDependenciesWorksheet();
+    this.handleDependenciesWorksheet();
   }
 
-  private _getCellBgColorConfig(color: string): ExcelJS.FillPattern {
+  private getCellBgColorConfig(color: string): ExcelJS.FillPattern {
     return {
       type: 'pattern',
       pattern: 'solid',
@@ -46,7 +46,7 @@ class ExcelService extends Service {
     };
   }
 
-  private _handleUpdateStatus(cell: ExcelJS.Cell, status?: PackageStatus) {
+  private handleUpdateStatus(cell: ExcelJS.Cell, status?: PackageStatus) {
     if (!status) {
       return;
     }
@@ -54,13 +54,13 @@ class ExcelService extends Service {
     cell.value = status;
 
     if (status === 'upToDate') {
-      cell.fill = this._getCellBgColorConfig(this.bgColors.upToDate);
+      cell.fill = this.getCellBgColorConfig(this.bgColors.upToDate);
     } else if (status === 'patch') {
-      cell.fill = this._getCellBgColorConfig(this.bgColors.patch);
+      cell.fill = this.getCellBgColorConfig(this.bgColors.patch);
     } else if (status === 'minor') {
-      cell.fill = this._getCellBgColorConfig(this.bgColors.minor);
+      cell.fill = this.getCellBgColorConfig(this.bgColors.minor);
     } else if (status === 'major') {
-      cell.fill = this._getCellBgColorConfig(this.bgColors.major);
+      cell.fill = this.getCellBgColorConfig(this.bgColors.major);
     }
   }
 
@@ -72,19 +72,19 @@ class ExcelService extends Service {
    * @param tooltip The tooltip to display when hovering over the URL
    * @returns The row that was added
    */
-  private _addUrlRow(
+  private addUrlRow(
     worksheet: ExcelJS.Worksheet,
     label: string,
     url: string,
-    tooltip: string
+    tooltip?: string
   ): ExcelJS.Row {
     const row = worksheet.addRow([label, url]);
-    
+
     // Style the label cell
     const labelCell = row.getCell(1);
     labelCell.font = { italic: true, color: { argb: '666666' } };
     labelCell.alignment = { horizontal: 'left' };
-    
+
     // Style the URL cell and make it clickable
     const urlCell = row.getCell(2);
     urlCell.font = { italic: true, color: { argb: '0000FF' }, underline: true };
@@ -94,13 +94,13 @@ class ExcelService extends Service {
       tooltip,
     };
     urlCell.alignment = { horizontal: 'left' };
-    
+
     return row;
   }
 
-  private _handleSummaryWorksheet() {
+  private handleSummaryWorksheet() {
     const worksheetSum = this.workbook.addWorksheet('Summary');
-    
+
     // Set column widths
     worksheetSum.columns = [
       { width: 20 }, // A - Dependency Type / Report labels
@@ -112,20 +112,18 @@ class ExcelService extends Service {
       { width: 10 }, // G - Patch
       { width: 10 }, // H - Deprecated
     ];
-    
+
     // Get report info from summary service
-    const reportInfo = this.summary.getReportInfo();
-    
+    const reportInfo = this.summary.reportInfo;
+
     // Add report information at the top
     worksheetSum.addRow(['Report Date:', reportInfo.date]);
     worksheetSum.addRow(['Report Time:', reportInfo.time]);
     worksheetSum.addRow(['Project Name:', reportInfo.projectName]);
     worksheetSum.addRow(['Project Version:', reportInfo.projectVersion]);
-    
+
     // Add empty row for spacing
     worksheetSum.addRow([]);
-
-    const summary = this.summary.getSummary();
 
     // Add column headers for dependency table (row 6)
     worksheetSum.addRow([
@@ -136,7 +134,7 @@ class ExcelService extends Service {
       'Major',
       'Minor',
       'Patch',
-      'Deprecated'
+      'Deprecated',
     ]);
 
     // Make the header row bold
@@ -145,7 +143,7 @@ class ExcelService extends Service {
     });
 
     // Add summary data for each dependency type
-    for (const [depType, stats] of Object.entries(summary.byType)) {
+    for (const [depType, stats] of Object.entries(this.summary.byType)) {
       const outdatedCount = stats.major + stats.minor + stats.patch;
 
       worksheetSum.addRow([
@@ -164,7 +162,7 @@ class ExcelService extends Service {
     worksheetSum.addRow([]);
 
     // Get totals from the summary object
-    const { totals } = summary;
+    const { totals } = this.summary;
 
     // Add total row with bold formatting
     const totalRow = worksheetSum.addRow([
@@ -182,30 +180,32 @@ class ExcelService extends Service {
     totalRow.eachCell((cell) => {
       cell.font = { bold: true };
     });
-    
+
     // Add empty rows for spacing
     worksheetSum.addRow([]);
     worksheetSum.addRow([]);
-    
-    // Get package info rows data from summary service
-    const packageInfoRows = this.summary.getPackageInfoRows();
 
-    // Add information about the package
-    const infoRow = worksheetSum.addRow([packageInfoRows.infoText]);
-    
-    // Merge cells for the info text and apply styling
-    worksheetSum.mergeCells(infoRow.number, 1, infoRow.number, 8);
-    const infoCell = infoRow.getCell(1);
-    infoCell.font = { italic: true, color: { argb: '666666' } };
-    infoCell.alignment = { horizontal: 'left' };
-    
-    // Add URL rows with two columns each (label and URL)
-    for (const urlInfo of packageInfoRows.urls) {
-      this._addUrlRow(worksheetSum, urlInfo.label, urlInfo.url, urlInfo.tooltip);
+    // Get package info rows data from summary service
+    const packageInfoRows = this.summary.sourceInfo;
+
+    if (packageInfoRows) {
+      // Add information about the package
+      const infoRow = worksheetSum.addRow([packageInfoRows.info]);
+
+      // Merge cells for the info text and apply styling
+      worksheetSum.mergeCells(infoRow.number, 1, infoRow.number, 8);
+      const infoCell = infoRow.getCell(1);
+      infoCell.font = { italic: true, color: { argb: '666666' } };
+      infoCell.alignment = { horizontal: 'left' };
+
+      // Add URL rows with two columns each (label and URL)
+      for (const urlInfo of packageInfoRows.urls) {
+        this.addUrlRow(worksheetSum, urlInfo.label, urlInfo.url);
+      }
     }
   }
 
-  private _handleDependenciesWorksheet() {
+  private handleDependenciesWorksheet() {
     const worksheetDeps = this.workbook.addWorksheet('Dependencies');
 
     worksheetDeps.columns = [
@@ -264,12 +264,12 @@ class ExcelService extends Service {
       });
 
       const packageStatusCell = newRow.getCell('updateStatus');
-      this._handleUpdateStatus(packageStatusCell, row.updateStatus);
+      this.handleUpdateStatus(packageStatusCell, row.updateStatus);
 
       // Highlight deprecated packages with a red background
       if (row.deprecated) {
         const deprecatedCell = newRow.getCell('deprecated');
-        deprecatedCell.fill = this._getCellBgColorConfig('FF0000'); // Red color
+        deprecatedCell.fill = this.getCellBgColorConfig('FF0000'); // Red color
       }
     }
   }
