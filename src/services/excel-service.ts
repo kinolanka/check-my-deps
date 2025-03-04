@@ -98,63 +98,49 @@ class ExcelService extends Service {
     return row;
   }
 
-  /**
-   * Adds package information and URLs to the summary worksheet
-   * @param worksheet The summary worksheet
-   */
-  private _addPackageInfoToSummary(worksheet: ExcelJS.Worksheet): void {
-    // Add empty rows for spacing
-    worksheet.addRow([]);
-    worksheet.addRow([]);
-    
-    // Get package info rows data from summary service
-    const packageInfoRows = this.summary.getPackageInfoRows();
-
-    // Add information about the package
-    const infoRow = worksheet.addRow([packageInfoRows.infoText]);
-    
-    // Merge cells for the info text and apply styling
-    worksheet.mergeCells(infoRow.number, 1, infoRow.number, 8);
-    const infoCell = infoRow.getCell(1);
-    infoCell.font = { italic: true, color: { argb: '666666' } };
-    infoCell.alignment = { horizontal: 'left' };
-    
-    // Add URL rows with two columns each (label and URL)
-    for (const urlInfo of packageInfoRows.urls) {
-      this._addUrlRow(worksheet, urlInfo.label, urlInfo.url, urlInfo.tooltip);
-    }
-  }
-
   private _handleSummaryWorksheet() {
     const worksheetSum = this.workbook.addWorksheet('Summary');
+    
+    // Set column widths
+    worksheetSum.columns = [
+      { width: 20 }, // A - Dependency Type / Report labels
+      { width: 10 }, // B - Total / Report values
+      { width: 15 }, // C - Up-to-Date
+      { width: 15 }, // D - Outdated
+      { width: 10 }, // E - Major
+      { width: 10 }, // F - Minor
+      { width: 10 }, // G - Patch
+      { width: 10 }, // H - Deprecated
+    ];
+    
+    // Get report info from summary service
+    const reportInfo = this.summary.getReportInfo();
+    
+    // Add report information at the top
+    worksheetSum.addRow(['Report Date:', reportInfo.date]);
+    worksheetSum.addRow(['Report Time:', reportInfo.time]);
+    worksheetSum.addRow(['Project Name:', reportInfo.projectName]);
+    worksheetSum.addRow(['Project Version:', reportInfo.projectVersion]);
+    
+    // Add empty row for spacing
+    worksheetSum.addRow([]);
 
     const summary = this.summary.getSummary();
 
-    worksheetSum.columns = [
-      { header: 'Dependency Type', width: 20 },
-      { header: 'Total', width: 10 },
-      { header: 'Up-to-Date', width: 15 },
-      { header: 'Outdated', width: 15 },
-      {
-        header: 'Major',
-        width: 10,
-      },
-      {
-        header: 'Minor',
-        width: 10,
-      },
-      {
-        header: 'Patch',
-        width: 10,
-      },
-      {
-        header: 'Deprecated',
-        width: 10,
-      },
-    ];
+    // Add column headers for dependency table (row 6)
+    worksheetSum.addRow([
+      'Dependency Type',
+      'Total',
+      'Up-to-Date',
+      'Outdated',
+      'Major',
+      'Minor',
+      'Patch',
+      'Deprecated'
+    ]);
 
     // Make the header row bold
-    worksheetSum.getRow(1).eachCell((cell) => {
+    worksheetSum.getRow(6).eachCell((cell) => {
       cell.font = { bold: true };
     });
 
@@ -197,8 +183,26 @@ class ExcelService extends Service {
       cell.font = { bold: true };
     });
     
-    // Add package information and URLs to the summary worksheet
-    this._addPackageInfoToSummary(worksheetSum);
+    // Add empty rows for spacing
+    worksheetSum.addRow([]);
+    worksheetSum.addRow([]);
+    
+    // Get package info rows data from summary service
+    const packageInfoRows = this.summary.getPackageInfoRows();
+
+    // Add information about the package
+    const infoRow = worksheetSum.addRow([packageInfoRows.infoText]);
+    
+    // Merge cells for the info text and apply styling
+    worksheetSum.mergeCells(infoRow.number, 1, infoRow.number, 8);
+    const infoCell = infoRow.getCell(1);
+    infoCell.font = { italic: true, color: { argb: '666666' } };
+    infoCell.alignment = { horizontal: 'left' };
+    
+    // Add URL rows with two columns each (label and URL)
+    for (const urlInfo of packageInfoRows.urls) {
+      this._addUrlRow(worksheetSum, urlInfo.label, urlInfo.url, urlInfo.tooltip);
+    }
   }
 
   private _handleDependenciesWorksheet() {

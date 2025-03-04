@@ -48,3 +48,10 @@ export type Summary = {
   byType: Record<string, SummaryStats>;
   totals: SummaryTotals;
 };
+
+export type ReportInfo = {
+  date: string;
+  time: string;
+  projectName: string;
+  projectVersion: string;
+};
