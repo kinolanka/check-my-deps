@@ -40,6 +40,10 @@ describe('extractRootDomain', () => {
   });
 
   it('should extract the root domain from a git+ssh URL correctly', () => {
-    expect(extractRootDomain('git+ssh://git@github.com/kinolanka/eslint-config-next.git#55dc5158d6909d9aa53a4b99c3c59763383fefcb')).toBe('github.com');
+    expect(
+      extractRootDomain(
+        'git+ssh://git@github.com/kinolanka/eslint-config-next.git#55dc5158d6909d9aa53a4b99c3c59763383fefcb'
+      )
+    ).toBe('github.com');
   });
 });
