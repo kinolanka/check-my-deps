@@ -5,7 +5,6 @@ import PackageInfoService from '@/services/package-info-service';
 import SummaryService from '@/services/summary-service';
 import { PackageStatus } from '@/utils/types';
 import convertDate from '@/utils/helpers/convert-date';
-import { PACKAGE_NAME, WEBSITE_URL, NPM_URL, GITHUB_URL } from '@/utils/constants';
 
 class ExcelService extends Service {
   private workbook: ExcelJS.Workbook;
@@ -108,8 +107,11 @@ class ExcelService extends Service {
     worksheet.addRow([]);
     worksheet.addRow([]);
     
+    // Get package info rows data from summary service
+    const packageInfoRows = this.summary.getPackageInfoRows();
+
     // Add information about the package
-    const infoRow = worksheet.addRow([`This report was created using npm package ${PACKAGE_NAME}`]);
+    const infoRow = worksheet.addRow([packageInfoRows.infoText]);
     
     // Merge cells for the info text and apply styling
     worksheet.mergeCells(infoRow.number, 1, infoRow.number, 8);
@@ -118,9 +120,9 @@ class ExcelService extends Service {
     infoCell.alignment = { horizontal: 'left' };
     
     // Add URL rows with two columns each (label and URL)
-    this._addUrlRow(worksheet, 'Website', WEBSITE_URL, 'Visit website');
-    this._addUrlRow(worksheet, 'NPM', NPM_URL, 'Visit NPM package page');
-    this._addUrlRow(worksheet, 'GitHub', GITHUB_URL, 'Visit GitHub repository');
+    for (const urlInfo of packageInfoRows.urls) {
+      this._addUrlRow(worksheet, urlInfo.label, urlInfo.url, urlInfo.tooltip);
+    }
   }
 
   private _handleSummaryWorksheet() {
