@@ -7,10 +7,13 @@ export type PackageSpec = {
   depType: string;
   reqVersion: string;
   installedVersion?: string;
+  installedVersionUrl?: string;
   installDate?: string;
   latestMinor?: string;
+  latestMinorUrl?: string;
   latestMinorDate?: string;
   latestVersion?: string;
+  latestVersionUrl?: string;
   latestVersionDate?: string;
   regSource?: string;
   updateStatus?: PackageStatus;

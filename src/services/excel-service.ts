@@ -271,6 +271,36 @@ class ExcelService extends Service {
         const deprecatedCell = newRow.getCell('deprecated');
         deprecatedCell.fill = this.getCellBgColorConfig('FF0000'); // Red color
       }
+
+      // Convert installed version cell to a hyperlink if URL is available
+      if (row.installedVersion && row.installedVersionUrl) {
+        const installedVersionCell = newRow.getCell('installedVersion');
+        installedVersionCell.value = {
+          text: row.installedVersion,
+          hyperlink: row.installedVersionUrl,
+        };
+        installedVersionCell.font = { color: { argb: '0000FF' }, underline: true };
+      }
+
+      // Convert latest minor version cell to a hyperlink if URL is available
+      if (row.latestMinor && row.latestMinorUrl) {
+        const latestMinorCell = newRow.getCell('latestMinor');
+        latestMinorCell.value = {
+          text: row.latestMinor,
+          hyperlink: row.latestMinorUrl,
+        };
+        latestMinorCell.font = { color: { argb: '0000FF' }, underline: true };
+      }
+
+      // Convert latest version cell to a hyperlink if URL is available
+      if (row.latestVersion && row.latestVersionUrl) {
+        const latestVersionCell = newRow.getCell('latestVersion');
+        latestVersionCell.value = {
+          text: row.latestVersion,
+          hyperlink: row.latestVersionUrl,
+        };
+        latestVersionCell.font = { color: { argb: '0000FF' }, underline: true };
+      }
     }
   }
 
