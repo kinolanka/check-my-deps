@@ -96,7 +96,7 @@ class PackageInfoService extends Service {
       this.versionInstalled = {
         version: installedVersion,
         releaseDate: this.npmViewData.time?.[installedVersion] || '',
-        npmUrl: getNpmPackageUrl(this.packageName, installedVersion)
+        npmUrl: getNpmPackageUrl(this.packageName, installedVersion),
       };
     }
   }
@@ -132,7 +132,7 @@ class PackageInfoService extends Service {
       this.versionLastMinor = {
         version: lastMinorVersion,
         releaseDate: this.npmViewData.time?.[lastMinorVersion] || '',
-        npmUrl: getNpmPackageUrl(this.packageName, lastMinorVersion)
+        npmUrl: getNpmPackageUrl(this.packageName, lastMinorVersion),
       };
     }
   }
@@ -146,7 +146,7 @@ class PackageInfoService extends Service {
       this.versionLast = {
         version: latestVersion,
         releaseDate: this.npmViewData.time?.[latestVersion] || '',
-        npmUrl: getNpmPackageUrl(this.packageName, latestVersion)
+        npmUrl: getNpmPackageUrl(this.packageName, latestVersion),
       };
     }
   }
@@ -166,8 +166,6 @@ class PackageInfoService extends Service {
   private _setDeprecated() {
     this.deprecated = !!this.npmViewData.deprecated;
   }
-
-
 
   public getInfo(): PackageSpec {
     return {

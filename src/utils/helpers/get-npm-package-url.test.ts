@@ -71,7 +71,7 @@ describe('getNpmPackageUrl', () => {
       const result = getNpmPackageUrl(packageName, packageVersion);
       expect(result).toBe('https://www.npmjs.com/package/@user/package-with-dash/v/1.0.0-alpha');
     });
-    
+
     it('should handle the package name from the project itself', () => {
       const packageName = '@kinolanka/check-my-deps';
       const result = getNpmPackageUrl(packageName);

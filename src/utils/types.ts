@@ -10,25 +10,13 @@ export type PackageVersionSpec = {
 
 export type PackageSpec = {
   packageName: string;
-  // depType: string;
   dependencyType: string;
-  // regSource?: string;
   registrySource?: string;
   updateStatus?: PackageStatus;
   deprecated?: boolean;
-  // reqVersion: string;
   versionRequired: string;
-  // installedVersion?: string;
-  // installedVersionUrl?: string;
-  // installDate?: string;
   versionInstalled?: PackageVersionSpec;
-  // latestMinor?: string;
-  // latestMinorUrl?: string;
-  // latestMinorDate?: string;
   versionLastMinor?: PackageVersionSpec;
-  // latestVersion?: string;
-  // latestVersionUrl?: string;
-  // latestVersionDate?: string;
   versionLast?: PackageVersionSpec;
 };
 

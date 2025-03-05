@@ -277,9 +277,11 @@ class ExcelService extends Service {
         dependencyType: row.dependencyType,
         versionRequired: row.versionRequired,
         installedVersion: row.versionInstalled?.version,
-        installDate: row.versionInstalled?.releaseDate && convertDate(row.versionInstalled.releaseDate),
+        installDate:
+          row.versionInstalled?.releaseDate && convertDate(row.versionInstalled.releaseDate),
         latestMinor: row.versionLastMinor?.version,
-        latestMinorDate: row.versionLastMinor?.releaseDate && convertDate(row.versionLastMinor.releaseDate),
+        latestMinorDate:
+          row.versionLastMinor?.releaseDate && convertDate(row.versionLastMinor.releaseDate),
         latestVersion: row.versionLast?.version,
         latestVersionDate: row.versionLast?.releaseDate && convertDate(row.versionLast.releaseDate),
         updateStatus: row.updateStatus,
@@ -299,13 +301,21 @@ class ExcelService extends Service {
       // Convert installed version cell to a hyperlink if URL is available
       if (row.versionInstalled?.version && row.versionInstalled?.npmUrl) {
         const installedVersionCell = newRow.getCell('installedVersion');
-        this.createUrlCell(installedVersionCell, row.versionInstalled.version, row.versionInstalled.npmUrl);
+        this.createUrlCell(
+          installedVersionCell,
+          row.versionInstalled.version,
+          row.versionInstalled.npmUrl
+        );
       }
 
       // Convert latest minor version cell to a hyperlink if URL is available
       if (row.versionLastMinor?.version && row.versionLastMinor?.npmUrl) {
         const latestMinorCell = newRow.getCell('latestMinor');
-        this.createUrlCell(latestMinorCell, row.versionLastMinor.version, row.versionLastMinor.npmUrl);
+        this.createUrlCell(
+          latestMinorCell,
+          row.versionLastMinor.version,
+          row.versionLastMinor.npmUrl
+        );
       }
 
       // Convert latest version cell to a hyperlink if URL is available
