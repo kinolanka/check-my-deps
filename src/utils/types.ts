@@ -2,22 +2,34 @@ type GenericObject<T extends Record<string, unknown>> = Record<string, unknown> 
 
 export type PackageStatus = 'upToDate' | 'major' | 'minor' | 'patch';
 
+export type PackageVersionSpec = {
+  version: string;
+  releaseDate: string;
+  npmUrl: string;
+};
+
 export type PackageSpec = {
   packageName: string;
-  depType: string;
-  reqVersion: string;
-  installedVersion?: string;
-  installedVersionUrl?: string;
-  installDate?: string;
-  latestMinor?: string;
-  latestMinorUrl?: string;
-  latestMinorDate?: string;
-  latestVersion?: string;
-  latestVersionUrl?: string;
-  latestVersionDate?: string;
-  regSource?: string;
+  // depType: string;
+  dependencyType: string;
+  // regSource?: string;
+  registrySource?: string;
   updateStatus?: PackageStatus;
   deprecated?: boolean;
+  // reqVersion: string;
+  versionRequired: string;
+  // installedVersion?: string;
+  // installedVersionUrl?: string;
+  // installDate?: string;
+  versionInstalled?: PackageVersionSpec;
+  // latestMinor?: string;
+  // latestMinorUrl?: string;
+  // latestMinorDate?: string;
+  versionLastMinor?: PackageVersionSpec;
+  // latestVersion?: string;
+  // latestVersionUrl?: string;
+  // latestVersionDate?: string;
+  versionLast?: PackageVersionSpec;
 };
 
 export type NpmListDepItem = GenericObject<{

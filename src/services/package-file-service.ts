@@ -4,6 +4,7 @@ import { PackageJson } from 'type-fest';
 
 import Service, { ServiceType } from '@/services/service';
 import sanitizeFileName from '@/utils/helpers/sanitize-file-name';
+import { PackageSpec } from '@/utils/types';
 
 class PackageFileService extends Service {
   private packageFileName = 'package.json';
@@ -28,18 +29,18 @@ class PackageFileService extends Service {
     return this.packageJson.version || '0.0.0';
   }
 
-  public getPackages() {
-    const list = [];
+  public getPackages(): PackageSpec[] {
+    const list: PackageSpec[] = [];
 
     for (const depType of this.depsTypes) {
       const deps = this.packageJson[depType];
 
       if (deps) {
-        for (const [packageName, reqVersion] of Object.entries(deps)) {
+        for (const [packageName, versionRequired] of Object.entries(deps)) {
           list.push({
             packageName,
-            depType,
-            reqVersion,
+            dependencyType: depType,
+            versionRequired,
           });
         }
       }
