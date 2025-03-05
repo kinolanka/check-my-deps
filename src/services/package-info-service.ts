@@ -1,6 +1,7 @@
 import { ServiceCtxType } from '@/services/service-ctx';
 import Service from '@/services/service';
 import extractRootDomain from '@/utils/helpers/extract-root-domain';
+import getNpmPackageUrl from '@/utils/helpers/get-npm-package-url';
 import { NpmListDepItem, NpmViewData, PackageSpec } from '@/utils/types';
 
 class PackageInfoService extends Service {
@@ -27,6 +28,12 @@ class PackageInfoService extends Service {
   private updateStatus: PackageSpec['updateStatus'] = 'upToDate';
 
   private deprecated = false;
+
+  private installedVersionUrl?: string;
+
+  private latestMinorUrl?: string;
+
+  private latestVersionUrl?: string;
 
   private npmListDepItem?: NpmListDepItem;
 
@@ -67,6 +74,8 @@ class PackageInfoService extends Service {
     this._setPackageStatus();
 
     this._setDeprecated();
+
+    this._setPackageUrls();
   }
 
   private _setPackageStatus() {
@@ -162,16 +171,36 @@ class PackageInfoService extends Service {
     this.deprecated = !!this.npmViewData.deprecated;
   }
 
+  private _setPackageUrls() {
+    // Generate installed version URL if available
+    if (this.installedVersion) {
+      this.installedVersionUrl = getNpmPackageUrl(this.packageName, this.installedVersion);
+    }
+
+    // Generate latest minor version URL if available
+    if (this.latestMinor) {
+      this.latestMinorUrl = getNpmPackageUrl(this.packageName, this.latestMinor);
+    }
+
+    // Generate latest version URL if available
+    if (this.latestVersion) {
+      this.latestVersionUrl = getNpmPackageUrl(this.packageName, this.latestVersion);
+    }
+  }
+
   public getInfo(): PackageSpec {
     return {
       packageName: this.packageName,
       depType: this.depType,
       reqVersion: this.reqVersion,
       installedVersion: this.installedVersion,
+      installedVersionUrl: this.installedVersionUrl,
       installDate: this.installDate,
       latestMinor: this.latestMinor,
+      latestMinorUrl: this.latestMinorUrl,
       latestMinorDate: this.latestMinorDate,
       latestVersion: this.latestVersion,
+      latestVersionUrl: this.latestVersionUrl,
       latestVersionDate: this.latestVersionDate,
       regSource: this.regSource,
       updateStatus: this.updateStatus,
