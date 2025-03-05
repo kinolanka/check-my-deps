@@ -236,7 +236,7 @@ class ExcelService extends Service {
       { header: 'Package Name', key: 'packageName', width: 30 },
       { header: 'Update Status', key: 'updateStatus', width: 10 },
       { header: 'Is Deprecated', key: 'deprecated', width: 10 },
-      { header: 'Required Version', key: 'reqVersion', width: 10 },
+      { header: 'Required Version', key: 'versionRequired', width: 10 },
       { header: 'Installed Version', key: 'installedVersion', width: 10 },
       {
         header: 'Installed Version Published Date',
@@ -255,8 +255,8 @@ class ExcelService extends Service {
         key: 'latestVersionDate',
         width: 15,
       },
-      { header: 'Registry Source', key: 'regSource', width: 20 },
-      { header: 'Dependency Type', key: 'depType', width: 20 },
+      { header: 'Registry Source', key: 'registrySource', width: 20 },
+      { header: 'Dependency Type', key: 'dependencyType', width: 20 },
     ];
 
     // Make the header row bold
@@ -274,16 +274,16 @@ class ExcelService extends Service {
 
       const newRow = worksheetDeps.addRow({
         packageName: row.packageName,
-        depType: row.depType,
-        reqVersion: row.reqVersion,
-        installedVersion: row.installedVersion,
-        installDate: row.installDate && convertDate(row.installDate),
-        latestMinor: row.latestMinor,
-        latestMinorDate: row.latestMinorDate && convertDate(row.latestMinorDate),
-        latestVersion: row.latestVersion,
-        latestVersionDate: row.latestVersionDate && convertDate(row.latestVersionDate),
+        dependencyType: row.dependencyType,
+        versionRequired: row.versionRequired,
+        installedVersion: row.versionInstalled?.version,
+        installDate: row.versionInstalled?.releaseDate && convertDate(row.versionInstalled.releaseDate),
+        latestMinor: row.versionLastMinor?.version,
+        latestMinorDate: row.versionLastMinor?.releaseDate && convertDate(row.versionLastMinor.releaseDate),
+        latestVersion: row.versionLast?.version,
+        latestVersionDate: row.versionLast?.releaseDate && convertDate(row.versionLast.releaseDate),
         updateStatus: row.updateStatus,
-        regSource: row.regSource,
+        registrySource: row.registrySource,
         deprecated: row.deprecated ? 'yes' : 'no',
       });
 
@@ -297,21 +297,21 @@ class ExcelService extends Service {
       }
 
       // Convert installed version cell to a hyperlink if URL is available
-      if (row.installedVersion && row.installedVersionUrl) {
+      if (row.versionInstalled?.version && row.versionInstalled?.npmUrl) {
         const installedVersionCell = newRow.getCell('installedVersion');
-        this.createUrlCell(installedVersionCell, row.installedVersion, row.installedVersionUrl);
+        this.createUrlCell(installedVersionCell, row.versionInstalled.version, row.versionInstalled.npmUrl);
       }
 
       // Convert latest minor version cell to a hyperlink if URL is available
-      if (row.latestMinor && row.latestMinorUrl) {
+      if (row.versionLastMinor?.version && row.versionLastMinor?.npmUrl) {
         const latestMinorCell = newRow.getCell('latestMinor');
-        this.createUrlCell(latestMinorCell, row.latestMinor, row.latestMinorUrl);
+        this.createUrlCell(latestMinorCell, row.versionLastMinor.version, row.versionLastMinor.npmUrl);
       }
 
       // Convert latest version cell to a hyperlink if URL is available
-      if (row.latestVersion && row.latestVersionUrl) {
+      if (row.versionLast?.version && row.versionLast?.npmUrl) {
         const latestVersionCell = newRow.getCell('latestVersion');
-        this.createUrlCell(latestVersionCell, row.latestVersion, row.latestVersionUrl);
+        this.createUrlCell(latestVersionCell, row.versionLast.version, row.versionLast.npmUrl);
       }
     }
   }

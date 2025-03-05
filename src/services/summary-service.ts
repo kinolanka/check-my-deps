@@ -63,8 +63,8 @@ class SummaryService extends Service {
     for (const packageInfo of this.list) {
       const row = packageInfo.getInfo();
 
-      if (!summaryByType[row.depType]) {
-        summaryByType[row.depType] = {
+      if (!summaryByType[row.dependencyType]) {
+        summaryByType[row.dependencyType] = {
           total: 0,
           upToDate: 0,
           patch: 0,
@@ -75,14 +75,14 @@ class SummaryService extends Service {
       }
 
       // Increment the total count for this dependency type
-      summaryByType[row.depType].total += 1;
+      summaryByType[row.dependencyType].total += 1;
 
       if (row.updateStatus) {
-        summaryByType[row.depType][row.updateStatus] += 1;
+        summaryByType[row.dependencyType][row.updateStatus] += 1;
       }
 
       if (row.deprecated) {
-        summaryByType[row.depType].deprecated += 1;
+        summaryByType[row.dependencyType].deprecated += 1;
       }
     }
 
