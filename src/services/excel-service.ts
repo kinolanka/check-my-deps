@@ -65,6 +65,36 @@ class ExcelService extends Service {
   }
 
   /**
+   * Creates a URL cell with a clickable hyperlink
+   * @param cell The cell to format as a URL
+   * @param text The text to display in the cell
+   * @param url The URL to make clickable
+   * @param tooltip Optional tooltip to display when hovering over the URL
+   * @param italic Whether to make the text italic (default: false)
+   */
+  private createUrlCell(
+    cell: ExcelJS.Cell,
+    text: string,
+    url: string,
+    tooltip?: string,
+    italic: boolean = false
+  ): void {
+    cell.value = {
+      text,
+      hyperlink: url,
+      tooltip,
+    };
+
+    cell.font = {
+      color: { argb: '0000FF' },
+      underline: true,
+      italic,
+    };
+
+    cell.alignment = { horizontal: 'left' };
+  }
+
+  /**
    * Adds a URL row to the worksheet with a label and clickable URL
    * @param worksheet The worksheet to add the row to
    * @param label The label for the URL (e.g., "Website", "NPM", "GitHub")
@@ -87,13 +117,7 @@ class ExcelService extends Service {
 
     // Style the URL cell and make it clickable
     const urlCell = row.getCell(2);
-    urlCell.font = { italic: true, color: { argb: '0000FF' }, underline: true };
-    urlCell.value = {
-      text: url,
-      hyperlink: url,
-      tooltip,
-    };
-    urlCell.alignment = { horizontal: 'left' };
+    this.createUrlCell(urlCell, url, url, tooltip, true);
 
     return row;
   }
@@ -186,11 +210,11 @@ class ExcelService extends Service {
     worksheetSum.addRow([]);
 
     // Get package info rows data from summary service
-    const packageInfoRows = this.summary.sourceInfo;
+    const sourceInfoRows = this.summary.sourceInfo;
 
-    if (packageInfoRows) {
+    if (sourceInfoRows) {
       // Add information about the package
-      const infoRow = worksheetSum.addRow([packageInfoRows.info]);
+      const infoRow = worksheetSum.addRow([sourceInfoRows.info]);
 
       // Merge cells for the info text and apply styling
       worksheetSum.mergeCells(infoRow.number, 1, infoRow.number, 8);
@@ -198,8 +222,8 @@ class ExcelService extends Service {
       infoCell.font = { italic: true, color: { argb: '666666' } };
       infoCell.alignment = { horizontal: 'left' };
 
-      // Add URL rows with two columns each (label and URL)
-      for (const urlInfo of packageInfoRows.urls) {
+      // Add source info rows
+      for (const urlInfo of sourceInfoRows.urls) {
         this.addUrlRow(worksheetSum, urlInfo.label, urlInfo.url);
       }
     }
@@ -275,31 +299,19 @@ class ExcelService extends Service {
       // Convert installed version cell to a hyperlink if URL is available
       if (row.installedVersion && row.installedVersionUrl) {
         const installedVersionCell = newRow.getCell('installedVersion');
-        installedVersionCell.value = {
-          text: row.installedVersion,
-          hyperlink: row.installedVersionUrl,
-        };
-        installedVersionCell.font = { color: { argb: '0000FF' }, underline: true };
+        this.createUrlCell(installedVersionCell, row.installedVersion, row.installedVersionUrl);
       }
 
       // Convert latest minor version cell to a hyperlink if URL is available
       if (row.latestMinor && row.latestMinorUrl) {
         const latestMinorCell = newRow.getCell('latestMinor');
-        latestMinorCell.value = {
-          text: row.latestMinor,
-          hyperlink: row.latestMinorUrl,
-        };
-        latestMinorCell.font = { color: { argb: '0000FF' }, underline: true };
+        this.createUrlCell(latestMinorCell, row.latestMinor, row.latestMinorUrl);
       }
 
       // Convert latest version cell to a hyperlink if URL is available
       if (row.latestVersion && row.latestVersionUrl) {
         const latestVersionCell = newRow.getCell('latestVersion');
-        latestVersionCell.value = {
-          text: row.latestVersion,
-          hyperlink: row.latestVersionUrl,
-        };
-        latestVersionCell.font = { color: { argb: '0000FF' }, underline: true };
+        this.createUrlCell(latestVersionCell, row.latestVersion, row.latestVersionUrl);
       }
     }
   }
