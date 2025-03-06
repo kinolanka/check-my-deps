@@ -63,18 +63,22 @@ class ExcelService extends Service {
       cell.fill = this.getCellBgColorConfig(this.bgColors.major);
     }
   }
-  
+
   /**
    * Formats a cell to display deprecated status with appropriate styling
    * @param cell The cell to format
    * @param isDeprecated Whether the package/version is deprecated
    * @param versionExists Whether the version exists
    */
-  private handleDeprecatedStatus(cell: ExcelJS.Cell, isDeprecated?: boolean, versionExists: boolean = true) {
+  private handleDeprecatedStatus(
+    cell: ExcelJS.Cell,
+    isDeprecated?: boolean,
+    versionExists: boolean = true
+  ) {
     // Only set value if the version exists
     if (versionExists) {
       cell.value = isDeprecated ? 'yes' : 'no';
-      
+
       if (isDeprecated) {
         cell.fill = this.getCellBgColorConfig('FF0000'); // Red color
         // No font styling applied to keep text as default black
@@ -319,22 +323,22 @@ class ExcelService extends Service {
       // Handle deprecated status for each version
       const installedDeprecatedCell = newRow.getCell('installedVersionDeprecated');
       this.handleDeprecatedStatus(
-        installedDeprecatedCell, 
-        row.versionInstalled?.deprecated, 
+        installedDeprecatedCell,
+        row.versionInstalled?.deprecated,
         !!row.versionInstalled
       );
-      
+
       const latestMinorDeprecatedCell = newRow.getCell('latestMinorDeprecated');
       this.handleDeprecatedStatus(
-        latestMinorDeprecatedCell, 
-        row.versionLastMinor?.deprecated, 
+        latestMinorDeprecatedCell,
+        row.versionLastMinor?.deprecated,
         !!row.versionLastMinor
       );
-      
+
       const latestVersionDeprecatedCell = newRow.getCell('latestVersionDeprecated');
       this.handleDeprecatedStatus(
-        latestVersionDeprecatedCell, 
-        row.versionLast?.deprecated, 
+        latestVersionDeprecatedCell,
+        row.versionLast?.deprecated,
         !!row.versionLast
       );
 

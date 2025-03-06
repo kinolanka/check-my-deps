@@ -54,7 +54,7 @@ class PackageFileService extends Service {
     // Replace dots in version with hyphens for better cross-OS compatibility
     const version = this.getVersion().replace(/\./g, '-');
 
-    const filePath = path.resolve(this.ctx.cwd, `${packageName}-v${version}-dependencies`);
+    const filePath = path.resolve(this.ctx.outputDir, `${packageName}-v${version}-dependencies`);
 
     return filePath;
   }
