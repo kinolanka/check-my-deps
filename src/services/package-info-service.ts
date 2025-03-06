@@ -97,6 +97,7 @@ class PackageInfoService extends Service {
         version: installedVersion,
         releaseDate: this.npmViewData.time?.[installedVersion] || '',
         npmUrl: getNpmPackageUrl(this.packageName, installedVersion),
+        deprecated: this._isVersionDeprecated(installedVersion),
       };
     }
   }
@@ -133,6 +134,7 @@ class PackageInfoService extends Service {
         version: lastMinorVersion,
         releaseDate: this.npmViewData.time?.[lastMinorVersion] || '',
         npmUrl: getNpmPackageUrl(this.packageName, lastMinorVersion),
+        deprecated: this._isVersionDeprecated(lastMinorVersion),
       };
     }
   }
@@ -147,6 +149,7 @@ class PackageInfoService extends Service {
         version: latestVersion,
         releaseDate: this.npmViewData.time?.[latestVersion] || '',
         npmUrl: getNpmPackageUrl(this.packageName, latestVersion),
+        deprecated: this._isVersionDeprecated(latestVersion),
       };
     }
   }
@@ -165,6 +168,25 @@ class PackageInfoService extends Service {
 
   private _setDeprecated() {
     this.deprecated = !!this.npmViewData.deprecated;
+  }
+
+  private _isVersionDeprecated(version: string): boolean {
+    // Check if the specific version is deprecated
+    // npm registry can have version-specific deprecation messages in the form:
+    // { versions: { "1.0.0": { deprecated: "message" } } }
+    try {
+      // If the entire package is deprecated
+      if (this.npmViewData.deprecated) {
+        return true;
+      }
+      
+      // Check if there's version-specific deprecation info
+      const versionData = this.npmViewData.versions?.[version];
+      return versionData && (typeof versionData === 'object' && !!versionData.deprecated);
+    } catch (error) {
+      this.ctx.outputService.error(error as Error);
+      return false;
+    }
   }
 
   public getInfo(): PackageSpec {

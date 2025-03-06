@@ -6,6 +6,7 @@ export type PackageVersionSpec = {
   version: string;
   releaseDate: string;
   npmUrl: string;
+  deprecated?: boolean;
 };
 
 export type PackageSpec = {
@@ -34,11 +35,11 @@ export type NpmListData = GenericObject<{
 
 // npm view <packagename> --json
 export type NpmViewData = GenericObject<{
-  versions: string[];
+  versions: string[] & Record<string, { deprecated?: string | boolean }>;
   time: Record<string, string>;
   homepage: string;
   repository: string | GenericObject<{ url: string }>;
-  deprecated?: boolean;
+  deprecated?: boolean | string;
 }>;
 
 export type SummaryStats = Record<PackageStatus | 'total' | 'deprecated', number>;

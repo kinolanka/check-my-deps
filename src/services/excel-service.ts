@@ -63,6 +63,26 @@ class ExcelService extends Service {
       cell.fill = this.getCellBgColorConfig(this.bgColors.major);
     }
   }
+  
+  /**
+   * Formats a cell to display deprecated status with appropriate styling
+   * @param cell The cell to format
+   * @param isDeprecated Whether the package/version is deprecated
+   * @param versionExists Whether the version exists
+   */
+  private handleDeprecatedStatus(cell: ExcelJS.Cell, isDeprecated?: boolean, versionExists: boolean = true) {
+    // Only set value if the version exists
+    if (versionExists) {
+      cell.value = isDeprecated ? 'yes' : 'no';
+      
+      if (isDeprecated) {
+        cell.fill = this.getCellBgColorConfig('FF0000'); // Red color
+        // No font styling applied to keep text as default black
+      }
+    } else {
+      cell.value = ''; // Leave cell empty if no version exists
+    }
+  }
 
   /**
    * Creates a URL cell with a clickable hyperlink
@@ -235,21 +255,23 @@ class ExcelService extends Service {
     worksheetDeps.columns = [
       { header: 'Package Name', key: 'packageName', width: 30 },
       { header: 'Update Status', key: 'updateStatus', width: 10 },
-      { header: 'Is Deprecated', key: 'deprecated', width: 10 },
       { header: 'Required Version', key: 'versionRequired', width: 10 },
       { header: 'Installed Version', key: 'installedVersion', width: 10 },
+      { header: 'Installed Version Deprecated', key: 'installedVersionDeprecated', width: 10 },
       {
         header: 'Installed Version Published Date',
         key: 'installDate',
         width: 15,
       },
       { header: 'Latest Minor Version', key: 'latestMinor', width: 10 },
+      { header: 'Latest Minor Version Deprecated', key: 'latestMinorDeprecated', width: 10 },
       {
         header: 'Latest Minor Version Published Date',
         key: 'latestMinorDate',
         width: 15,
       },
       { header: 'Latest Available Version', key: 'latestVersion', width: 15 },
+      { header: 'Latest Available Version Deprecated', key: 'latestVersionDeprecated', width: 10 },
       {
         header: 'Latest Version Published Date',
         key: 'latestVersionDate',
@@ -277,26 +299,44 @@ class ExcelService extends Service {
         dependencyType: row.dependencyType,
         versionRequired: row.versionRequired,
         installedVersion: row.versionInstalled?.version,
+        installedVersionDeprecated: '', // Will be set by handleDeprecatedStatus
         installDate:
           row.versionInstalled?.releaseDate && convertDate(row.versionInstalled.releaseDate),
         latestMinor: row.versionLastMinor?.version,
+        latestMinorDeprecated: '', // Will be set by handleDeprecatedStatus
         latestMinorDate:
           row.versionLastMinor?.releaseDate && convertDate(row.versionLastMinor.releaseDate),
         latestVersion: row.versionLast?.version,
+        latestVersionDeprecated: '', // Will be set by handleDeprecatedStatus
         latestVersionDate: row.versionLast?.releaseDate && convertDate(row.versionLast.releaseDate),
         updateStatus: row.updateStatus,
         registrySource: row.registrySource,
-        deprecated: row.deprecated ? 'yes' : 'no',
       });
 
       const packageStatusCell = newRow.getCell('updateStatus');
       this.handleUpdateStatus(packageStatusCell, row.updateStatus);
 
-      // Highlight deprecated packages with a red background
-      if (row.deprecated) {
-        const deprecatedCell = newRow.getCell('deprecated');
-        deprecatedCell.fill = this.getCellBgColorConfig('FF0000'); // Red color
-      }
+      // Handle deprecated status for each version
+      const installedDeprecatedCell = newRow.getCell('installedVersionDeprecated');
+      this.handleDeprecatedStatus(
+        installedDeprecatedCell, 
+        row.versionInstalled?.deprecated, 
+        !!row.versionInstalled
+      );
+      
+      const latestMinorDeprecatedCell = newRow.getCell('latestMinorDeprecated');
+      this.handleDeprecatedStatus(
+        latestMinorDeprecatedCell, 
+        row.versionLastMinor?.deprecated, 
+        !!row.versionLastMinor
+      );
+      
+      const latestVersionDeprecatedCell = newRow.getCell('latestVersionDeprecated');
+      this.handleDeprecatedStatus(
+        latestVersionDeprecatedCell, 
+        row.versionLast?.deprecated, 
+        !!row.versionLast
+      );
 
       // Convert installed version cell to a hyperlink if URL is available
       if (row.versionInstalled?.version && row.versionInstalled?.npmUrl) {
