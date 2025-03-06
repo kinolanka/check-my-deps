@@ -49,13 +49,47 @@ class PackageFileService extends Service {
     return list;
   }
 
-  public getExportFilePath(): string {
+  /**
+   * Gets a unique export file path that doesn't conflict with existing files
+   * @param fileExtension The file extension to check for (including the dot, e.g., '.xlsx')
+   * @returns A unique file path without the extension
+   */
+  public getExportFilePath(fileExtension: string): string {
     const packageName = sanitizeFileName(this.getName() || 'package');
     // Replace dots in version with hyphens for better cross-OS compatibility
     const version = this.getVersion().replace(/\./g, '-');
 
-    const filePath = path.resolve(this.ctx.outputDir ?? this.ctx.cwd, `${packageName}-v${version}-dependencies`);
-
+    const baseFileName = `${packageName}-v${version}-dependencies`;
+    const outputDir = this.ctx.outputDir ?? this.ctx.cwd;
+    
+    // Get a unique file path by adding a numeric suffix if the file already exists
+    const uniqueFilePath = this.getUniqueFilePath(outputDir, baseFileName, fileExtension);
+    
+    return uniqueFilePath;
+  }
+  
+  /**
+   * Generates a unique file path by adding a numeric suffix if the file already exists
+   * @param outputDir The directory where the file will be saved
+   * @param baseFileName The base file name without extension
+   * @param fileExtension The file extension to check for (including the dot, e.g., '.xlsx')
+   * @returns A unique file path that doesn't exist yet (without the extension)
+   */
+  private getUniqueFilePath(outputDir: string, baseFileName: string, fileExtension: string): string {
+    let suffix = '';
+    let counter = 1;
+    let filePath = path.resolve(outputDir, `${baseFileName}${suffix}`);
+    let fullFilePath = `${filePath}${fileExtension}`;
+    
+    // Check if the file with the current suffix exists
+    while (fs.existsSync(fullFilePath)) {
+      // File exists, increment the counter and try again
+      suffix = `-${counter}`;
+      filePath = path.resolve(outputDir, `${baseFileName}${suffix}`);
+      fullFilePath = `${filePath}${fileExtension}`;
+      counter++;
+    }
+    
     return filePath;
   }
 }

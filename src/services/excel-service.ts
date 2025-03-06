@@ -370,8 +370,16 @@ class ExcelService extends Service {
     }
   }
 
+  /**
+   * Returns the file extension for Excel files
+   * @returns The file extension including the dot (e.g., '.xlsx')
+   */
+  public getFileExtension(): string {
+    return '.xlsx';
+  }
+
   public async saveToFile(filePath: string) {
-    const fullFilePath = `${filePath}.xlsx`;
+    const fullFilePath = `${filePath}${this.getFileExtension()}`;
 
     await this.workbook.xlsx.writeFile(fullFilePath);
 

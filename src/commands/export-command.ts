@@ -55,9 +55,13 @@ const exportCommand = new Command()
       outputService.updateLoadingText('Creating Excel report...');
       const excelService = new ExcelService(exportList, summary, ctx);
 
-      const filePath = packageFileService.getExportFilePath();
+      // Get the file extension from the export service
+      const fileExtension = excelService.getFileExtension();
+      
+      // Get a unique file path that doesn't conflict with existing files
+      const filePath = packageFileService.getExportFilePath(fileExtension);
 
-      outputService.updateLoadingText(`Saving Excel file to ${filePath}...`);
+      outputService.updateLoadingText(`Saving Excel file to ${filePath}${fileExtension}...`);
       await excelService.saveToFile(filePath);
 
       outputService.stopLoadingSuccess('Export completed!');
