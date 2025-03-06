@@ -81,7 +81,8 @@ class SummaryService extends Service {
         summaryByType[row.dependencyType][row.updateStatus] += 1;
       }
 
-      if (row.deprecated) {
+      // Count only packages where the installed version is deprecated
+      if (row.versionInstalled?.deprecated) {
         summaryByType[row.dependencyType].deprecated += 1;
       }
     }
