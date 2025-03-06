@@ -20,8 +20,13 @@ const exportCommand = new Command()
     'the directory where the export file will be saved. defaults to the current directory.',
     process.cwd()
   )
+  .option(
+    '-s, --silent',
+    'prevent any output to the terminal',
+    false
+  )
   .action(async (options) => {
-    const outputService = new OutputService();
+    const outputService = new OutputService(options.silent);
     outputService.startLoading('Analyzing dependencies...');
 
     try {
@@ -30,6 +35,7 @@ const exportCommand = new Command()
         cwd: options.cwd,
         outputService,
         outputDir: options.outputDir,
+        silent: options.silent,
       });
 
       const packageFileService = new PackageFileService(ctx);
