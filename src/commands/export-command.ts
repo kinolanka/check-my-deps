@@ -15,13 +15,22 @@ const exportCommand = new Command()
     'the working directory. defaults to the current directory.',
     process.cwd()
   )
+  .option(
+    '-o, --output-dir <outputDir>',
+    'the directory where the export file will be saved. defaults to the current directory.',
+    process.cwd()
+  )
   .action(async (options) => {
     const outputService = new OutputService();
     outputService.startLoading('Analyzing dependencies...');
 
     try {
       outputService.updateLoadingText('Reading package.json...');
-      const ctx = new ServiceCtx({ cwd: options.cwd, outputService });
+      const ctx = new ServiceCtx({
+        cwd: options.cwd,
+        outputService,
+        outputDir: options.outputDir,
+      });
 
       const packageFileService = new PackageFileService(ctx);
 

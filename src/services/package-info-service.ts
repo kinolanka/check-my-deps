@@ -179,10 +179,10 @@ class PackageInfoService extends Service {
       if (this.npmViewData.deprecated) {
         return true;
       }
-      
+
       // Check if there's version-specific deprecation info
       const versionData = this.npmViewData.versions?.[version];
-      return versionData && (typeof versionData === 'object' && !!versionData.deprecated);
+      return versionData && typeof versionData === 'object' && !!versionData.deprecated;
     } catch (error) {
       this.ctx.outputService.error(error as Error);
       return false;
