@@ -96,6 +96,28 @@ class ExcelService extends Service {
    * @param tooltip Optional tooltip to display when hovering over the URL
    * @param italic Whether to make the text italic (default: false)
    */
+  /**
+   * Checks if a string is a valid URL
+   * @param str The string to check
+   * @returns True if the string is a valid URL, false otherwise
+   */
+  private isValidUrl(str: string): boolean {
+    try {
+      const url = new URL(str);
+      return url.protocol === 'http:' || url.protocol === 'https:';
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Creates a URL cell with a clickable hyperlink
+   * @param cell The cell to format as a URL
+   * @param text The text to display in the cell
+   * @param url The URL to make clickable
+   * @param tooltip Optional tooltip to display when hovering over the URL
+   * @param italic Whether to make the text italic (default: false)
+   */
   private createUrlCell(
     cell: ExcelJS.Cell,
     text: string,
@@ -366,6 +388,17 @@ class ExcelService extends Service {
       if (row.versionLast?.version && row.versionLast?.npmUrl) {
         const latestVersionCell = newRow.getCell('latestVersion');
         this.createUrlCell(latestVersionCell, row.versionLast.version, row.versionLast.npmUrl);
+      }
+
+      // Handle registrySource - check if it's a valid URL and make it clickable if it is
+      if (row.registrySource) {
+        const registrySourceCell = newRow.getCell('registrySource');
+        if (this.isValidUrl(row.registrySource)) {
+          this.createUrlCell(registrySourceCell, row.registrySource, row.registrySource);
+        } else {
+          registrySourceCell.value = row.registrySource;
+          registrySourceCell.alignment = { horizontal: 'left' };
+        }
       }
     }
   }
