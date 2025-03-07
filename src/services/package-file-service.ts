@@ -62,18 +62,18 @@ class PackageFileService extends Service {
 
     const baseFileName = `${packageName}-v${version}-dependencies`;
     const outputDir = this.ctx.outputDir ?? this.ctx.cwd;
-    
+
     // If forceOverwrite is true, we don't need to check for existing files
     if (forceOverwrite) {
       return path.resolve(outputDir, baseFileName);
     }
-    
+
     // Otherwise, get a unique file path by adding a numeric suffix if the file already exists
     const uniqueFilePath = this.getUniqueFilePath(outputDir, baseFileName, fileExtension);
-    
+
     return uniqueFilePath;
   }
-  
+
   /**
    * Generates a unique file path by adding a numeric suffix if the file already exists
    * @param outputDir The directory where the file will be saved
@@ -81,12 +81,16 @@ class PackageFileService extends Service {
    * @param fileExtension The file extension to check for (including the dot, e.g., '.xlsx')
    * @returns A unique file path that doesn't exist yet (without the extension)
    */
-  private getUniqueFilePath(outputDir: string, baseFileName: string, fileExtension: string): string {
+  private getUniqueFilePath(
+    outputDir: string,
+    baseFileName: string,
+    fileExtension: string
+  ): string {
     let suffix = '';
     let counter = 1;
     let filePath = path.resolve(outputDir, `${baseFileName}${suffix}`);
     let fullFilePath = `${filePath}${fileExtension}`;
-    
+
     // Check if the file with the current suffix exists
     while (fs.existsSync(fullFilePath)) {
       // File exists, increment the counter and try again
@@ -95,7 +99,7 @@ class PackageFileService extends Service {
       fullFilePath = `${filePath}${fileExtension}`;
       counter++;
     }
-    
+
     return filePath;
   }
 }

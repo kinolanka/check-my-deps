@@ -20,11 +20,7 @@ const exportCommand = new Command()
     'the directory where the export file will be saved. defaults to the current directory.',
     process.cwd()
   )
-  .option(
-    '-s, --silent',
-    'prevent any output to the terminal',
-    false
-  )
+  .option('-s, --silent', 'prevent any output to the terminal', false)
   .option(
     '-f, --force-overwrite',
     'overwrite existing export files instead of creating unique filenames',
@@ -63,7 +59,7 @@ const exportCommand = new Command()
 
       // Get the file extension from the export service
       const fileExtension = excelService.getFileExtension();
-      
+
       // Get a file path, either unique or overwriting existing files based on the forceOverwrite option
       const filePath = packageFileService.getExportFilePath(fileExtension, ctx.forceOverwrite);
 

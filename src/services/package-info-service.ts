@@ -178,24 +178,28 @@ class PackageInfoService extends Service {
       }
 
       // Handle different package source types
-      if (resolvedUrl.startsWith('https://registry.npmjs.org/') || 
-          resolvedUrl.startsWith('http://registry.npmjs.org/')) {
+      if (
+        resolvedUrl.startsWith('https://registry.npmjs.org/') ||
+        resolvedUrl.startsWith('http://registry.npmjs.org/')
+      ) {
         // Standard npm registry URL
         // Format: https://registry.npmjs.org/package-name/-/package-name-1.0.0.tgz
         const packagePath = resolvedUrl.split('/-/')[0];
         this.registrySource = packagePath;
       } else if (resolvedUrl.startsWith('https://') || resolvedUrl.startsWith('http://')) {
         // Other HTTP/HTTPS URLs (custom registries, tarballs, etc.)
-        if (resolvedUrl.includes('github.com') || 
-            resolvedUrl.includes('gitlab.com') || 
-            resolvedUrl.includes('bitbucket.org')) {
+        if (
+          resolvedUrl.includes('github.com') ||
+          resolvedUrl.includes('gitlab.com') ||
+          resolvedUrl.includes('bitbucket.org')
+        ) {
           // Git repository URLs
           this.registrySource = resolvedUrl.split('#')[0]; // Remove commit/branch reference
         } else {
           // Try to extract the package URL without version/tarball specifics
           const url = new URL(resolvedUrl);
           const pathParts = url.pathname.split('/-/');
-          
+
           if (pathParts.length > 1) {
             // Registry URL with package path
             this.registrySource = `${url.origin}${pathParts[0]}`;

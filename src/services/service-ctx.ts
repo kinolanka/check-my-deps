@@ -15,7 +15,13 @@ class ServiceCtx {
   private _silent: boolean;
   private _forceOverwrite: boolean;
 
-  constructor({ cwd, outputService, outputDir, silent = false, forceOverwrite = false }: ServiceCtxType) {
+  constructor({
+    cwd,
+    outputService,
+    outputDir,
+    silent = false,
+    forceOverwrite = false,
+  }: ServiceCtxType) {
     this._cwd = cwd;
     this._outputService = outputService;
     // Ensure outputDir is always a string by using cwd as fallback
