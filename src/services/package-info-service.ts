@@ -154,15 +154,75 @@ class PackageInfoService extends Service {
     }
   }
 
+  /*
+    {
+      "dependencies": {
+        "lodash": "^4.17.21", // npm registry
+        "react": "18.2.0", // exact version
+        "private-repo": "github:user/private#main", // GitHub private repo
+        "utils": "file:../local-utils", // local directory
+        "moment": "https://registry.npmjs.org/moment/-/moment-2.29.1.tgz", // tarball
+        "forked-lib": "git+ssh://git@github.com:user/forked-lib.git#fix-bug", // SSH
+        "alpha-build": "npm:react@next", // alias
+        "@scope/pkg": "git+https://gitlab.com/scope/pkg.git#v2.0.0" // scoped GitLab
+      }
+    }
+  */
+
   private _setSource() {
     try {
       const resolvedUrl = this.npmListDepItem?.resolved;
 
-      if (resolvedUrl) {
-        this.registrySource = extractRootDomain(resolvedUrl);
+      if (!resolvedUrl) {
+        return;
+      }
+
+      // Handle different package source types
+      if (resolvedUrl.startsWith('https://registry.npmjs.org/') || 
+          resolvedUrl.startsWith('http://registry.npmjs.org/')) {
+        // Standard npm registry URL
+        // Format: https://registry.npmjs.org/package-name/-/package-name-1.0.0.tgz
+        const packagePath = resolvedUrl.split('/-/')[0];
+        this.registrySource = packagePath;
+      } else if (resolvedUrl.startsWith('https://') || resolvedUrl.startsWith('http://')) {
+        // Other HTTP/HTTPS URLs (custom registries, tarballs, etc.)
+        if (resolvedUrl.includes('github.com') || 
+            resolvedUrl.includes('gitlab.com') || 
+            resolvedUrl.includes('bitbucket.org')) {
+          // Git repository URLs
+          this.registrySource = resolvedUrl.split('#')[0]; // Remove commit/branch reference
+        } else {
+          // Try to extract the package URL without version/tarball specifics
+          const url = new URL(resolvedUrl);
+          const pathParts = url.pathname.split('/-/');
+          
+          if (pathParts.length > 1) {
+            // Registry URL with package path
+            this.registrySource = `${url.origin}${pathParts[0]}`;
+          } else {
+            // Other HTTP URL
+            this.registrySource = resolvedUrl;
+          }
+        }
+      } else if (resolvedUrl.startsWith('git+')) {
+        // Git URLs: git+https://, git+ssh://, etc.
+        const gitUrl = resolvedUrl.substring(4).split('#')[0]; // Remove git+ prefix and fragment
+        this.registrySource = gitUrl;
+      } else if (resolvedUrl.startsWith('file:')) {
+        // Local file references
+        this.registrySource = resolvedUrl;
+      } else if (resolvedUrl.startsWith('npm:')) {
+        // npm alias packages
+        const aliasedPackage = resolvedUrl.substring(4).split('@')[0];
+        this.registrySource = `https://registry.npmjs.org/${aliasedPackage}`;
+      } else {
+        // Any other format
+        this.registrySource = resolvedUrl;
       }
     } catch (error) {
       this.ctx.outputService.error(error as Error);
+      // Fallback to the original behavior
+      this.registrySource = this.npmListDepItem?.resolved;
     }
   }
 
