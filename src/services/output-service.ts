@@ -1,5 +1,3 @@
-import chalk from 'chalk';
-
 class OutputService {
   private silent: boolean;
   private loadingInterval: NodeJS.Timeout | null = null;
@@ -25,7 +23,7 @@ class OutputService {
       this.clearLine();
     }
 
-    this._log(chalk.blue(message), force);
+    this._log(message, force);
 
     // Resume loading if it was active
     if (isLoading && (force || !this.silent)) {
@@ -40,7 +38,7 @@ class OutputService {
       this.clearLine();
     }
 
-    this._log(chalk.green(message));
+    this._log(message);
 
     // Resume loading if it was active
     if (isLoading) {
@@ -55,7 +53,7 @@ class OutputService {
       this.clearLine();
     }
 
-    this._log(chalk.red(message));
+    this._log(message);
 
     // Resume loading if it was active
     if (isLoading) {
@@ -79,7 +77,7 @@ class OutputService {
       this.clearLine();
     }
 
-    this._log(chalk.yellow(`ℹ ${message}`));
+    this._log(`ℹ ${message}`);
 
     // Resume loading if it was active
     if (isLoading) {
@@ -97,9 +95,7 @@ class OutputService {
 
     // Clear current line and write the spinner, text, and elapsed time
     this.clearLine();
-    process.stdout.write(
-      `${chalk.blue(spinner)} ${this.currentLoadingText} ${chalk.dim(`[${elapsedTime}s]`)}`
-    );
+    process.stdout.write(`${spinner} ${this.currentLoadingText} ${`[${elapsedTime}s]`}`);
   }
 
   public startLoading(text: string): void {
@@ -128,9 +124,7 @@ class OutputService {
     if (this.currentLoadingText) {
       this.clearLine();
       this._log(
-        chalk.green(
-          `✓ ${this.currentLoadingText} ${chalk.dim(`[${((Date.now() - this.startTime) / 1000).toFixed(1)}s]`)}`
-        )
+        `✓ ${this.currentLoadingText} ${`[${((Date.now() - this.startTime) / 1000).toFixed(1)}s]`}`
       );
     }
 
@@ -160,11 +154,11 @@ class OutputService {
   }
 
   public stopLoadingSuccess(message: string): void {
-    this.stopLoading(chalk.green(`✓ ${message}`));
+    this.stopLoading(`✓ ${message}`);
   }
 
   public stopLoadingError(message: string): void {
-    this.stopLoading(chalk.red(`✗ ${message}`));
+    this.stopLoading(`✗ ${message}`);
   }
 }
 
