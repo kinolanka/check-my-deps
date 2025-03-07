@@ -1,5 +1,4 @@
 import { execSync } from 'child_process';
-import chalk from 'chalk';
 
 import Service, { ServiceType } from '@/services/service';
 import PackageInfoService from '@/services/package-info-service';
@@ -36,20 +35,26 @@ class NpmService extends Service {
     } catch (error) {
       // Check if the error is related to version mismatches (ELSPROBLEMS)
       if (error instanceof Error && error.message.includes('ELSPROBLEMS')) {
-        this.ctx.outputService.errorMsg('\nError: Version mismatch detected between package.json and package-lock.json');
-        this.ctx.outputService.log('\nPlease run "npm install" to update your package-lock.json and node_modules');
-        this.ctx.outputService.log('This is required before running the update command to ensure consistency.\n');
+        this.ctx.outputService.errorMsg(
+          '\nError: Version mismatch detected between package.json and package-lock.json'
+        );
+        this.ctx.outputService.log(
+          '\nPlease run "npm install" to update your package-lock.json and node_modules'
+        );
+        this.ctx.outputService.log(
+          'This is required before running the update command to ensure consistency.\n'
+        );
         process.exit(1); // Exit with error code
       } else {
         this.ctx.outputService.error(error as Error);
       }
-      
+
       // Create a minimal structure to avoid null reference errors if execution continues
       // Ensure it conforms to NpmListData type by including required properties
-      this.npmListData = { 
-        name: 'unknown', 
-        version: '0.0.0', 
-        dependencies: {} 
+      this.npmListData = {
+        name: 'unknown',
+        version: '0.0.0',
+        dependencies: {},
       };
     }
   }
