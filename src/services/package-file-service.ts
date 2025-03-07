@@ -50,11 +50,12 @@ class PackageFileService extends Service {
   }
 
   /**
-   * Gets a unique export file path that doesn't conflict with existing files
+   * Gets an export file path, either unique or overwriting existing files based on the forceOverwrite option
    * @param fileExtension The file extension to check for (including the dot, e.g., '.xlsx')
-   * @returns A unique file path without the extension
+   * @param forceOverwrite If true, will return the base file path even if it already exists
+   * @returns A file path without the extension
    */
-  public getExportFilePath(fileExtension: string): string {
+  public getExportFilePath(fileExtension: string, forceOverwrite = false): string {
     const packageName = sanitizeFileName(this.getName() || 'package');
     // Replace dots in version with hyphens for better cross-OS compatibility
     const version = this.getVersion().replace(/\./g, '-');
@@ -62,7 +63,12 @@ class PackageFileService extends Service {
     const baseFileName = `${packageName}-v${version}-dependencies`;
     const outputDir = this.ctx.outputDir ?? this.ctx.cwd;
     
-    // Get a unique file path by adding a numeric suffix if the file already exists
+    // If forceOverwrite is true, we don't need to check for existing files
+    if (forceOverwrite) {
+      return path.resolve(outputDir, baseFileName);
+    }
+    
+    // Otherwise, get a unique file path by adding a numeric suffix if the file already exists
     const uniqueFilePath = this.getUniqueFilePath(outputDir, baseFileName, fileExtension);
     
     return uniqueFilePath;

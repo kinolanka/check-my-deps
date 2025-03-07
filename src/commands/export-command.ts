@@ -25,6 +25,11 @@ const exportCommand = new Command()
     'prevent any output to the terminal',
     false
   )
+  .option(
+    '-f, --force-overwrite',
+    'overwrite existing export files instead of creating unique filenames',
+    false
+  )
   .action(async (options) => {
     const outputService = new OutputService(options.silent);
     outputService.startLoading('Analyzing dependencies...');
@@ -36,6 +41,7 @@ const exportCommand = new Command()
         outputService,
         outputDir: options.outputDir,
         silent: options.silent,
+        forceOverwrite: options.forceOverwrite,
       });
 
       const packageFileService = new PackageFileService(ctx);
@@ -58,8 +64,8 @@ const exportCommand = new Command()
       // Get the file extension from the export service
       const fileExtension = excelService.getFileExtension();
       
-      // Get a unique file path that doesn't conflict with existing files
-      const filePath = packageFileService.getExportFilePath(fileExtension);
+      // Get a file path, either unique or overwriting existing files based on the forceOverwrite option
+      const filePath = packageFileService.getExportFilePath(fileExtension, ctx.forceOverwrite);
 
       outputService.updateLoadingText(`Saving Excel file to ${filePath}${fileExtension}...`);
       await excelService.saveToFile(filePath);
