@@ -1,6 +1,5 @@
 import fs from 'fs-extra';
 import path from 'path';
-import chalk from 'chalk';
 import { PackageJson } from 'type-fest';
 
 import Service, { ServiceType } from '@/services/service';
@@ -162,11 +161,15 @@ class UpdateService extends Service {
       if (updatedCount > 0) {
         // Write the updated package.json back to disk
         fs.writeJSONSync(this.packageJsonPath, packageJson, { spaces: 2 });
-        
+
         // Log a message suggesting to run npm install
-        if (!this.ctx.silent) {
-          console.log(chalk.yellow('\nℹ Remember to run "npm install" to update your node_modules with the new versions.'));
-        }
+        this.ctx.outputService.log('Package versions have been updated in package.json');
+        this.ctx.outputService.log(
+          'Please run "npm install" to update your package-lock.json and node_modules'
+        );
+        this.ctx.outputService.log(
+          'This will ensure your installed dependencies match the updated versions.'
+        );
       }
 
       return updatedCount;
@@ -187,23 +190,27 @@ class UpdateService extends Service {
       currentVersion: string;
       newVersion: string;
       updateType: PackageStatus;
+      deprecated?: boolean;
     }>
   ): void {
-    if (this.ctx.silent) {
-      return;
-    }
+    // Create a structured JSON object
+    const jsonOutput = {
+      timestamp: new Date().toISOString(),
+      updateLevel: this.updateLevel,
+      totalUpdates: updates.length,
+      updates: updates.map((update) => ({
+        packageName: update.packageName,
+        dependencyType: update.dependencyType,
+        currentVersion: update.currentVersion,
+        newVersion: update.newVersion,
+        updateType: update.updateType,
+        deprecated: update.deprecated || false,
+      })),
+    };
 
-    console.log('\nPackages to update:');
-    console.log('-------------------');
-
-    for (const update of updates) {
-      const updateLabel = this.getUpdateTypeLabel(update.updateType);
-      console.log(
-        `${update.packageName} (${update.dependencyType}):\n  ${update.currentVersion} → ${update.newVersion} (${updateLabel})`
-      );
-    }
-
-    console.log('-------------------');
+    // Output the JSON string to the terminal
+    // Force parameter ensures the JSON is always displayed even in silent mode
+    this.ctx.outputService.msg(JSON.stringify(jsonOutput, null, 2), true);
   }
 
   /**
