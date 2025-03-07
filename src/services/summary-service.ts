@@ -3,6 +3,7 @@ import PackageInfoService from '@/services/package-info-service';
 import PackageFileService from '@/services/package-file-service';
 import { Summary, SummaryStats, SummaryTotals } from '@/utils/types';
 import { PACKAGE_NAME, WEBSITE_URL, NPM_URL, GITHUB_URL } from '@/utils/constants';
+import formatDate from '@/utils/helpers/format-date';
 
 /**
  * The SummaryService class is responsible for generating a summary of package statistics from a list of PackageInfoService instances.
@@ -127,11 +128,8 @@ class SummaryService extends Service {
     // Get current date and time
     const now = new Date();
 
-    // Format date as M/D/YYYY to match package release dates format
-    const month = now.getMonth() + 1; // months are zero-indexed
-    const day = now.getDate();
-    const year = now.getFullYear();
-    const date = `${month}/${day}/${year}`;
+    // Format date as MM/DD/YYYY with leading zeros for month and day when less than 10
+    const date = formatDate(now);
 
     const time = now.toTimeString().split(' ')[0]; // HH:MM:SS
 

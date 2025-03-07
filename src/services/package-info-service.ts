@@ -1,6 +1,6 @@
 import { ServiceCtxType } from '@/services/service-ctx';
 import Service from '@/services/service';
-import extractRootDomain from '@/utils/helpers/extract-root-domain';
+import formatDate from '@/utils/helpers/format-date';
 import getNpmPackageUrl from '@/utils/helpers/get-npm-package-url';
 import { NpmListDepItem, NpmViewData, PackageSpec, PackageVersionSpec } from '@/utils/types';
 
@@ -95,7 +95,7 @@ class PackageInfoService extends Service {
     if (installedVersion) {
       this.versionInstalled = {
         version: installedVersion,
-        releaseDate: this.npmViewData.time?.[installedVersion] || '',
+        releaseDate: formatDate(this.npmViewData.time?.[installedVersion] || ''),
         npmUrl: getNpmPackageUrl(this.packageName, installedVersion),
         deprecated: this._isVersionDeprecated(installedVersion),
       };
@@ -132,7 +132,7 @@ class PackageInfoService extends Service {
     if (lastMinorVersion) {
       this.versionLastMinor = {
         version: lastMinorVersion,
-        releaseDate: this.npmViewData.time?.[lastMinorVersion] || '',
+        releaseDate: formatDate(this.npmViewData.time?.[lastMinorVersion] || ''),
         npmUrl: getNpmPackageUrl(this.packageName, lastMinorVersion),
         deprecated: this._isVersionDeprecated(lastMinorVersion),
       };
@@ -147,7 +147,7 @@ class PackageInfoService extends Service {
     if (latestVersion) {
       this.versionLast = {
         version: latestVersion,
-        releaseDate: this.npmViewData.time?.[latestVersion] || '',
+        releaseDate: formatDate(this.npmViewData.time?.[latestVersion] || ''),
         npmUrl: getNpmPackageUrl(this.packageName, latestVersion),
         deprecated: this._isVersionDeprecated(latestVersion),
       };

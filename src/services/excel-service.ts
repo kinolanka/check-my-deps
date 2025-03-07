@@ -4,7 +4,6 @@ import Service, { ServiceType } from '@/services/service';
 import PackageInfoService from '@/services/package-info-service';
 import SummaryService from '@/services/summary-service';
 import { PackageStatus, Summary } from '@/utils/types';
-import convertDate from '@/utils/helpers/convert-date';
 
 class ExcelService extends Service {
   private workbook: ExcelJS.Workbook;
@@ -326,15 +325,13 @@ class ExcelService extends Service {
         versionRequired: row.versionRequired,
         installedVersion: row.versionInstalled?.version,
         installedVersionDeprecated: '', // Will be set by handleDeprecatedStatus
-        installDate:
-          row.versionInstalled?.releaseDate && convertDate(row.versionInstalled.releaseDate),
+        installDate: row.versionInstalled?.releaseDate,
         latestMinor: row.versionLastMinor?.version,
         latestMinorDeprecated: '', // Will be set by handleDeprecatedStatus
-        latestMinorDate:
-          row.versionLastMinor?.releaseDate && convertDate(row.versionLastMinor.releaseDate),
+        latestMinorDate: row.versionLastMinor?.releaseDate,
         latestVersion: row.versionLast?.version,
         latestVersionDeprecated: '', // Will be set by handleDeprecatedStatus
-        latestVersionDate: row.versionLast?.releaseDate && convertDate(row.versionLast.releaseDate),
+        latestVersionDate: row.versionLast?.releaseDate,
         updateStatus: row.updateStatus,
         registrySource: row.registrySource,
       });
