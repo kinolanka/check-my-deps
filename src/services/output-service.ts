@@ -12,23 +12,23 @@ class OutputService {
     this.silent = silent;
   }
 
-  private _log(message: string): void {
-    if (!this.silent) {
+  private _log(message: string, force = false): void {
+    if (force || !this.silent) {
       console.log(message);
     }
   }
 
-  public msg(message: string): void {
+  public msg(message: string, force = false): void {
     // If loading is active, stop it temporarily to show the message
     const isLoading = this.loadingInterval !== null;
-    if (isLoading) {
+    if (isLoading && (force || !this.silent)) {
       this.clearLine();
     }
 
-    this._log(chalk.blue(message));
+    this._log(chalk.blue(message), force);
 
     // Resume loading if it was active
-    if (isLoading) {
+    if (isLoading && (force || !this.silent)) {
       this.renderLoading();
     }
   }
