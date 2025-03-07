@@ -72,6 +72,21 @@ class OutputService {
     console.log(error);
   }
 
+  public log(message: string): void {
+    // If loading is active, stop it temporarily to show the message
+    const isLoading = this.loadingInterval !== null;
+    if (isLoading) {
+      this.clearLine();
+    }
+
+    this._log(chalk.yellow(`ℹ ${message}`));
+
+    // Resume loading if it was active
+    if (isLoading) {
+      this.renderLoading();
+    }
+  }
+
   private clearLine(): void {
     process.stdout.write('\r\u001B[K');
   }
