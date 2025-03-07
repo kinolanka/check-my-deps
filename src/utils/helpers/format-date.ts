@@ -10,7 +10,7 @@ const formatDate = (dateInput: string | Date): string => {
 
   // Handle both string and Date input types
   const date = dateInput instanceof Date ? dateInput : new Date(dateInput);
-  
+
   // Check if the date is valid
   if (isNaN(date.getTime())) {
     return '';
@@ -18,10 +18,10 @@ const formatDate = (dateInput: string | Date): string => {
 
   // Get month (add 1 as months are zero-indexed) and add leading zero if needed
   const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
-  
+
   // Get day and add leading zero if needed
   const day = date.getUTCDate().toString().padStart(2, '0');
-  
+
   // Get full year
   const year = date.getUTCFullYear();
 
