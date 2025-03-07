@@ -5,6 +5,7 @@ export type ServiceCtxType = {
   outputService: OutputService;
   outputDir?: string;
   silent?: boolean;
+  forceOverwrite?: boolean;
 };
 
 class ServiceCtx {
@@ -12,13 +13,15 @@ class ServiceCtx {
   private _outputService: ServiceCtxType['outputService'];
   private _outputDir: string;
   private _silent: boolean;
+  private _forceOverwrite: boolean;
 
-  constructor({ cwd, outputService, outputDir, silent = false }: ServiceCtxType) {
+  constructor({ cwd, outputService, outputDir, silent = false, forceOverwrite = false }: ServiceCtxType) {
     this._cwd = cwd;
     this._outputService = outputService;
     // Ensure outputDir is always a string by using cwd as fallback
     this._outputDir = outputDir || cwd;
     this._silent = silent;
+    this._forceOverwrite = forceOverwrite;
   }
 
   get cwd(): string {
@@ -35,6 +38,10 @@ class ServiceCtx {
 
   get silent(): boolean {
     return this._silent;
+  }
+
+  get forceOverwrite(): boolean {
+    return this._forceOverwrite;
   }
 }
 
