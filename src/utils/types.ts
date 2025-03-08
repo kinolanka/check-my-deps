@@ -1,5 +1,7 @@
 type GenericObject<T extends Record<string, unknown>> = Record<string, unknown> & T;
 
+export type ExportFormat = 'excel' | 'json';
+
 export type PackageStatus = 'upToDate' | 'major' | 'minor' | 'patch';
 
 export type PackageVersionSpec = {

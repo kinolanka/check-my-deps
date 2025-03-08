@@ -1,16 +1,15 @@
 import ExcelJS from 'exceljs';
 
-import Service, { ServiceType } from '@/services/service';
+import ExportService from '@/services/export-service';
+import { ServiceType } from '@/services/service';
 import PackageInfoService from '@/services/package-info-service';
 import SummaryService from '@/services/summary-service';
 import { PackageStatus, Summary } from '@/utils/types';
 
-class ExcelService extends Service {
+class ExcelService extends ExportService {
   private workbook: ExcelJS.Workbook;
 
-  private list: PackageInfoService[];
-
-  private summary: Summary;
+  private summaryData: Summary;
 
   private bgColors = {
     major: 'FF0000', // Red color
@@ -20,13 +19,10 @@ class ExcelService extends Service {
   };
 
   constructor(list: PackageInfoService[], summary: SummaryService, ctx: ServiceType) {
-    super(ctx);
+    super(list, summary, ctx);
 
     this.workbook = new ExcelJS.Workbook();
-
-    this.list = list;
-
-    this.summary = summary.getSummary();
+    this.summaryData = summary.getSummary();
 
     this.init();
   }
@@ -183,7 +179,7 @@ class ExcelService extends Service {
     ];
 
     // Get report info from summary service
-    const reportInfo = this.summary.reportInfo;
+    const reportInfo = this.summaryData.reportInfo;
 
     // Add report information at the top
     worksheetSum.addRow(['Report Date:', reportInfo.date]);
@@ -212,7 +208,7 @@ class ExcelService extends Service {
     });
 
     // Add summary data for each dependency type
-    for (const [depType, stats] of Object.entries(this.summary.byType)) {
+    for (const [depType, stats] of Object.entries(this.summaryData.byType)) {
       const outdatedCount = stats.major + stats.minor + stats.patch;
 
       worksheetSum.addRow([
@@ -231,7 +227,7 @@ class ExcelService extends Service {
     worksheetSum.addRow([]);
 
     // Get totals from the summary object
-    const { totals } = this.summary;
+    const { totals } = this.summaryData;
 
     // Add total row with bold formatting
     const totalRow = worksheetSum.addRow([
@@ -255,7 +251,7 @@ class ExcelService extends Service {
     worksheetSum.addRow([]);
 
     // Get package info rows data from summary service
-    const sourceInfoRows = this.summary.sourceInfo;
+    const sourceInfoRows = this.summaryData.sourceInfo;
 
     if (sourceInfoRows) {
       // Add information about the package
@@ -408,7 +404,7 @@ class ExcelService extends Service {
     return '.xlsx';
   }
 
-  public async saveToFile(filePath: string) {
+  public async saveToFile(filePath: string): Promise<void> {
     const fullFilePath = `${filePath}${this.getFileExtension()}`;
 
     await this.workbook.xlsx.writeFile(fullFilePath);
