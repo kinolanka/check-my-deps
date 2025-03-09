@@ -1,4 +1,4 @@
-# check-my-deps Test Project
+# @kinolanka-demo/main
 
 This is a dummy project created specifically for testing the `check-my-deps` tool. It contains various dependency formats and specifications that can be found in real-world npm projects.
 
