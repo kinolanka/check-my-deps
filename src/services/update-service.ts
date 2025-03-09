@@ -2,7 +2,6 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
-
 import type PackageInfoService from '@/services/package-info-service';
 import type { ServiceType } from '@/services/service';
 import Service from '@/services/service';
@@ -150,10 +149,7 @@ class UpdateService extends Service {
         const { packageName, dependencyType, newVersion } = update;
 
         // Update the version in package.json
-        if (
-          packageJson[dependencyType] &&
-          typeof packageJson[dependencyType] === 'object'
-        ) {
+        if (packageJson[dependencyType] && typeof packageJson[dependencyType] === 'object') {
           const deps = packageJson[dependencyType] as Record<string, string>;
           if (deps[packageName] !== newVersion) {
             deps[packageName] = newVersion;

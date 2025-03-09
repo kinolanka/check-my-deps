@@ -49,7 +49,7 @@ class JsonService extends ExportService {
   public async saveToFile(filePath: string): Promise<void> {
     const data = this.prepareData();
     const fullPath = `${filePath}${this.getFileExtension()}`;
-    
+
     // Create directory if it doesn't exist
     const directory = path.dirname(fullPath);
     if (!fs.existsSync(directory)) {
@@ -57,12 +57,8 @@ class JsonService extends ExportService {
     }
 
     // Write the JSON data to the file
-    await fs.promises.writeFile(
-      fullPath,
-      JSON.stringify(data, null, 2),
-      'utf8'
-    );
-    
+    await fs.promises.writeFile(fullPath, JSON.stringify(data, null, 2), 'utf8');
+
     this.ctx.outputService.successMsg(`JSON file created at ${fullPath}`);
   }
 }

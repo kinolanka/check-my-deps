@@ -102,7 +102,13 @@ class PackageInfoService extends Service {
     }
   }
 
-  private _filterProductionVersions(versions: string[]) {
+  private _filterProductionVersions(versions: NpmViewData['versions']) {
+    // Handle the case where versions might not be an array
+    if (!Array.isArray(versions)) {
+      // If versions is an object, extract its keys as an array
+      return Object.keys(versions).filter((version: string) => !version.includes('-'));
+    }
+
     return versions.filter((version: string) => !version.includes('-'));
   }
 
