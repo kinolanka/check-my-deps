@@ -17,7 +17,6 @@ class PackageFileService extends Service {
     'dependencies',
     'devDependencies',
     'peerDependencies',
-    'bundleDependencies',
     'optionalDependencies',
   ];
 
