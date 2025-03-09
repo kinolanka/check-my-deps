@@ -13,7 +13,13 @@ class PackageFileService extends Service {
   private packageFileName = 'package.json';
   private packageLockFileName = 'package-lock.json';
 
-  private depsTypes = ['dependencies', 'devDependencies', 'peerDependencies'];
+  private depsTypes = [
+    'dependencies',
+    'devDependencies',
+    'peerDependencies',
+    'bundleDependencies',
+    'optionalDependencies',
+  ];
 
   private packageJson: PackageJson;
 

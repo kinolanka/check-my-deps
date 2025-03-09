@@ -12,7 +12,6 @@ class OutputService {
 
   private _log(message: string, force = false): void {
     if (force || !this.silent) {
-      
       // eslint-disable-next-line no-console
       console.log(message);
     }
