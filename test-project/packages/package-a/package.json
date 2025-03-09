@@ -14,7 +14,7 @@
   "license": "MIT",
   "dependencies": {
     "react": "17.0.2",
-    "package-b": "workspace:*",
+    "package-b": "file:../package-b",
     "lodash": "npm:lodash-es@latest"
   },
   "devDependencies": {

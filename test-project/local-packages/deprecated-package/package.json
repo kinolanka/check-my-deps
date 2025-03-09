@@ -1,0 +1,16 @@
+{
+  "name": "deprecated-package",
+  "version": "1.0.0",
+  "description": "Mock deprecated package for testing check-my-deps",
+  "main": "index.js",
+  "deprecated": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "deprecated",
+    "test"
+  ],
+  "author": "Test User",
+  "license": "MIT"
+}
