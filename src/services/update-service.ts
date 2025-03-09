@@ -1,10 +1,14 @@
-import fs from 'fs-extra';
 import path from 'path';
-import { PackageJson } from 'type-fest';
 
-import Service, { ServiceType } from '@/services/service';
-import PackageInfoService from '@/services/package-info-service';
-import { PackageStatus } from '@/utils/types';
+import fs from 'fs-extra';
+
+
+import type PackageInfoService from '@/services/package-info-service';
+import type { ServiceType } from '@/services/service';
+import Service from '@/services/service';
+import type { PackageStatus } from '@/utils/types';
+
+import type { PackageJson } from 'type-fest';
 
 /**
  * Service for updating package.json dependencies
@@ -147,10 +151,10 @@ class UpdateService extends Service {
 
         // Update the version in package.json
         if (
-          packageJson[dependencyType as keyof PackageJson] &&
-          typeof packageJson[dependencyType as keyof PackageJson] === 'object'
+          packageJson[dependencyType] &&
+          typeof packageJson[dependencyType] === 'object'
         ) {
-          const deps = packageJson[dependencyType as keyof PackageJson] as Record<string, string>;
+          const deps = packageJson[dependencyType] as Record<string, string>;
           if (deps[packageName] !== newVersion) {
             deps[packageName] = newVersion;
             updatedCount++;

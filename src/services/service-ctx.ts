@@ -1,4 +1,4 @@
-import OutputService from '@/services/output-service';
+import type OutputService from '@/services/output-service';
 
 export type ServiceCtxType = {
   cwd: string;

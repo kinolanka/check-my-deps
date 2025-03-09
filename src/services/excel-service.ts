@@ -1,10 +1,10 @@
 import ExcelJS from 'exceljs';
 
 import ExportService from '@/services/export-service';
-import { ServiceType } from '@/services/service';
-import PackageInfoService from '@/services/package-info-service';
-import SummaryService from '@/services/summary-service';
-import { PackageStatus, Summary } from '@/utils/types';
+import type PackageInfoService from '@/services/package-info-service';
+import type { ServiceType } from '@/services/service';
+import type SummaryService from '@/services/summary-service';
+import type { PackageStatus, Summary } from '@/utils/types';
 
 class ExcelService extends ExportService {
   private workbook: ExcelJS.Workbook;

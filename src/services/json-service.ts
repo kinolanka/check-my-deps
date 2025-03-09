@@ -1,11 +1,12 @@
-import fs from 'fs-extra';
 import path from 'path';
 
+import fs from 'fs-extra';
+
 import ExportService from '@/services/export-service';
-import { ServiceType } from '@/services/service';
-import PackageInfoService from '@/services/package-info-service';
-import SummaryService from '@/services/summary-service';
-import { Summary } from '@/utils/types';
+import type PackageInfoService from '@/services/package-info-service';
+import type { ServiceType } from '@/services/service';
+import type SummaryService from '@/services/summary-service';
+import type { Summary } from '@/utils/types';
 
 /**
  * The JsonService class is responsible for generating a JSON report from package data

@@ -1,8 +1,9 @@
 import { execSync } from 'child_process';
 
-import Service, { ServiceType } from '@/services/service';
 import PackageInfoService from '@/services/package-info-service';
-import { NpmListData, NpmViewData, PackageSpec } from '@/utils/types';
+import type { ServiceType } from '@/services/service';
+import Service from '@/services/service';
+import type { NpmListData, NpmViewData, PackageSpec } from '@/utils/types';
 
 class NpmService extends Service {
   private packages: PackageSpec[];
@@ -31,7 +32,7 @@ class NpmService extends Service {
         cwd: this.ctx.cwd,
       });
 
-      this.npmListData = JSON.parse(npmListDataBuffer.toString());
+      this.npmListData = JSON.parse(npmListDataBuffer.toString()) as NpmListData;
     } catch (error) {
       // Check if the error is related to version mismatches (ELSPROBLEMS)
       if (error instanceof Error && error.message.includes('ELSPROBLEMS')) {

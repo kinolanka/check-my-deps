@@ -1,13 +1,15 @@
 import { Command } from 'commander';
 
-import NpmService from '@/services/npm-service';
 import ExcelService from '@/services/excel-service';
 import JsonService from '@/services/json-service';
+import NpmService from '@/services/npm-service';
 import OutputService from '@/services/output-service';
 import PackageFileService from '@/services/package-file-service';
 import ServiceCtx from '@/services/service-ctx';
 import SummaryService from '@/services/summary-service';
-import { ExportFormat } from '@/utils/types';
+import type { ExportFormat } from '@/utils/types';
+
+import type { OptionValues } from 'commander';
 
 const exportCommand = new Command()
   .name('export')
@@ -29,18 +31,18 @@ const exportCommand = new Command()
     false
   )
   .option('--format <format>', 'The format of the export file (excel or json).', 'excel')
-  .action(async (options) => {
-    const outputService = new OutputService(options.silent);
+  .action(async (options: OptionValues) => {
+    const outputService = new OutputService(Boolean(options.silent));
     outputService.startLoading('Analyzing dependencies...');
 
     try {
       outputService.updateLoadingText('Reading package.json...');
       const ctx = new ServiceCtx({
-        cwd: options.cwd || process.cwd(),
+        cwd: (options.cwd as string) || process.cwd(),
         outputService,
-        outputDir: options.outputDir || process.cwd(),
-        silent: options.silent,
-        forceOverwrite: options.forceOverwrite,
+        outputDir: (options.outputDir as string) || process.cwd(),
+        silent: Boolean(options.silent),
+        forceOverwrite: Boolean(options.forceOverwrite),
       });
 
       const packageFileService = new PackageFileService(ctx);
@@ -58,7 +60,7 @@ const exportCommand = new Command()
       const summary = new SummaryService(exportList, packageFileService, ctx);
 
       // Determine which export format to use (default is excel)
-      const format = (options.format as ExportFormat) || 'excel';
+      const format: ExportFormat = (options.format as ExportFormat) || 'excel';
 
       let exportService;
       if (format === 'json') {

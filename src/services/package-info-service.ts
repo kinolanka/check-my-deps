@@ -1,8 +1,8 @@
-import { ServiceCtxType } from '@/services/service-ctx';
 import Service from '@/services/service';
+import type { ServiceCtxType } from '@/services/service-ctx';
 import formatDate from '@/utils/helpers/format-date';
 import getNpmPackageUrl from '@/utils/helpers/get-npm-package-url';
-import { NpmListDepItem, NpmViewData, PackageSpec, PackageVersionSpec } from '@/utils/types';
+import type { NpmListDepItem, NpmViewData, PackageSpec, PackageVersionSpec } from '@/utils/types';
 
 class PackageInfoService extends Service {
   private packageName: string;

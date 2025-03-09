@@ -1,10 +1,13 @@
-import fs from 'fs-extra';
 import path from 'path';
-import { PackageJson } from 'type-fest';
 
-import Service, { ServiceType } from '@/services/service';
+import fs from 'fs-extra';
+
+import type { ServiceType } from '@/services/service';
+import Service from '@/services/service';
 import sanitizeFileName from '@/utils/helpers/sanitize-file-name';
-import { PackageSpec } from '@/utils/types';
+import type { PackageSpec } from '@/utils/types';
+
+import type { PackageJson } from 'type-fest';
 
 class PackageFileService extends Service {
   private packageFileName = 'package.json';
@@ -19,20 +22,22 @@ class PackageFileService extends Service {
 
     const packageJsonPath = path.resolve(this.ctx.cwd, this.packageFileName);
     this.packageJson = fs.readJSONSync(packageJsonPath) as PackageJson;
-    
+
     // Check if package-lock.json exists
     this.checkPackageLockExists();
   }
-  
+
   /**
    * Checks if package-lock.json exists in the project directory
    * @throws Error if package-lock.json doesn't exist
    */
   private checkPackageLockExists(): void {
     const packageLockPath = path.resolve(this.ctx.cwd, this.packageLockFileName);
-    
+
     if (!fs.existsSync(packageLockPath)) {
-      throw new Error('package-lock.json file not found. Please run "npm i --package-lock-only" to generate it first.');
+      throw new Error(
+        'package-lock.json file not found. Please run "npm i --package-lock-only" to generate it first.'
+      );
     }
   }
 
@@ -55,7 +60,7 @@ class PackageFileService extends Service {
           list.push({
             packageName,
             dependencyType: depType,
-            versionRequired,
+            versionRequired: versionRequired as string,
           });
         }
       }

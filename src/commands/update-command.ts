@@ -6,6 +6,8 @@ import PackageFileService from '@/services/package-file-service';
 import ServiceCtx from '@/services/service-ctx';
 import UpdateService from '@/services/update-service';
 
+import type { OptionValues } from 'commander';
+
 const updateCommand = new Command()
   .name('update')
   .description('Update package.json dependencies according to specified semver rules')
@@ -24,22 +26,22 @@ const updateCommand = new Command()
     'Show what would be updated without making actual changes to package.json.',
     false
   )
-  .action(async (options) => {
-    const outputService = new OutputService(options.silent);
+  .action(async (options: OptionValues) => {
+    const outputService = new OutputService(Boolean(options.silent));
     outputService.startLoading('Analyzing dependencies...');
 
     try {
       // Validate update level option
-      const updateLevel = options.level.toLowerCase();
+      const updateLevel = (options.level as string).toLowerCase();
       if (!['latest', 'minor', 'patch'].includes(updateLevel)) {
         throw new Error('Invalid update level. Must be one of: latest, minor, patch');
       }
 
       outputService.updateLoadingText('Reading package.json...');
       const ctx = new ServiceCtx({
-        cwd: options.cwd || process.cwd(),
+        cwd: (options.cwd as string) || process.cwd(),
         outputService,
-        silent: options.silent,
+        silent: Boolean(options.silent),
       });
 
       outputService.updateLoadingText('Extracting package information...');
