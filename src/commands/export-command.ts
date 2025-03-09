@@ -11,28 +11,24 @@ import { ExportFormat } from '@/utils/types';
 
 const exportCommand = new Command()
   .name('export')
-  .description('Get the content of the package.json file and export dependencies to an Excel file')
+  .description(
+    'Analyze dependencies in package.json and export a detailed report with version information'
+  )
   .option(
     '-c, --cwd <cwd>',
-    'the working directory. defaults to the current directory.',
-    process.cwd()
+    'The working directory where package.json is located. Defaults to the current directory.'
   )
   .option(
     '-o, --output-dir <outputDir>',
-    'the directory where the export file will be saved. defaults to the current directory.',
-    process.cwd()
+    'The directory where the export file will be saved. Defaults to the current directory.'
   )
-  .option('-s, --silent', 'prevent any output to the terminal', false)
+  .option('-s, --silent', 'Prevent any output to the terminal.', false)
   .option(
     '-f, --force-overwrite',
-    'overwrite existing export files instead of creating unique filenames',
+    'Overwrite existing export files instead of creating unique filenames.',
     false
   )
-  .option(
-    '--format <format>',
-    'the format of the export file (excel or json)',
-    'excel'
-  )
+  .option('--format <format>', 'The format of the export file (excel or json).', 'excel')
   .action(async (options) => {
     const outputService = new OutputService(options.silent);
     outputService.startLoading('Analyzing dependencies...');
@@ -40,9 +36,9 @@ const exportCommand = new Command()
     try {
       outputService.updateLoadingText('Reading package.json...');
       const ctx = new ServiceCtx({
-        cwd: options.cwd,
+        cwd: options.cwd || process.cwd(),
         outputService,
-        outputDir: options.outputDir,
+        outputDir: options.outputDir || process.cwd(),
         silent: options.silent,
         forceOverwrite: options.forceOverwrite,
       });
@@ -63,7 +59,7 @@ const exportCommand = new Command()
 
       // Determine which export format to use (default is excel)
       const format = (options.format as ExportFormat) || 'excel';
-      
+
       let exportService;
       if (format === 'json') {
         outputService.updateLoadingText('Creating JSON report...');
@@ -79,7 +75,9 @@ const exportCommand = new Command()
       // Get a file path, either unique or overwriting existing files based on the forceOverwrite option
       const filePath = packageFileService.getExportFilePath(fileExtension, ctx.forceOverwrite);
 
-      outputService.updateLoadingText(`Saving ${format.toUpperCase()} file to ${filePath}${fileExtension}...`);
+      outputService.updateLoadingText(
+        `Saving ${format.toUpperCase()} file to ${filePath}${fileExtension}...`
+      );
       await exportService.saveToFile(filePath);
 
       outputService.stopLoadingSuccess('Export completed!');
