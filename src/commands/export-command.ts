@@ -54,7 +54,7 @@ const exportCommand = new Command()
       const npmService = new NpmService(packages, ctx);
 
       outputService.updateLoadingText('Processing dependency information...');
-      const exportList = npmService.getList();
+      const exportList = await npmService.getList();
 
       outputService.updateLoadingText('Generating summary...');
       const summary = new SummaryService(exportList, packageFileService, ctx);
