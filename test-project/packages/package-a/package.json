@@ -1,0 +1,23 @@
+{
+  "name": "package-a",
+  "version": "1.0.0",
+  "description": "Workspace package A for testing check-my-deps",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "workspace",
+    "test"
+  ],
+  "author": "Test User",
+  "license": "MIT",
+  "dependencies": {
+    "react": "17.0.2",
+    "package-b": "workspace:*",
+    "lodash": "npm:lodash-es@latest"
+  },
+  "devDependencies": {
+    "typescript": "4.5.5"
+  }
+}
