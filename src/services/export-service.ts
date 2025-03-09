@@ -1,6 +1,7 @@
-import Service, { ServiceType } from '@/services/service';
-import PackageInfoService from '@/services/package-info-service';
-import SummaryService from '@/services/summary-service';
+import type PackageInfoService from '@/services/package-info-service';
+import type { ServiceType } from '@/services/service';
+import Service from '@/services/service';
+import type SummaryService from '@/services/summary-service';
 
 /**
  * Base interface for export services
@@ -24,8 +25,9 @@ abstract class ExportService extends Service {
 
   /**
    * Saves the data to a file
-   * @param filePath The path where the file should be saved (without extension)
+   * @param {string} filePath - The path where the file should be saved (without extension)
    */
+  // eslint-disable-next-line no-unused-vars
   abstract saveToFile(filePath: string): Promise<void>;
 }
 

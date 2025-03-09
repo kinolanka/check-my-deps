@@ -1,4 +1,4 @@
-import { ServiceCtxType } from '@/services/service-ctx';
+import type { ServiceCtxType } from '@/services/service-ctx';
 
 export type ServiceType = ServiceCtxType;
 

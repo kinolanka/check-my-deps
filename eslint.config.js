@@ -23,6 +23,14 @@ const baseConfig = {
   plugins: {
     import: importPlugin,
   },
+  settings: {
+    'import/resolver': {
+      typescript: {
+        project: './tsconfig.json',
+        alwaysTryTypes: true
+      }
+    }
+  },
   rules: {
     // Import rules
     'import/order': [
@@ -52,7 +60,7 @@ const baseConfig = {
     'prefer-const': 'error',
     'no-var': 'error',
   },
-  ignores: ['dist/**', 'node_modules/**'],
+  ignores: ['dist/**', 'node_modules/**', 'test-projects/**'],
 };
 
 // TypeScript specific configuration

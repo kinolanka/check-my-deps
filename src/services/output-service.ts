@@ -1,6 +1,6 @@
 class OutputService {
   private silent: boolean;
-  private loadingInterval: NodeJS.Timeout | null = null;
+  private loadingInterval: ReturnType<typeof setTimeout> | null = null;
   private loadingChars = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
   private loadingIndex = 0;
   private currentLoadingText = '';
@@ -12,6 +12,8 @@ class OutputService {
 
   private _log(message: string, force = false): void {
     if (force || !this.silent) {
+      
+      // eslint-disable-next-line no-console
       console.log(message);
     }
   }
@@ -67,7 +69,7 @@ class OutputService {
       this.stopLoading();
     }
 
-    console.log(error);
+    console.error(error);
   }
 
   public log(message: string): void {

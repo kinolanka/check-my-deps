@@ -1,6 +1,8 @@
-import getPackageInfo from './get-package-info';
-import fs from 'fs-extra';
 import path from 'path';
+
+import fs from 'fs-extra';
+
+import getPackageInfo from './get-package-info';
 
 jest.mock('fs-extra');
 jest.mock('path');

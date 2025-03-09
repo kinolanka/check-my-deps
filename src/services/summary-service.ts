@@ -1,9 +1,10 @@
-import Service, { ServiceType } from '@/services/service';
-import PackageInfoService from '@/services/package-info-service';
-import PackageFileService from '@/services/package-file-service';
-import { Summary, SummaryStats, SummaryTotals } from '@/utils/types';
+import type PackageFileService from '@/services/package-file-service';
+import type PackageInfoService from '@/services/package-info-service';
+import Service from '@/services/service';
+import type { ServiceType } from '@/services/service';
 import { PACKAGE_NAME, WEBSITE_URL, NPM_URL, GITHUB_URL } from '@/utils/constants';
 import formatDate from '@/utils/helpers/format-date';
+import type { Summary, SummaryStats, SummaryTotals } from '@/utils/types';
 
 /**
  * The SummaryService class is responsible for generating a summary of package statistics from a list of PackageInfoService instances.
@@ -145,7 +146,7 @@ class SummaryService extends Service {
     };
   }
 
-  public generateSourceInfo() {
+  public generateSourceInfo(): void {
     this.summary.sourceInfo = {
       info: `This report was created using npm package ${PACKAGE_NAME}`,
       urls: [
