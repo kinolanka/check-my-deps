@@ -237,22 +237,41 @@ class PackageInfoService extends Service {
   }
 
   private _setDeprecated() {
-    this.deprecated = !!this.npmViewData.deprecated;
+    // Check if the entire package is deprecated
+    if (this.npmViewData.deprecated) {
+      this.deprecated = true;
+      return;
+    }
+
+    // Check if the installed version is deprecated
+    if (this.versionInstalled?.version) {
+      this.deprecated = this._isVersionDeprecated(this.versionInstalled.version);
+    } else {
+      this.deprecated = false;
+    }
   }
 
   private _isVersionDeprecated(version: string): boolean {
-    // Check if the specific version is deprecated
-    // npm registry can have version-specific deprecation messages in the form:
-    // { versions: { "1.0.0": { deprecated: "message" } } }
     try {
+      // First check if we have pre-fetched version-specific deprecation status
+      if (this.npmViewData.versionDeprecations && version in this.npmViewData.versionDeprecations) {
+        return this.npmViewData.versionDeprecations[version];
+      }
+
       // If the entire package is deprecated
       if (this.npmViewData.deprecated) {
         return true;
       }
 
-      // Check if there's version-specific deprecation info
+      // Check if there's version-specific deprecation info in the versions object
+      // This is a fallback, as npm registry data structure might vary
       const versionData = this.npmViewData.versions?.[version];
-      return versionData && typeof versionData === 'object' && !!versionData.deprecated;
+      if (versionData && typeof versionData === 'object' && !!versionData.deprecated) {
+        return true;
+      }
+
+      // If we reach here, the version is not deprecated
+      return false;
     } catch (error) {
       this.ctx.outputService.error(error as Error);
       return false;

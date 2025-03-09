@@ -69,6 +69,28 @@ class NpmService extends Service {
     return JSON.parse(npmViewDataBuffer.toString()) as NpmViewData;
   }
 
+  private _getVersionDeprecationStatus(packageName: string, version: string): boolean {
+    try {
+      // Make a specific call to get information about this version
+      const versionDataBuffer = execSync(`npm view ${packageName}@${version} deprecated --json`, {
+        cwd: this.ctx.cwd,
+      });
+
+      const result = versionDataBuffer.toString().trim();
+
+      // If the result is empty or 'undefined', the version is not deprecated
+      if (!result || result === 'undefined') {
+        return false;
+      }
+
+      // Otherwise, the version is deprecated
+      return true;
+    } catch (error) {
+      this.ctx.outputService.error(error as Error);
+      return false;
+    }
+  }
+
   private _setDependenciesList() {
     const list = [];
 
@@ -77,6 +99,58 @@ class NpmService extends Service {
 
       const npmViewData = this._getNpmViewData(currentPackage.packageName);
 
+      // Initialize versionDeprecations object if it doesn't exist
+      if (!npmViewData.versionDeprecations) {
+        npmViewData.versionDeprecations = {};
+      }
+
+      // Check if the installed version is deprecated
+      if (npmListDepItem?.version) {
+        const isInstalledVersionDeprecated = this._getVersionDeprecationStatus(
+          currentPackage.packageName,
+          npmListDepItem.version
+        );
+        npmViewData.versionDeprecations[npmListDepItem.version] = isInstalledVersionDeprecated;
+      }
+
+      // Create a temporary PackageInfoService to get version information
+      // This is needed to determine which versions we need to check for deprecation
+      const tempPackageInfo = new PackageInfoService(
+        {
+          package: currentPackage,
+          npmListDepItem,
+          npmViewData,
+        },
+        this.ctx
+      );
+
+      const tempInfo = tempPackageInfo.getInfo();
+
+      // Check last minor version deprecation if available
+      if (
+        tempInfo.versionLastMinor?.version &&
+        !(tempInfo.versionLastMinor.version in npmViewData.versionDeprecations)
+      ) {
+        const isLastMinorDeprecated = this._getVersionDeprecationStatus(
+          currentPackage.packageName,
+          tempInfo.versionLastMinor.version
+        );
+        npmViewData.versionDeprecations[tempInfo.versionLastMinor.version] = isLastMinorDeprecated;
+      }
+
+      // Check latest version deprecation if available
+      if (
+        tempInfo.versionLast?.version &&
+        !(tempInfo.versionLast.version in npmViewData.versionDeprecations)
+      ) {
+        const isLatestDeprecated = this._getVersionDeprecationStatus(
+          currentPackage.packageName,
+          tempInfo.versionLast.version
+        );
+        npmViewData.versionDeprecations[tempInfo.versionLast.version] = isLatestDeprecated;
+      }
+
+      // Create the final PackageInfoService with complete deprecation information
       const packageInfo = new PackageInfoService(
         {
           package: currentPackage,

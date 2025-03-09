@@ -42,6 +42,8 @@ export type NpmViewData = GenericObject<{
   homepage: string;
   repository: string | GenericObject<{ url: string }>;
   deprecated?: boolean | string;
+  // Custom property to store version-specific deprecation status
+  versionDeprecations?: Record<string, boolean>;
 }>;
 
 export type SummaryStats = Record<PackageStatus | 'total' | 'deprecated', number>;
