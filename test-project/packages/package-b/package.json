@@ -1,0 +1,22 @@
+{
+  "name": "package-b",
+  "version": "1.0.0",
+  "description": "Workspace package B for testing check-my-deps",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "workspace",
+    "test"
+  ],
+  "author": "Test User",
+  "license": "MIT",
+  "dependencies": {
+    "express": "4.17.3",
+    "deprecated-package": "1.0.0"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0 || ^18.0.0"
+  }
+}

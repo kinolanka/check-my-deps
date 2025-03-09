@@ -1,0 +1,16 @@
+{
+  "name": "is-odd",
+  "version": "3.0.1",
+  "description": "Local package that returns true if the given number is odd",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "is-odd",
+    "odd",
+    "number"
+  ],
+  "author": "Test User",
+  "license": "MIT"
+}
