@@ -8,15 +8,22 @@ import UpdateService from '@/services/update-service';
 
 const updateCommand = new Command()
   .name('update')
-  .description('Update package.json dependencies to their latest versions')
+  .description('Update package.json dependencies according to specified semver rules')
   .option(
     '-c, --cwd <cwd>',
-    'the working directory. defaults to the current directory.',
-    process.cwd()
+    'The working directory where package.json is located. Defaults to the current directory.'
   )
-  .option('-s, --silent', 'prevent any output to the terminal', false)
-  .option('-l, --level <level>', 'specify the semver update level (latest, minor, patch)', 'latest')
-  .option('-d, --dry-run', 'show what would be updated without making changes', false)
+  .option('-s, --silent', 'Prevent any output to the terminal.', false)
+  .option(
+    '-l, --level <level>',
+    'Specify the semver update level (latest, minor, patch). Controls how aggressive updates will be.',
+    'latest'
+  )
+  .option(
+    '-d, --dry-run',
+    'Show what would be updated without making actual changes to package.json.',
+    false
+  )
   .action(async (options) => {
     const outputService = new OutputService(options.silent);
     outputService.startLoading('Analyzing dependencies...');
@@ -30,7 +37,7 @@ const updateCommand = new Command()
 
       outputService.updateLoadingText('Reading package.json...');
       const ctx = new ServiceCtx({
-        cwd: options.cwd,
+        cwd: options.cwd || process.cwd(),
         outputService,
         silent: options.silent,
       });

@@ -13,8 +13,8 @@ async function main() {
 
   const program = new Command()
     .name('check-my-deps')
-    .description('Easily manage and monitor project dependencies')
-    .version(packageInfo.version || '0.0.1', '-v, --version', 'display the version number');
+    .description('Analyze, export, and update npm dependencies in your project')
+    .version(packageInfo.version || '0.0.1', '-v, --version', 'Display the version number');
 
   program.addCommand(exportCommand, { isDefault: true });
   program.addCommand(updateCommand);
