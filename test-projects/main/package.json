@@ -1,5 +1,5 @@
 {
-  "name": "check-my-deps-test-project",
+  "name": "@kinolanka-demo/main",
   "version": "1.0.0",
   "description": "Test project for check-my-deps with various dependency formats",
   "main": "index.js",
