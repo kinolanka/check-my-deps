@@ -27,7 +27,6 @@ abstract class ExportService extends Service {
    * Saves the data to a file
    * @param {string} filePath - The path where the file should be saved (without extension)
    */
-  // eslint-disable-next-line no-unused-vars
   abstract saveToFile(filePath: string): Promise<void>;
 }
 

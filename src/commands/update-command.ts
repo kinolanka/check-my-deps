@@ -52,7 +52,7 @@ const updateCommand = new Command()
       const npmService = new NpmService(packages, ctx);
 
       outputService.updateLoadingText('Processing dependency information...');
-      const packageInfoList = npmService.getList();
+      const packageInfoList = await npmService.getList();
 
       outputService.updateLoadingText('Determining updates...');
       const updateService = new UpdateService(packageInfoList, updateLevel, ctx);

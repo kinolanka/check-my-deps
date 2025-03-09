@@ -27,9 +27,9 @@ const baseConfig = {
     'import/resolver': {
       typescript: {
         project: './tsconfig.json',
-        alwaysTryTypes: true
-      }
-    }
+        alwaysTryTypes: true,
+      },
+    },
   },
   rules: {
     // Import rules
@@ -86,7 +86,24 @@ const tsConfig = {
     '@typescript-eslint/no-unsafe-member-access': 'warn',
     '@typescript-eslint/no-unsafe-argument': 'warn',
     '@typescript-eslint/no-unsafe-call': 'warn',
-    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    // Disable the base rule as it can report incorrect errors in TypeScript files
+    'no-unused-vars': 'off',
+    // Use the TypeScript-specific rule instead
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      {
+        // Pattern for function parameters and type parameters
+        // argsIgnorePattern: '^_|^item$|^index$',
+        // Pattern for variables
+        varsIgnorePattern: '^_',
+        // Ignore rest siblings in destructuring
+        ignoreRestSiblings: true,
+        // Allow unused parameters in array destructuring
+        // destructuredArrayIgnorePattern: '^_|^item$|^index$',
+        // This is critical for type definitions
+        caughtErrors: 'none',
+      },
+    ],
     '@typescript-eslint/consistent-type-imports': 'warn',
     '@typescript-eslint/no-floating-promises': 'warn',
     '@typescript-eslint/await-thenable': 'warn',
