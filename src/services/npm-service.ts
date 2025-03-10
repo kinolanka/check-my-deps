@@ -33,14 +33,14 @@ class NpmService extends Service {
 
     this.packages = packages;
 
-    this._init();
+    this.init();
   }
 
-  private _init() {
-    this._setNpmListData();
+  private init() {
+    this.setNpmListData();
   }
 
-  private _setNpmListData() {
+  private setNpmListData() {
     try {
       const npmListDataBuffer = execSync('npm list --json --package-lock-only', {
         cwd: this.ctx.cwd,
@@ -77,7 +77,7 @@ class NpmService extends Service {
     }
   }
 
-  private _getNpmViewData(packageName: string): Promise<NpmViewData> {
+  private getNpmViewData(packageName: string): Promise<NpmViewData> {
     return new Promise((resolve, reject) => {
       exec(
         `npm view ${packageName} versions time homepage repository deprecated --json`,
@@ -99,7 +99,7 @@ class NpmService extends Service {
     });
   }
 
-  private async _getVersionDeprecationStatus(
+  private async getVersionDeprecationStatus(
     packageName: string,
     version: string
   ): Promise<boolean> {
@@ -132,7 +132,7 @@ class NpmService extends Service {
     });
   }
 
-  private async _setDependenciesList() {
+  private async setDependenciesList() {
     // Create a structure to hold package data for processing
     const packageDataList = this.packages.map((pkg) => {
       const npmListDepItem = this.npmListData?.dependencies[pkg.packageName];
@@ -143,7 +143,7 @@ class NpmService extends Service {
     // Fetch npm view data in chunks of 5 using processInChunks
     const npmViewDataResponses = await processInChunks(
       packageDataList,
-      async ({ pkg }) => this._getNpmViewData(pkg.packageName),
+      async ({ pkg }) => this.getNpmViewData(pkg.packageName),
       5
     );
 
@@ -208,7 +208,7 @@ class NpmService extends Service {
 
         // Run all deprecation checks in parallel
         const deprecationChecks = versionsToCheck.map(({ version, packageName }) =>
-          this._getVersionDeprecationStatus(packageName, version).then((isDeprecated) => ({
+          this.getVersionDeprecationStatus(packageName, version).then((isDeprecated) => ({
             version,
             isDeprecated,
           }))
@@ -236,7 +236,7 @@ class NpmService extends Service {
   }
 
   public async getList(): Promise<PackageInfoService[]> {
-    await this._setDependenciesList();
+    await this.setDependenciesList();
 
     return this.list;
   }

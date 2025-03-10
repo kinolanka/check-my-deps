@@ -23,7 +23,7 @@ class OutputService {
     this.silent = silent;
   }
 
-  private _log(message: string, force = false): void {
+  private logToConsole(message: string, force = false): void {
     if (force || !this.silent) {
       // eslint-disable-next-line no-console
       console.log(message);
@@ -38,7 +38,7 @@ class OutputService {
       this.clearLine();
     }
 
-    this._log(message, force);
+    this.logToConsole(message, force);
 
     // Resume loading if it was active
     if (isLoading && (force || !this.silent)) {
@@ -54,7 +54,7 @@ class OutputService {
       this.clearLine();
     }
 
-    this._log(message);
+    this.logToConsole(message);
 
     // Resume loading if it was active
     if (isLoading) {
@@ -70,7 +70,7 @@ class OutputService {
       this.clearLine();
     }
 
-    this._log(message);
+    this.logToConsole(message);
 
     // Resume loading if it was active
     if (isLoading) {
@@ -95,7 +95,7 @@ class OutputService {
       this.clearLine();
     }
 
-    this._log(`ℹ ${message}`);
+    this.logToConsole(`ℹ ${message}`);
 
     // Resume loading if it was active
     if (isLoading) {
@@ -147,7 +147,7 @@ class OutputService {
     if (this.currentLoadingText) {
       this.clearLine();
 
-      this._log(
+      this.logToConsole(
         `✓ ${this.currentLoadingText} ${`[${((Date.now() - this.startTime) / 1000).toFixed(1)}s]`}`
       );
     }
@@ -174,7 +174,7 @@ class OutputService {
       process.stdout.write('\u001B[?25h');
 
       if (finalMessage) {
-        this._log(finalMessage);
+        this.logToConsole(finalMessage);
       }
     }
   }

@@ -63,24 +63,24 @@ class PackageInfoService extends Service {
 
     this.npmViewData = args.npmViewData;
 
-    this._init();
+    this.init();
   }
 
-  private _init() {
-    this._setInstalledVersion();
+  private init() {
+    this.setInstalledVersion();
 
-    this._setLastMinorVersion();
+    this.setLastMinorVersion();
 
-    this._setLatestVersion();
+    this.setLatestVersion();
 
-    this._setSource();
+    this.setSource();
 
-    this._setPackageStatus();
+    this.setPackageStatus();
 
-    this._setDeprecated();
+    this.setDeprecated();
   }
 
-  private _setPackageStatus() {
+  private setPackageStatus() {
     if (!this.versionInstalled?.version || !this.versionLast?.version) {
       return;
     }
@@ -106,7 +106,7 @@ class PackageInfoService extends Service {
     }
   }
 
-  private _setInstalledVersion() {
+  private setInstalledVersion() {
     const installedVersion = this.npmListDepItem?.version || '';
 
     if (installedVersion) {
@@ -114,12 +114,12 @@ class PackageInfoService extends Service {
         version: installedVersion,
         releaseDate: formatDate(this.npmViewData.time?.[installedVersion] || ''),
         npmUrl: getNpmPackageUrl(this.packageName, installedVersion),
-        deprecated: this._isVersionDeprecated(installedVersion),
+        deprecated: this.isVersionDeprecated(installedVersion),
       };
     }
   }
 
-  private _filterProductionVersions(versions: NpmViewData['versions']) {
+  private filterProductionVersions(versions: NpmViewData['versions']) {
     // Handle the case where versions might not be an array
     if (!Array.isArray(versions)) {
       // If versions is an object, extract its keys as an array
@@ -129,12 +129,12 @@ class PackageInfoService extends Service {
     return versions.filter((version: string) => !version.includes('-'));
   }
 
-  private _setLastMinorVersion() {
+  private setLastMinorVersion() {
     if (!this.versionInstalled?.version) {
       return;
     }
 
-    const productionVersions = this._filterProductionVersions(this.npmViewData.versions);
+    const productionVersions = this.filterProductionVersions(this.npmViewData.versions);
 
     const [major, minor] = this.versionInstalled.version.split('.').map(Number);
 
@@ -162,13 +162,13 @@ class PackageInfoService extends Service {
         version: lastMinorVersion,
         releaseDate: formatDate(this.npmViewData.time?.[lastMinorVersion] || ''),
         npmUrl: getNpmPackageUrl(this.packageName, lastMinorVersion),
-        deprecated: this._isVersionDeprecated(lastMinorVersion),
+        deprecated: this.isVersionDeprecated(lastMinorVersion),
       };
     }
   }
 
-  private _setLatestVersion() {
-    const productionVersions = this._filterProductionVersions(this.npmViewData.versions);
+  private setLatestVersion() {
+    const productionVersions = this.filterProductionVersions(this.npmViewData.versions);
 
     const latestVersion = productionVersions.pop() || '';
 
@@ -177,7 +177,7 @@ class PackageInfoService extends Service {
         version: latestVersion,
         releaseDate: formatDate(this.npmViewData.time?.[latestVersion] || ''),
         npmUrl: getNpmPackageUrl(this.packageName, latestVersion),
-        deprecated: this._isVersionDeprecated(latestVersion),
+        deprecated: this.isVersionDeprecated(latestVersion),
       };
     }
   }
@@ -197,7 +197,7 @@ class PackageInfoService extends Service {
     }
   */
 
-  private _setSource() {
+  private setSource() {
     try {
       const resolvedUrl = this.npmListDepItem?.resolved;
 
@@ -263,7 +263,7 @@ class PackageInfoService extends Service {
     }
   }
 
-  private _setDeprecated() {
+  private setDeprecated() {
     // Check if the entire package is deprecated
     if (this.npmViewData.deprecated) {
       this.deprecated = true;
@@ -273,13 +273,13 @@ class PackageInfoService extends Service {
 
     // Check if the installed version is deprecated
     if (this.versionInstalled?.version) {
-      this.deprecated = this._isVersionDeprecated(this.versionInstalled.version);
+      this.deprecated = this.isVersionDeprecated(this.versionInstalled.version);
     } else {
       this.deprecated = false;
     }
   }
 
-  private _isVersionDeprecated(version: string): boolean {
+  private isVersionDeprecated(version: string): boolean {
     try {
       // First check if we have pre-fetched version-specific deprecation status
       if (this.npmViewData.versionDeprecations && version in this.npmViewData.versionDeprecations) {

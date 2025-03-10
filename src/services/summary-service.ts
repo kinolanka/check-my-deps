@@ -61,10 +61,10 @@ class SummaryService extends Service {
 
     this.packageFileService = packageFileService;
 
-    this._init();
+    this.init();
   }
 
-  private _init() {
+  private init() {
     this.calculateSummaryByType();
 
     this.calculateTotals();
