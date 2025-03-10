@@ -1,4 +1,19 @@
 #!/usr/bin/env node
+
+/**
+ * @fileoverview Entry point for the check-my-deps CLI application.
+ *
+ * This module serves as the main entry point for the CLI tool and is responsible for:
+ * - Setting up the command-line interface using Commander
+ * - Registering available commands (export and update)
+ * - Handling process signals for graceful termination
+ * - Parsing command-line arguments
+ * - Initializing the application with package information
+ *
+ * The CLI provides two main commands:
+ * - export: Analyzes dependencies and exports reports in various formats (default command)
+ * - update: Updates package.json dependencies based on specified rules
+ */
 import { Command } from 'commander';
 
 import exportCommand from '@/commands/export-command';

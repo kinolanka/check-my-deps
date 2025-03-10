@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Provides the SummaryService class for generating comprehensive package dependency summaries.
+ *
+ * This module implements a service for aggregating and analyzing package information with features including:
+ * - Calculating statistics by dependency type (dependencies, devDependencies, etc.)
+ * - Generating totals across all dependency types
+ * - Tracking update status counts (up-to-date, patch, minor, major)
+ * - Counting deprecated packages
+ * - Creating report metadata (date, time, project name, version)
+ * - Providing source information and relevant URLs
+ *
+ * The service transforms individual package data into aggregated statistics
+ * and metadata that can be used by export services to generate reports.
+ */
+
 import type PackageFileService from '@/services/package-file-service';
 import type PackageInfoService from '@/services/package-info-service';
 import Service from '@/services/service';
@@ -5,11 +20,6 @@ import type { ServiceType } from '@/services/service';
 import { PACKAGE_NAME, WEBSITE_URL, NPM_URL, GITHUB_URL } from '@/utils/constants';
 import formatDate from '@/utils/helpers/format-date';
 import type { Summary, SummaryStats, SummaryTotals } from '@/utils/types';
-
-/**
- * The SummaryService class is responsible for generating a summary of package statistics from a list of PackageInfoService instances.
- * It extends the Service class and provides the following functionality:
- */
 
 class SummaryService extends Service {
   private list: PackageInfoService[];

@@ -1,3 +1,19 @@
+/**
+ * @fileoverview Defines TypeScript type definitions used throughout the check-my-deps package.
+ *
+ * This module contains all shared type definitions that represent the core data structures
+ * of the application, including:
+ * - Package information and version specifications
+ * - npm API response structures
+ * - Summary and reporting data structures
+ * - Export format options
+ * - Status indicators for dependency updates
+ *
+ * These types provide strong typing for the application, ensuring consistency
+ * across services and reducing potential runtime errors through compile-time checks.
+ * They also serve as documentation for the shape of data flowing through the system.
+ */
+
 type GenericObject<T extends Record<string, unknown>> = Record<string, unknown> & T;
 
 export type ExportFormat = 'excel' | 'json';

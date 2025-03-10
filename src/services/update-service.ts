@@ -1,3 +1,17 @@
+/**
+ * @fileoverview Provides the UpdateService class for updating package.json dependencies.
+ *
+ * This module implements a service for updating package dependencies with features including:
+ * - Filtering packages that need updates based on specified update level (latest, minor, patch)
+ * - Determining appropriate version prefixes (^, ~, etc.) for updates
+ * - Handling special cases like deprecated packages and non-npm registry dependencies
+ * - Applying updates to package.json while preserving formatting
+ * - Providing feedback on update operations
+ *
+ * The service is used by the update command to intelligently update dependencies
+ * according to user-specified constraints and best practices.
+ */
+
 import path from 'path';
 
 import fs from 'fs-extra';
@@ -8,10 +22,6 @@ import Service from '@/services/service';
 import type { PackageStatus } from '@/utils/types';
 
 import type { PackageJson } from 'type-fest';
-
-/**
- * Service for updating package.json dependencies
- */
 class UpdateService extends Service {
   private packageInfoList: PackageInfoService[];
   private updateLevel: string;

@@ -1,3 +1,19 @@
+/**
+ * @fileoverview Defines the 'update' command for the check-my-deps CLI tool.
+ *
+ * This module handles the update command functionality, which analyzes dependencies
+ * in package.json and updates them according to specified semver rules.
+ * The command supports multiple options including custom working directory,
+ * silent mode, update level selection, and dry run mode.
+ *
+ * The update process follows these steps:
+ * 1. Reads package.json and extracts dependency information
+ * 2. Fetches latest version data from npm registry
+ * 3. Determines which packages can be updated based on the specified level
+ * 4. Displays proposed updates to the user
+ * 5. Updates package.json with new versions (unless in dry-run mode)
+ */
+
 import { Command } from 'commander';
 
 import NpmService from '@/services/npm-service';

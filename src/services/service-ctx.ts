@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Provides the ServiceCtx class that serves as a context container for services.
+ *
+ * This module defines a context object that holds common configuration and dependencies
+ * shared across various services in the application. It centralizes access to:
+ * - Working directory path
+ * - Output directory path
+ * - Output service for logging and user feedback
+ * - Silent mode flag
+ * - Force overwrite flag for export operations
+ *
+ * Services can access these shared resources through a single context object,
+ * promoting cleaner dependency injection and easier testing.
+ */
+
 import type OutputService from '@/services/output-service';
 
 export type ServiceCtxType = {

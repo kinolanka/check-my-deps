@@ -1,3 +1,16 @@
+/**
+ * @fileoverview Provides the OutputService class for handling CLI output and loading indicators.
+ *
+ * This module implements a service for managing terminal output with features including:
+ * - Animated loading spinners with elapsed time tracking
+ * - Silent mode support for suppressing output
+ * - Different message types (standard, success, error)
+ * - Loading state management with step-by-step progress updates
+ *
+ * The service provides a consistent interface for displaying feedback to users
+ * during potentially long-running operations, enhancing the CLI user experience.
+ */
+
 class OutputService {
   private silent: boolean;
   private loadingInterval: ReturnType<typeof setTimeout> | null = null;

@@ -1,3 +1,17 @@
+/**
+ * @fileoverview Provides the JsonService class for generating JSON reports of dependency information.
+ *
+ * This module implements a service for creating structured JSON reports with features including:
+ * - Converting package information objects to JSON-serializable format
+ * - Including complete dependency details with version information
+ * - Incorporating summary statistics and metadata
+ * - Saving formatted JSON to files with proper directory creation
+ * - Providing user feedback on export operations
+ *
+ * The service extends the base ExportService and specializes in JSON export,
+ * providing a machine-readable format that can be consumed by other tools or processes.
+ */
+
 import path from 'path';
 
 import fs from 'fs-extra';
@@ -7,11 +21,6 @@ import type PackageInfoService from '@/services/package-info-service';
 import type { ServiceType } from '@/services/service';
 import type SummaryService from '@/services/summary-service';
 import type { Summary } from '@/utils/types';
-
-/**
- * The JsonService class is responsible for generating a JSON report from package data
- * It extends the ExportService class and provides functionality to export data to JSON format
- */
 class JsonService extends ExportService {
   private summaryData: Summary;
 

@@ -1,5 +1,14 @@
 /**
- * Application constants
+ * @fileoverview Defines application-wide constants used throughout the check-my-deps package.
+ *
+ * This module centralizes all constant values used across the application, including:
+ * - URLs for the project's web presence (website, npm, GitHub)
+ * - Package identification information
+ * - Other application-wide static values
+ *
+ * Centralizing constants in this file makes it easier to maintain and update
+ * values that might change across releases, while ensuring consistency
+ * throughout the codebase.
  */
 
 /**

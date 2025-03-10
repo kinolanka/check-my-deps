@@ -1,3 +1,19 @@
+/**
+ * @fileoverview Defines the 'export' command for the check-my-deps CLI tool.
+ *
+ * This module handles the export command functionality, which analyzes dependencies
+ * in package.json and generates detailed reports in various formats (Excel, JSON).
+ * The command supports multiple options including custom working directory,
+ * output directory, silent mode, and format selection.
+ *
+ * The export process follows these steps:
+ * 1. Reads package.json and extracts dependency information
+ * 2. Fetches latest version data from npm registry
+ * 3. Processes and compares installed vs latest versions
+ * 4. Generates a summary with package metadata
+ * 5. Creates and saves the report in the specified format
+ */
+
 import { Command } from 'commander';
 
 import ExcelService from '@/services/excel-service';
