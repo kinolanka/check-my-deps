@@ -11,10 +11,10 @@
  * making it easy to add new export formats in the future while maintaining a unified API.
  */
 
+import type SummaryService from '@/services/export/summary-service';
 import type PackageInfoService from '@/services/package-info-service';
 import type { ServiceType } from '@/services/service';
 import Service from '@/services/service';
-import type SummaryService from '@/services/summary-service';
 
 abstract class ExportService extends Service {
   protected list: PackageInfoService[];
