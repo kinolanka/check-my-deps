@@ -15,6 +15,7 @@
 
 import Service from '@/services/service';
 import type { ServiceCtxType } from '@/services/service-ctx';
+import { NPM_REGISTRY_HOST } from '@/utils/constants';
 import formatDate from '@/utils/helpers/format-date';
 import getNpmPackageUrl from '@/utils/helpers/get-npm-package-url';
 import type { NpmListDepItem, NpmViewData, PackageSpec, PackageVersionSpec } from '@/utils/types';
@@ -206,8 +207,8 @@ class PackageInfoService extends Service {
 
       // Handle different package source types
       if (
-        resolvedUrl.startsWith('https://registry.npmjs.org/') ||
-        resolvedUrl.startsWith('http://registry.npmjs.org/')
+        resolvedUrl.startsWith(`https://${NPM_REGISTRY_HOST}/`) ||
+        resolvedUrl.startsWith(`http://${NPM_REGISTRY_HOST}/`)
       ) {
         // Standard npm registry URL
         // Format: https://registry.npmjs.org/package-name/-/package-name-1.0.0.tgz
@@ -249,7 +250,7 @@ class PackageInfoService extends Service {
         // npm alias packages
         const aliasedPackage = resolvedUrl.substring(4).split('@')[0];
 
-        this.registrySource = `https://registry.npmjs.org/${aliasedPackage}`;
+        this.registrySource = `https://${NPM_REGISTRY_HOST}/${aliasedPackage}`;
       } else {
         // Any other format
         this.registrySource = resolvedUrl;

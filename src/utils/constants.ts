@@ -40,3 +40,8 @@ export const PACKAGE_FILE_NAME = 'package.json';
  * Name of the package lock file
  */
 export const PACKAGE_LOCK_FILE_NAME = 'package-lock.json';
+
+/**
+ * Host of the npm registry
+ */
+export const NPM_REGISTRY_HOST = 'registry.npmjs.org';
