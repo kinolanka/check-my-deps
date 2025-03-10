@@ -17,13 +17,14 @@ import fs from 'fs-extra';
 
 import type { ServiceType } from '@/services/service';
 import Service from '@/services/service';
+import { PACKAGE_FILE_NAME } from '@/utils/constants';
 import sanitizeFileName from '@/utils/helpers/sanitize-file-name';
 import type { PackageSpec } from '@/utils/types';
 
 import type { PackageJson } from 'type-fest';
 
 class PackageFileService extends Service {
-  private packageFileName = 'package.json';
+  private packageFileName = PACKAGE_FILE_NAME;
   private packageLockFileName = 'package-lock.json';
 
   private depsTypes = [

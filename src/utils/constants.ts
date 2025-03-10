@@ -30,3 +30,8 @@ export const GITHUB_URL = 'https://github.com/kinolanka/check-my-deps';
  * Package name
  */
 export const PACKAGE_NAME = '@kinolanka/check-my-deps';
+
+/**
+ * Name of the package file
+ */
+export const PACKAGE_FILE_NAME = 'package.json';

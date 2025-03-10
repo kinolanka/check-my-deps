@@ -19,6 +19,7 @@ import fs from 'fs-extra';
 import type PackageInfoService from '@/services/package-info-service';
 import type { ServiceType } from '@/services/service';
 import Service from '@/services/service';
+import { PACKAGE_FILE_NAME } from '@/utils/constants';
 import type { PackageStatus } from '@/utils/types';
 
 import type { PackageJson } from 'type-fest';
@@ -35,7 +36,7 @@ class UpdateService extends Service {
 
     this.updateLevel = updateLevel;
 
-    this.packageJsonPath = path.resolve(this.ctx.cwd, 'package.json');
+    this.packageJsonPath = path.resolve(this.ctx.cwd, PACKAGE_FILE_NAME);
   }
 
   /**
