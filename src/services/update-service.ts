@@ -19,7 +19,7 @@ import fs from 'fs-extra';
 import type PackageInfoService from '@/services/package-info-service';
 import type { ServiceType } from '@/services/service';
 import Service from '@/services/service';
-import { PACKAGE_FILE_NAME, PACKAGE_LOCK_FILE_NAME } from '@/utils/constants';
+import { NPM_REGISTRY_HOST, PACKAGE_FILE_NAME, PACKAGE_LOCK_FILE_NAME } from '@/utils/constants';
 import type { PackageStatus, PackageUpdateInfo, UpdateLevel } from '@/utils/types';
 
 import type { PackageJson } from 'type-fest';
@@ -53,7 +53,7 @@ class UpdateService extends Service {
 
       // For non-npm registry packages (like git, file, etc.), we need to check if they have valid version data
       // If they have valid version data and update status, we should consider them for updates
-      if (info.registrySource && !info.registrySource.includes('registry.npmjs.org')) {
+      if (info.registrySource && !info.registrySource.includes(NPM_REGISTRY_HOST)) {
         // For git/file dependencies, only update if we have valid version data and it's not up to date
         if (info.versionLast?.version || info.versionLastMinor?.version) {
           // Continue with normal update logic below
