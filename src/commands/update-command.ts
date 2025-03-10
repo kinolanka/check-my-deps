@@ -22,6 +22,7 @@ import PackageFileService from '@/services/package-file-service';
 import ServiceCtx from '@/services/service-ctx';
 import UpdateService from '@/services/update-service';
 import { PACKAGE_FILE_NAME } from '@/utils/constants';
+import type { UpdateLevel } from '@/utils/types';
 
 import type { OptionValues } from 'commander';
 
@@ -50,7 +51,7 @@ const updateCommand = new Command()
 
     try {
       // Validate update level option
-      const updateLevel = (options.level as string).toLowerCase();
+      const updateLevel = (options.level as UpdateLevel).toLowerCase() as UpdateLevel;
 
       // Validate update level
       if (!['latest', 'minor', 'patch'].includes(updateLevel)) {
