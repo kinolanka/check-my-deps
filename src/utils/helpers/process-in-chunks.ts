@@ -37,11 +37,14 @@ export async function processInChunks<T, R>(
   // Process data in chunks
   for (let i = 0; i < data.length; i += limit) {
     const chunk = data.slice(i, i + limit);
+
     const chunkPromises = chunk.map((item, chunkIndex) => {
       const dataIndex = i + chunkIndex;
+
       return callback(item, dataIndex).then((result) => {
         // Store result at the original index position
         results[dataIndex] = result;
+
         return result;
       });
     });

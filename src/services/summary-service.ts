@@ -118,10 +118,15 @@ class SummaryService extends Service {
 
     for (const stats of Object.values(this.summary.byType)) {
       totals.total += stats.total;
+
       totals.upToDate += stats.upToDate;
+
       totals.major += stats.major;
+
       totals.minor += stats.minor;
+
       totals.patch += stats.patch;
+
       totals.deprecated += stats.deprecated;
     }
 
@@ -146,6 +151,7 @@ class SummaryService extends Service {
 
     // Get project name and version from package file service
     const projectName = this.packageFileService.getName();
+
     const projectVersion = this.packageFileService.getVersion();
 
     this.summary.reportInfo = {

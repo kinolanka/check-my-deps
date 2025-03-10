@@ -87,6 +87,7 @@ class PackageInfoService extends Service {
     const [installedMajor, installedMinor, installedPatch] = this.versionInstalled.version
       .split('.')
       .map(Number);
+
     const [latestMajor, latestMinor, latestPatch] = this.versionLast.version.split('.').map(Number);
 
     if (
@@ -139,13 +140,18 @@ class PackageInfoService extends Service {
     const lastMinorVersion = productionVersions
       .filter((version: string) => {
         const [vMajor, vMinor] = version.split('.').map(Number);
+
         return vMajor === major && vMinor > minor;
       })
       .sort((a: string, b: string) => {
         const [aMajor, aMinor, aPatch] = a.split('.').map(Number);
+
         const [bMajor, bMinor, bPatch] = b.split('.').map(Number);
+
         if (aMajor !== bMajor) return aMajor - bMajor;
+
         if (aMinor !== bMinor) return aMinor - bMinor;
+
         return aPatch - bPatch;
       })
       .pop();
@@ -206,6 +212,7 @@ class PackageInfoService extends Service {
         // Standard npm registry URL
         // Format: https://registry.npmjs.org/package-name/-/package-name-1.0.0.tgz
         const packagePath = resolvedUrl.split('/-/')[0];
+
         this.registrySource = packagePath;
       } else if (resolvedUrl.startsWith('https://') || resolvedUrl.startsWith('http://')) {
         // Other HTTP/HTTPS URLs (custom registries, tarballs, etc.)
@@ -219,6 +226,7 @@ class PackageInfoService extends Service {
         } else {
           // Try to extract the package URL without version/tarball specifics
           const url = new URL(resolvedUrl);
+
           const pathParts = url.pathname.split('/-/');
 
           if (pathParts.length > 1) {
@@ -232,6 +240,7 @@ class PackageInfoService extends Service {
       } else if (resolvedUrl.startsWith('git+')) {
         // Git URLs: git+https://, git+ssh://, etc.
         const gitUrl = resolvedUrl.substring(4).split('#')[0]; // Remove git+ prefix and fragment
+
         this.registrySource = gitUrl;
       } else if (resolvedUrl.startsWith('file:')) {
         // Local file references
@@ -239,6 +248,7 @@ class PackageInfoService extends Service {
       } else if (resolvedUrl.startsWith('npm:')) {
         // npm alias packages
         const aliasedPackage = resolvedUrl.substring(4).split('@')[0];
+
         this.registrySource = `https://registry.npmjs.org/${aliasedPackage}`;
       } else {
         // Any other format
@@ -246,6 +256,7 @@ class PackageInfoService extends Service {
       }
     } catch (error) {
       this.ctx.outputService.error(error as Error);
+
       // Fallback to the original behavior
       this.registrySource = this.npmListDepItem?.resolved;
     }
@@ -255,6 +266,7 @@ class PackageInfoService extends Service {
     // Check if the entire package is deprecated
     if (this.npmViewData.deprecated) {
       this.deprecated = true;
+
       return;
     }
 
@@ -281,6 +293,7 @@ class PackageInfoService extends Service {
       // Check if there's version-specific deprecation info in the versions object
       // This is a fallback, as npm registry data structure might vary
       const versionData = this.npmViewData.versions?.[version];
+
       if (versionData && typeof versionData === 'object' && !!versionData.deprecated) {
         return true;
       }
@@ -289,6 +302,7 @@ class PackageInfoService extends Service {
       return false;
     } catch (error) {
       this.ctx.outputService.error(error as Error);
+
       return false;
     }
   }

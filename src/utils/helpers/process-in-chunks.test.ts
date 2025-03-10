@@ -17,6 +17,7 @@ describe('processInChunks', () => {
 
   it('should process all items and maintain original order', async () => {
     const data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
     const limit = 3;
 
     const results = await processInChunks(data, mockAsyncOperation, limit);
@@ -27,6 +28,7 @@ describe('processInChunks', () => {
     // Verify results are in the correct order
     results.forEach((result, index) => {
       expect(result.value).toBe(data[index]);
+
       expect(result.index).toBe(index);
     });
 
@@ -36,14 +38,17 @@ describe('processInChunks', () => {
 
   it('should process in chunks with the specified limit', async () => {
     const data = [1, 2, 3, 4, 5, 6, 7];
+
     const limit = 2;
 
     // Create a spy to track when promises are created vs resolved
     const callOrder: number[] = [];
+
     const spyOperation = jest.fn(
       (item: number): Promise<number> =>
         new Promise((resolve) => {
           callOrder.push(item); // Track when the promise is created
+
           setTimeout(() => {
             resolve(item);
           }, item * 10); // Different delays to ensure we're waiting for chunks
@@ -55,14 +60,17 @@ describe('processInChunks', () => {
     // Verify the chunks were processed in the correct order
     // We should see [1,2], [3,4], [5,6], [7] as our chunks
     expect(callOrder).toEqual([1, 2, 3, 4, 5, 6, 7]);
+
     expect(spyOperation).toHaveBeenCalledTimes(data.length);
   });
 
   it('should handle empty array input', async () => {
     const data: number[] = [];
+
     const results = await processInChunks(data, mockAsyncOperation);
 
     expect(results).toEqual([]);
+
     expect(mockAsyncOperation).not.toHaveBeenCalled();
   });
 
@@ -71,10 +79,12 @@ describe('processInChunks', () => {
 
     // We'll use a spy to track when promises are created
     const callTracker: number[] = [];
+
     const spyOperation = jest.fn(
       (item: number): Promise<number> =>
         new Promise((resolve) => {
           callTracker.push(item);
+
           setTimeout(() => resolve(item), 10);
         })
     );
@@ -83,6 +93,7 @@ describe('processInChunks', () => {
 
     // Default limit is 5, so we should see all items processed
     expect(callTracker).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+
     expect(spyOperation).toHaveBeenCalledTimes(data.length);
   });
 });

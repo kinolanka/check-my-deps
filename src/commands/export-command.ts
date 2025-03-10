@@ -49,10 +49,12 @@ const exportCommand = new Command()
   .option('--format <format>', 'The format of the export file (excel or json).', 'excel')
   .action(async (options: OptionValues) => {
     const outputService = new OutputService(Boolean(options.silent));
+
     outputService.startLoading('Analyzing dependencies...');
 
     try {
       outputService.updateLoadingText('Reading package.json...');
+
       const ctx = new ServiceCtx({
         cwd: (options.cwd as string) || process.cwd(),
         outputService,
@@ -64,26 +66,33 @@ const exportCommand = new Command()
       const packageFileService = new PackageFileService(ctx);
 
       outputService.updateLoadingText('Extracting package information...');
+
       const packages = packageFileService.getPackages();
 
       outputService.updateLoadingText('Fetching npm registry data...');
+
       const npmService = new NpmService(packages, ctx);
 
       outputService.updateLoadingText('Processing dependency information...');
+
       const exportList = await npmService.getList();
 
       outputService.updateLoadingText('Generating summary...');
+
       const summary = new SummaryService(exportList, packageFileService, ctx);
 
       // Determine which export format to use (default is excel)
       const format: ExportFormat = (options.format as ExportFormat) || 'excel';
 
       let exportService;
+
       if (format === 'json') {
         outputService.updateLoadingText('Creating JSON report...');
+
         exportService = new JsonService(exportList, summary, ctx);
       } else {
         outputService.updateLoadingText('Creating Excel report...');
+
         exportService = new ExcelService(exportList, summary, ctx);
       }
 
@@ -96,11 +105,13 @@ const exportCommand = new Command()
       outputService.updateLoadingText(
         `Saving ${format.toUpperCase()} file to ${filePath}${fileExtension}...`
       );
+
       await exportService.saveToFile(filePath);
 
       outputService.stopLoadingSuccess('Export completed!');
     } catch (error) {
       outputService.stopLoadingError('Export failed');
+
       outputService.error(error as Error);
     }
   });

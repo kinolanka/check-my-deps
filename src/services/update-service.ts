@@ -22,6 +22,7 @@ import Service from '@/services/service';
 import type { PackageStatus } from '@/utils/types';
 
 import type { PackageJson } from 'type-fest';
+
 class UpdateService extends Service {
   private packageInfoList: PackageInfoService[];
   private updateLevel: string;
@@ -29,8 +30,11 @@ class UpdateService extends Service {
 
   constructor(packageInfoList: PackageInfoService[], updateLevel: string, ctx: ServiceType) {
     super(ctx);
+
     this.packageInfoList = packageInfoList;
+
     this.updateLevel = updateLevel;
+
     this.packageJsonPath = path.resolve(this.ctx.cwd, 'package.json');
   }
 
@@ -104,6 +108,7 @@ class UpdateService extends Service {
     deprecated?: boolean;
   }> {
     const updatablePackages = this.getUpdatablePackages();
+
     const updates: Array<{
       packageName: string;
       dependencyType: string;
@@ -115,6 +120,7 @@ class UpdateService extends Service {
 
     for (const pkg of updatablePackages) {
       const packageInfo = pkg.getInfo();
+
       const { packageName, dependencyType, versionRequired, updateStatus } = packageInfo;
 
       // Determine the target version based on update level
@@ -134,6 +140,7 @@ class UpdateService extends Service {
 
       // Determine the version prefix from the current version requirement
       const prefix = this.getVersionPrefix(versionRequired);
+
       const newVersion = `${prefix}${targetVersion}`;
 
       // Add to updates list
@@ -180,8 +187,10 @@ class UpdateService extends Service {
         // Update the version in package.json
         if (packageJson[dependencyType] && typeof packageJson[dependencyType] === 'object') {
           const deps = packageJson[dependencyType] as Record<string, string>;
+
           if (deps[packageName] !== newVersion) {
             deps[packageName] = newVersion;
+
             updatedCount++;
           }
         }
@@ -193,9 +202,11 @@ class UpdateService extends Service {
 
         // Log a message suggesting to run npm install
         this.ctx.outputService.log('Package versions have been updated in package.json');
+
         this.ctx.outputService.log(
           'Please run "npm install" to update your package-lock.json and node_modules'
         );
+
         this.ctx.outputService.log(
           'This will ensure your installed dependencies match the updated versions.'
         );
@@ -204,6 +215,7 @@ class UpdateService extends Service {
       return updatedCount;
     } catch (error) {
       this.ctx.outputService.error(error as Error);
+
       return 0;
     }
   }
@@ -263,6 +275,7 @@ class UpdateService extends Service {
     if (versionRequired.startsWith('^') || versionRequired.startsWith('~')) {
       return versionRequired.charAt(0);
     }
+
     return '';
   }
 }

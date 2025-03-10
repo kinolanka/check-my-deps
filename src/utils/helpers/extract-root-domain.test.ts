@@ -3,11 +3,13 @@ import extractRootDomain from './extract-root-domain';
 describe('extractRootDomain', () => {
   it('should extract the root domain from a valid URL', () => {
     expect(extractRootDomain('https://www.example.com')).toBe('www.example.com');
+
     expect(extractRootDomain('http://subdomain.example.co.uk')).toBe('subdomain.example.co.uk');
   });
 
   it('should return the input if the URL is invalid', () => {
     expect(extractRootDomain('invalid-url')).toBe('invalid-url');
+
     expect(extractRootDomain('')).toBe('');
   });
 

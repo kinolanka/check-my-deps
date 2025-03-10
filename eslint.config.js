@@ -8,6 +8,7 @@ import importPlugin from 'eslint-plugin-import';
 import globals from 'globals';
 
 const __filename = fileURLToPath(import.meta.url);
+
 const __dirname = dirname(__filename);
 
 // Base configuration for all files
@@ -59,6 +60,20 @@ const baseConfig = {
     eqeqeq: ['error', 'always'],
     'prefer-const': 'error',
     'no-var': 'error',
+    'padding-line-between-statements': [
+      'error',
+      { blankLine: 'always', prev: '*', next: '*' },
+      {
+        blankLine: 'any',
+        prev: ['import', 'cjs-import'],
+        next: ['import', 'cjs-import'],
+      },
+      {
+        blankLine: 'any',
+        prev: ['export', 'cjs-export'],
+        next: ['export', 'cjs-export'],
+      },
+    ],
   },
   ignores: ['dist/**', 'node_modules/**', 'test-projects/**'],
 };

@@ -52,12 +52,15 @@ class NpmService extends Service {
         this.ctx.outputService.errorMsg(
           '\nError: Version mismatch detected between package.json and package-lock.json'
         );
+
         this.ctx.outputService.log(
           '\nPlease run "npm install" to update your package-lock.json and node_modules'
         );
+
         this.ctx.outputService.log(
           'This is required before running the update command to ensure consistency.\n'
         );
+
         process.exit(1); // Exit with error code
       } else {
         this.ctx.outputService.error(error as Error);
@@ -84,6 +87,7 @@ class NpmService extends Service {
           } else {
             try {
               const npmViewData = JSON.parse(stdout) as NpmViewData;
+
               resolve(npmViewData);
             } catch (parseError) {
               reject(parseError);
@@ -105,7 +109,9 @@ class NpmService extends Service {
         (error, stdout) => {
           if (error) {
             this.ctx.outputService.error(error);
+
             resolve(false);
+
             return;
           }
 
@@ -114,6 +120,7 @@ class NpmService extends Service {
           // If the result is empty or 'undefined', the version is not deprecated
           if (!result || result === 'undefined') {
             resolve(false);
+
             return;
           }
 
@@ -128,6 +135,7 @@ class NpmService extends Service {
     // Create a structure to hold package data for processing
     const packageDataList = this.packages.map((pkg) => {
       const npmListDepItem = this.npmListData?.dependencies[pkg.packageName];
+
       return { pkg, npmListDepItem };
     });
 
@@ -158,6 +166,7 @@ class NpmService extends Service {
           },
           this.ctx
         );
+
         const tempInfo = tempPackageInfo.getInfo();
 
         // Collect all versions that need deprecation status checks

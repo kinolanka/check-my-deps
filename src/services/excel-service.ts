@@ -37,6 +37,7 @@ class ExcelService extends ExportService {
     super(list, summary, ctx);
 
     this.workbook = new ExcelJS.Workbook();
+
     this.summaryData = summary.getSummary();
 
     this.init();
@@ -114,6 +115,7 @@ class ExcelService extends ExportService {
   private isValidUrl(str: string): boolean {
     try {
       const url = new URL(str);
+
       return url.protocol === 'http:' || url.protocol === 'https:';
     } catch {
       return false;
@@ -168,11 +170,14 @@ class ExcelService extends ExportService {
 
     // Style the label cell
     const labelCell = row.getCell(1);
+
     labelCell.font = { italic: true, color: { argb: '666666' } };
+
     labelCell.alignment = { horizontal: 'left' };
 
     // Style the URL cell and make it clickable
     const urlCell = row.getCell(2);
+
     this.createUrlCell(urlCell, url, url, tooltip, true);
 
     return row;
@@ -198,8 +203,11 @@ class ExcelService extends ExportService {
 
     // Add report information at the top
     worksheetSum.addRow(['Report Date:', reportInfo.date]);
+
     worksheetSum.addRow(['Report Time:', reportInfo.time]);
+
     worksheetSum.addRow(['Project Name:', reportInfo.projectName]);
+
     worksheetSum.addRow(['Project Version:', reportInfo.projectVersion]);
 
     // Add empty row for spacing
@@ -263,6 +271,7 @@ class ExcelService extends ExportService {
 
     // Add empty rows for spacing
     worksheetSum.addRow([]);
+
     worksheetSum.addRow([]);
 
     // Get package info rows data from summary service
@@ -274,8 +283,11 @@ class ExcelService extends ExportService {
 
       // Merge cells for the info text and apply styling
       worksheetSum.mergeCells(infoRow.number, 1, infoRow.number, 8);
+
       const infoCell = infoRow.getCell(1);
+
       infoCell.font = { italic: true, color: { argb: '666666' } };
+
       infoCell.alignment = { horizontal: 'left' };
 
       // Add source info rows
@@ -348,10 +360,12 @@ class ExcelService extends ExportService {
       });
 
       const packageStatusCell = newRow.getCell('updateStatus');
+
       this.handleUpdateStatus(packageStatusCell, row.updateStatus);
 
       // Handle deprecated status for each version
       const installedDeprecatedCell = newRow.getCell('installedVersionDeprecated');
+
       this.handleDeprecatedStatus(
         installedDeprecatedCell,
         row.versionInstalled?.deprecated,
@@ -359,6 +373,7 @@ class ExcelService extends ExportService {
       );
 
       const latestMinorDeprecatedCell = newRow.getCell('latestMinorDeprecated');
+
       this.handleDeprecatedStatus(
         latestMinorDeprecatedCell,
         row.versionLastMinor?.deprecated,
@@ -366,6 +381,7 @@ class ExcelService extends ExportService {
       );
 
       const latestVersionDeprecatedCell = newRow.getCell('latestVersionDeprecated');
+
       this.handleDeprecatedStatus(
         latestVersionDeprecatedCell,
         row.versionLast?.deprecated,
@@ -375,6 +391,7 @@ class ExcelService extends ExportService {
       // Convert installed version cell to a hyperlink if URL is available
       if (row.versionInstalled?.version && row.versionInstalled?.npmUrl) {
         const installedVersionCell = newRow.getCell('installedVersion');
+
         this.createUrlCell(
           installedVersionCell,
           row.versionInstalled.version,
@@ -385,6 +402,7 @@ class ExcelService extends ExportService {
       // Convert latest minor version cell to a hyperlink if URL is available
       if (row.versionLastMinor?.version && row.versionLastMinor?.npmUrl) {
         const latestMinorCell = newRow.getCell('latestMinor');
+
         this.createUrlCell(
           latestMinorCell,
           row.versionLastMinor.version,
@@ -395,16 +413,19 @@ class ExcelService extends ExportService {
       // Convert latest version cell to a hyperlink if URL is available
       if (row.versionLast?.version && row.versionLast?.npmUrl) {
         const latestVersionCell = newRow.getCell('latestVersion');
+
         this.createUrlCell(latestVersionCell, row.versionLast.version, row.versionLast.npmUrl);
       }
 
       // Handle registrySource - check if it's a valid URL and make it clickable if it is
       if (row.registrySource) {
         const registrySourceCell = newRow.getCell('registrySource');
+
         if (this.isValidUrl(row.registrySource)) {
           this.createUrlCell(registrySourceCell, row.registrySource, row.registrySource);
         } else {
           registrySourceCell.value = row.registrySource;
+
           registrySourceCell.alignment = { horizontal: 'left' };
         }
       }
