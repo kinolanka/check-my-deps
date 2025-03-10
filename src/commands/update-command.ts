@@ -51,12 +51,14 @@ const updateCommand = new Command()
       // Validate update level option
       const updateLevel = (options.level as string).toLowerCase();
 
+      // Validate update level
       if (!['latest', 'minor', 'patch'].includes(updateLevel)) {
         throw new Error('Invalid update level. Must be one of: latest, minor, patch');
       }
 
       outputService.updateLoadingText('Reading package.json...');
 
+      // Create service context
       const ctx = new ServiceCtx({
         cwd: (options.cwd as string) || process.cwd(),
         outputService,
@@ -65,24 +67,31 @@ const updateCommand = new Command()
 
       outputService.updateLoadingText('Extracting package information...');
 
+      // Initialize services
       const packageFileService = new PackageFileService(ctx);
 
+      // Get packages from package.json
       const packages = packageFileService.getPackages();
 
       outputService.updateLoadingText('Fetching npm registry data...');
 
+      // Initialize npm service
       const npmService = new NpmService(packages, ctx);
 
       outputService.updateLoadingText('Processing dependency information...');
 
+      // Get package information from npm registry
       const packageInfoList = await npmService.getList();
 
       outputService.updateLoadingText('Determining updates...');
 
+      // Initialize update service
       const updateService = new UpdateService(packageInfoList, updateLevel, ctx);
 
+      // Determine updates
       const updates = updateService.prepareUpdates();
 
+      // Check if there are updates
       if (updates.length === 0) {
         outputService.stopLoadingSuccess('All packages are already up to date!');
 
@@ -104,14 +113,17 @@ const updateCommand = new Command()
       // Update versions in package.json
       outputService.updateLoadingText(`Updating ${updates.length} packages...`);
 
+      // Apply updates
       const updatedCount = updateService.applyUpdates(updates);
 
+      // Check if any updates were applied
       if (updatedCount > 0) {
         outputService.stopLoadingSuccess(`Successfully updated ${updatedCount} packages!`);
       } else {
         outputService.stopLoadingSuccess('No packages needed updating.');
       }
     } catch (error) {
+      // Stop loading and display error
       outputService.stopLoadingError('Update failed');
 
       outputService.error(error as Error);

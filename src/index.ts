@@ -25,17 +25,22 @@ process.on('SIGINT', () => process.exit(0));
 process.on('SIGTERM', () => process.exit(0));
 
 async function main() {
+  // Get information about current package
   const packageInfo = getPackageInfo();
 
+  // Initialize the CLI application
   const program = new Command()
     .name('check-my-deps')
     .description('Analyze, export, and update npm dependencies in your project')
     .version(packageInfo.version || '0.0.1', '-v, --version', 'Display the version number');
 
+  // Add export command
   program.addCommand(exportCommand, { isDefault: true });
 
+  // Add update command
   program.addCommand(updateCommand);
 
+  // Parse command-line arguments
   program.parse(process.argv);
 }
 

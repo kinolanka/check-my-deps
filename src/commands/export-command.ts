@@ -48,6 +48,7 @@ const exportCommand = new Command()
   )
   .option('--format <format>', 'The format of the export file (excel or json).', 'excel')
   .action(async (options: OptionValues) => {
+    // Initialize output service
     const outputService = new OutputService(Boolean(options.silent));
 
     outputService.startLoading('Analyzing dependencies...');
@@ -55,6 +56,7 @@ const exportCommand = new Command()
     try {
       outputService.updateLoadingText('Reading package.json...');
 
+      // Initialize service context
       const ctx = new ServiceCtx({
         cwd: (options.cwd as string) || process.cwd(),
         outputService,
@@ -63,22 +65,27 @@ const exportCommand = new Command()
         forceOverwrite: Boolean(options.forceOverwrite),
       });
 
+      // Initialize package file service
       const packageFileService = new PackageFileService(ctx);
 
       outputService.updateLoadingText('Extracting package information...');
 
+      // Get packages from package.json
       const packages = packageFileService.getPackages();
 
       outputService.updateLoadingText('Fetching npm registry data...');
 
+      // Initialize npm service
       const npmService = new NpmService(packages, ctx);
 
       outputService.updateLoadingText('Processing dependency information...');
 
+      // Get package information from npm registry
       const exportList = await npmService.getList();
 
       outputService.updateLoadingText('Generating summary...');
 
+      // Initialize summary service
       const summary = new SummaryService(exportList, packageFileService, ctx);
 
       // Determine which export format to use (default is excel)
@@ -86,13 +93,16 @@ const exportCommand = new Command()
 
       let exportService;
 
+      // Initialize export service
       if (format === 'json') {
         outputService.updateLoadingText('Creating JSON report...');
 
+        // Initialize JSON export service
         exportService = new JsonService(exportList, summary, ctx);
       } else {
         outputService.updateLoadingText('Creating Excel report...');
 
+        // Initialize Excel export service
         exportService = new ExcelService(exportList, summary, ctx);
       }
 
@@ -106,10 +116,12 @@ const exportCommand = new Command()
         `Saving ${format.toUpperCase()} file to ${filePath}${fileExtension}...`
       );
 
+      // Save the export file
       await exportService.saveToFile(filePath);
 
       outputService.stopLoadingSuccess('Export completed!');
     } catch (error) {
+      // Stop loading and display error
       outputService.stopLoadingError('Export failed');
 
       outputService.error(error as Error);
