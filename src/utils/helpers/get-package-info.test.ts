@@ -2,6 +2,8 @@ import path from 'path';
 
 import fs from 'fs-extra';
 
+import { PACKAGE_FILE_NAME } from '../constants';
+
 import getPackageInfo from './get-package-info';
 
 jest.mock('fs-extra');
@@ -15,7 +17,7 @@ describe('getPackageInfo', () => {
   };
 
   beforeEach(() => {
-    (path.join as jest.Mock).mockReturnValue('package.json');
+    (path.join as jest.Mock).mockReturnValue(PACKAGE_FILE_NAME);
 
     (fs.readJSONSync as jest.Mock).mockReturnValue(mockPackageJson);
   });
@@ -33,12 +35,12 @@ describe('getPackageInfo', () => {
   it('should call path.join with correct arguments', () => {
     getPackageInfo();
 
-    expect(path.join).toHaveBeenCalledWith('package.json');
+    expect(path.join).toHaveBeenCalledWith(PACKAGE_FILE_NAME);
   });
 
   it('should call fs.readJSONSync with correct path', () => {
     getPackageInfo();
 
-    expect(fs.readJSONSync).toHaveBeenCalledWith('package.json');
+    expect(fs.readJSONSync).toHaveBeenCalledWith(PACKAGE_FILE_NAME);
   });
 });

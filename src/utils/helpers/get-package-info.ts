@@ -3,6 +3,8 @@ import path from 'path';
 import fs from 'fs-extra';
 import { type PackageJson } from 'type-fest';
 
+import { PACKAGE_FILE_NAME } from '@/utils/constants';
+
 /**
  * Reads and parses the package.json file from the current directory.
  *
@@ -14,7 +16,7 @@ import { type PackageJson } from 'type-fest';
  * console.log(packageInfo.name); // Outputs the package name
  */
 const getPackageInfo = (): PackageJson => {
-  const packageJsonPath = path.join('package.json');
+  const packageJsonPath = path.join(PACKAGE_FILE_NAME);
 
   return fs.readJSONSync(packageJsonPath) as PackageJson;
 };
