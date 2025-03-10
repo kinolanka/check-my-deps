@@ -11,6 +11,7 @@ describe('sanitizeFileName', () => {
 
   it('should replace non-alphanumeric characters with hyphens', () => {
     expect(sanitizeFileName('file name!')).toBe('file-name-');
+
     expect(sanitizeFileName('file_name')).toBe('file-name');
   });
 
@@ -28,6 +29,7 @@ describe('sanitizeFileName', () => {
 
   it('should handle strings with numbers', () => {
     expect(sanitizeFileName('file123')).toBe('file123');
+
     expect(sanitizeFileName('file@123')).toBe('file123');
   });
 });

@@ -33,6 +33,7 @@ class OutputService {
   public msg(message: string, force = false): void {
     // If loading is active, stop it temporarily to show the message
     const isLoading = this.loadingInterval !== null;
+
     if (isLoading && (force || !this.silent)) {
       this.clearLine();
     }
@@ -48,6 +49,7 @@ class OutputService {
   public successMsg(message: string): void {
     // If loading is active, stop it temporarily to show the message
     const isLoading = this.loadingInterval !== null;
+
     if (isLoading) {
       this.clearLine();
     }
@@ -63,6 +65,7 @@ class OutputService {
   public errorMsg(message: string): void {
     // If loading is active, stop it temporarily to show the message
     const isLoading = this.loadingInterval !== null;
+
     if (isLoading) {
       this.clearLine();
     }
@@ -87,6 +90,7 @@ class OutputService {
   public log(message: string): void {
     // If loading is active, stop it temporarily to show the message
     const isLoading = this.loadingInterval !== null;
+
     if (isLoading) {
       this.clearLine();
     }
@@ -105,10 +109,12 @@ class OutputService {
 
   private renderLoading(): void {
     const spinner = this.loadingChars[this.loadingIndex];
+
     const elapsedTime = ((Date.now() - this.startTime) / 1000).toFixed(1);
 
     // Clear current line and write the spinner, text, and elapsed time
     this.clearLine();
+
     process.stdout.write(`${spinner} ${this.currentLoadingText} ${`[${elapsedTime}s]`}`);
   }
 
@@ -116,7 +122,9 @@ class OutputService {
     if (this.silent) return;
 
     this.stopLoading();
+
     this.currentLoadingText = text;
+
     this.startTime = Date.now();
 
     // Hide cursor
@@ -127,6 +135,7 @@ class OutputService {
 
     this.loadingInterval = setInterval(() => {
       this.loadingIndex = (this.loadingIndex + 1) % this.loadingChars.length;
+
       this.renderLoading();
     }, 80);
   }
@@ -137,6 +146,7 @@ class OutputService {
     // Log the previous step as completed
     if (this.currentLoadingText) {
       this.clearLine();
+
       this._log(
         `✓ ${this.currentLoadingText} ${`[${((Date.now() - this.startTime) / 1000).toFixed(1)}s]`}`
       );
@@ -144,6 +154,7 @@ class OutputService {
 
     // Update the text for the next step
     this.currentLoadingText = text;
+
     this.startTime = Date.now(); // Reset timer for the new step
 
     // Render the new loading state
@@ -153,6 +164,7 @@ class OutputService {
   public stopLoading(finalMessage?: string): void {
     if (this.loadingInterval) {
       clearInterval(this.loadingInterval);
+
       this.loadingInterval = null;
 
       // Clear current line

@@ -15,13 +15,16 @@ import type PackageInfoService from '@/services/package-info-service';
 import type { ServiceType } from '@/services/service';
 import Service from '@/services/service';
 import type SummaryService from '@/services/summary-service';
+
 abstract class ExportService extends Service {
   protected list: PackageInfoService[];
   protected summary: SummaryService;
 
   constructor(list: PackageInfoService[], summary: SummaryService, ctx: ServiceType) {
     super(ctx);
+
     this.list = list;
+
     this.summary = summary;
   }
 

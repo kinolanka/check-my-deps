@@ -21,11 +21,13 @@ import type PackageInfoService from '@/services/package-info-service';
 import type { ServiceType } from '@/services/service';
 import type SummaryService from '@/services/summary-service';
 import type { Summary } from '@/utils/types';
+
 class JsonService extends ExportService {
   private summaryData: Summary;
 
   constructor(list: PackageInfoService[], summary: SummaryService, ctx: ServiceType) {
     super(list, summary, ctx);
+
     this.summaryData = summary.getSummary();
   }
 
@@ -57,10 +59,12 @@ class JsonService extends ExportService {
    */
   public async saveToFile(filePath: string): Promise<void> {
     const data = this.prepareData();
+
     const fullPath = `${filePath}${this.getFileExtension()}`;
 
     // Create directory if it doesn't exist
     const directory = path.dirname(fullPath);
+
     if (!fs.existsSync(directory)) {
       fs.mkdirSync(directory, { recursive: true });
     }

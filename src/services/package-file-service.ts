@@ -39,6 +39,7 @@ class PackageFileService extends Service {
     super(ctx);
 
     const packageJsonPath = path.resolve(this.ctx.cwd, this.packageFileName);
+
     this.packageJson = fs.readJSONSync(packageJsonPath) as PackageJson;
 
     // Check if package-lock.json exists
@@ -95,10 +96,12 @@ class PackageFileService extends Service {
    */
   public getExportFilePath(fileExtension: string, forceOverwrite = false): string {
     const packageName = sanitizeFileName(this.getName() || 'package');
+
     // Replace dots in version with hyphens for better cross-OS compatibility
     const version = this.getVersion().replace(/\./g, '-');
 
     const baseFileName = `${packageName}-v${version}-dependencies`;
+
     const outputDir = this.ctx.outputDir ?? this.ctx.cwd;
 
     // If forceOverwrite is true, we don't need to check for existing files
@@ -125,16 +128,22 @@ class PackageFileService extends Service {
     fileExtension: string
   ): string {
     let suffix = '';
+
     let counter = 1;
+
     let filePath = path.resolve(outputDir, `${baseFileName}${suffix}`);
+
     let fullFilePath = `${filePath}${fileExtension}`;
 
     // Check if the file with the current suffix exists
     while (fs.existsSync(fullFilePath)) {
       // File exists, increment the counter and try again
       suffix = `-${counter}`;
+
       filePath = path.resolve(outputDir, `${baseFileName}${suffix}`);
+
       fullFilePath = `${filePath}${fileExtension}`;
+
       counter++;
     }
 
