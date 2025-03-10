@@ -1,3 +1,16 @@
+/**
+ * @fileoverview Provides the PackageFileService class for interacting with package.json files.
+ *
+ * This module implements a service for reading and analyzing package.json files with features including:
+ * - Extracting package metadata (name, version)
+ * - Parsing dependencies from all dependency types (dependencies, devDependencies, etc.)
+ * - Validating the existence of package-lock.json
+ * - Generating unique export file paths for reports
+ *
+ * The service serves as the primary interface for accessing package information
+ * and is used by other services to retrieve dependency specifications.
+ */
+
 import path from 'path';
 
 import fs from 'fs-extra';

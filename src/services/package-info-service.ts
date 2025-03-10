@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Provides the PackageInfoService class for processing individual package information.
+ *
+ * This module implements a service for analyzing and enriching package data with features including:
+ * - Parsing and normalizing package version information
+ * - Determining update status (up-to-date, patch, minor, major)
+ * - Identifying the latest versions available (latest, last minor)
+ * - Detecting package source/registry information
+ * - Checking deprecation status of packages and specific versions
+ * - Generating comprehensive package information objects
+ *
+ * The service serves as the core data processor for individual package entries,
+ * transforming raw npm data into structured, actionable information for reporting and updates.
+ */
+
 import Service from '@/services/service';
 import type { ServiceCtxType } from '@/services/service-ctx';
 import formatDate from '@/utils/helpers/format-date';

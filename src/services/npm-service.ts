@@ -1,3 +1,17 @@
+/**
+ * @fileoverview Provides the NpmService class for interacting with npm registry.
+ *
+ * This module implements a service for fetching and processing npm package information with features including:
+ * - Retrieving local dependency information using 'npm list'
+ * - Fetching package metadata from npm registry using 'npm view'
+ * - Checking deprecation status of specific package versions
+ * - Processing package data in parallel chunks for better performance
+ * - Creating PackageInfoService instances with complete package information
+ *
+ * The service acts as a bridge between local package information and npm registry data,
+ * providing a comprehensive view of dependencies and their available versions.
+ */
+
 import { execSync, exec } from 'child_process';
 
 import PackageInfoService from '@/services/package-info-service';

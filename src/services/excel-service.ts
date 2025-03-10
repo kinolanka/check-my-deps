@@ -1,3 +1,18 @@
+/**
+ * @fileoverview Provides the ExcelService class for generating Excel reports of dependency information.
+ *
+ * This module implements a service for creating detailed Excel reports with features including:
+ * - Creating multiple worksheets (summary and detailed dependencies)
+ * - Formatting cells with colors based on update status (major, minor, patch)
+ * - Adding hyperlinks to npm package URLs
+ * - Highlighting deprecated packages
+ * - Generating summary statistics by dependency type
+ * - Including project metadata and report information
+ *
+ * The service extends the base ExportService and specializes in Excel-specific
+ * formatting and presentation of dependency data for better readability and analysis.
+ */
+
 import ExcelJS from 'exceljs';
 
 import ExportService from '@/services/export-service';
