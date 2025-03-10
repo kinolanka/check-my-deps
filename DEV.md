@@ -19,5 +19,6 @@ npm start -- -c ./test-projects/main -o ./temp --format json
 
 
 # run the update on the main test project
-npm start -- update -c ./test-projects/main -o ./temp
+npm start -- update -c ./test-projects/main --dry-run
+npm start -- update -c ./test-projects/main
 ```

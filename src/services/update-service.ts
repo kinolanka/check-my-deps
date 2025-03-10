@@ -31,19 +31,38 @@ class UpdateService extends Service {
     return this.packageInfoList.filter((pkg) => {
       const info = pkg.getInfo();
 
-      // Skip packages that aren't from npm registry
-      if (!info.registrySource?.includes('registry.npmjs.org')) {
-        return false;
-      }
-
-      // Skip deprecated packages
-      if (info.deprecated) {
-        return false;
-      }
-
       // Skip packages without version info (might be missing from npm registry data)
       if (!info.updateStatus || !info.versionInstalled) {
         return false;
+      }
+
+      // For non-npm registry packages (like git, file, etc.), we need to check if they have valid version data
+      // If they have valid version data and update status, we should consider them for updates
+      if (info.registrySource && !info.registrySource.includes('registry.npmjs.org')) {
+        // For git/file dependencies, only update if we have valid version data and it's not up to date
+        if (info.versionLast?.version || info.versionLastMinor?.version) {
+          // Continue with normal update logic below
+        } else {
+          return false; // Skip if we don't have valid version data
+        }
+      }
+
+      // Skip deprecated packages unless they have a non-deprecated newer version
+      if (info.deprecated) {
+        // If the package is deprecated but has a newer version that's not deprecated, allow the update
+        let targetVersionDeprecated = true;
+
+        if (this.updateLevel === 'latest' && info.versionLast) {
+          targetVersionDeprecated = !!info.versionLast.deprecated;
+        } else if (this.updateLevel === 'minor' && info.versionLastMinor) {
+          targetVersionDeprecated = !!info.versionLastMinor.deprecated;
+        } else if (this.updateLevel === 'patch' && info.versionInstalled) {
+          targetVersionDeprecated = !!info.versionInstalled.deprecated;
+        }
+
+        if (targetVersionDeprecated) {
+          return false; // Skip if the target version is also deprecated
+        }
       }
 
       const status = info.updateStatus;
@@ -235,24 +254,6 @@ class UpdateService extends Service {
       return versionRequired.charAt(0);
     }
     return '';
-  }
-
-  /**
-   * Returns a human-readable label for the update type
-   */
-  private getUpdateTypeLabel(updateType: PackageStatus): string {
-    switch (updateType) {
-      case 'major':
-        return 'major update';
-      case 'minor':
-        return 'minor update';
-      case 'patch':
-        return 'patch update';
-      case 'upToDate':
-        return 'up to date';
-      default:
-        return updateType;
-    }
   }
 }
 
