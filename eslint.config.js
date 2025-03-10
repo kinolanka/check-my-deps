@@ -54,6 +54,18 @@ const baseConfig = {
     ],
     'import/no-duplicates': 'error',
     'import/no-unresolved': 'warn',
+    // Enforce absolute imports with @/ prefix instead of relative paths
+    'no-restricted-imports': [
+      'error',
+      {
+        patterns: [
+          {
+            group: ['../*', './*'],
+            message: 'Use absolute imports with @/ prefix instead of relative imports',
+          },
+        ],
+      },
+    ],
 
     // General rules
     'no-console': ['warn', { allow: ['warn', 'error'] }],
@@ -135,6 +147,8 @@ const testConfig = {
     'no-console': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/unbound-method': 'off',
+    // Disable the no-restricted-imports rule for test files
+    'no-restricted-imports': 'off',
   },
 };
 

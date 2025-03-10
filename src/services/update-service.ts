@@ -19,7 +19,7 @@ import fs from 'fs-extra';
 import type PackageInfoService from '@/services/package-info-service';
 import type { ServiceType } from '@/services/service';
 import Service from '@/services/service';
-import { PACKAGE_FILE_NAME } from '@/utils/constants';
+import { PACKAGE_FILE_NAME, PACKAGE_LOCK_FILE_NAME } from '@/utils/constants';
 import type { PackageStatus } from '@/utils/types';
 
 import type { PackageJson } from 'type-fest';
@@ -202,10 +202,10 @@ class UpdateService extends Service {
         fs.writeJSONSync(this.packageJsonPath, packageJson, { spaces: 2 });
 
         // Log a message suggesting to run npm install
-        this.ctx.outputService.log('Package versions have been updated in package.json');
+        this.ctx.outputService.log(`Package versions have been updated in ${PACKAGE_FILE_NAME}`);
 
         this.ctx.outputService.log(
-          'Please run "npm install" to update your package-lock.json and node_modules'
+          `Please run "npm install" to update your ${PACKAGE_LOCK_FILE_NAME} and node_modules`
         );
 
         this.ctx.outputService.log(

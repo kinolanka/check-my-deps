@@ -17,7 +17,12 @@ import type PackageFileService from '@/services/package-file-service';
 import type PackageInfoService from '@/services/package-info-service';
 import Service from '@/services/service';
 import type { ServiceType } from '@/services/service';
-import { PACKAGE_NAME, WEBSITE_URL, NPM_URL, GITHUB_URL } from '@/utils/constants';
+import {
+  THIS_PACKAGE_NAME,
+  THIS_PACKAGE_WEBSITE_URL,
+  THIS_PACKAGE_NPM_URL,
+  THIS_PACKAGE_GITHUB_URL,
+} from '@/utils/constants';
 import formatDate from '@/utils/helpers/format-date';
 import type { Summary, SummaryStats, SummaryTotals } from '@/utils/types';
 
@@ -164,11 +169,11 @@ class SummaryService extends Service {
 
   public generateSourceInfo(): void {
     this.summary.sourceInfo = {
-      info: `This report was created using npm package ${PACKAGE_NAME}`,
+      info: `This report was created using npm package ${THIS_PACKAGE_NAME}`,
       urls: [
-        { label: 'Website', url: WEBSITE_URL },
-        { label: 'NPM', url: NPM_URL },
-        { label: 'GitHub', url: GITHUB_URL },
+        { label: 'Website', url: THIS_PACKAGE_WEBSITE_URL },
+        { label: 'NPM', url: THIS_PACKAGE_NPM_URL },
+        { label: 'GitHub', url: THIS_PACKAGE_GITHUB_URL },
       ],
     };
   }

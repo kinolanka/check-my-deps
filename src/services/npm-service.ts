@@ -17,6 +17,7 @@ import { execSync, exec } from 'child_process';
 import PackageInfoService from '@/services/package-info-service';
 import type { ServiceType } from '@/services/service';
 import Service from '@/services/service';
+import { PACKAGE_FILE_NAME, PACKAGE_LOCK_FILE_NAME } from '@/utils/constants';
 import { processInChunks } from '@/utils/helpers/process-in-chunks';
 import type { NpmListData, NpmViewData, PackageSpec } from '@/utils/types';
 
@@ -50,11 +51,11 @@ class NpmService extends Service {
       // Check if the error is related to version mismatches (ELSPROBLEMS)
       if (error instanceof Error && error.message.includes('ELSPROBLEMS')) {
         this.ctx.outputService.errorMsg(
-          '\nError: Version mismatch detected between package.json and package-lock.json'
+          `\nError: Version mismatch detected between ${PACKAGE_FILE_NAME} and ${PACKAGE_LOCK_FILE_NAME}`
         );
 
         this.ctx.outputService.log(
-          '\nPlease run "npm install" to update your package-lock.json and node_modules'
+          `\nPlease run "npm install" to update your ${PACKAGE_LOCK_FILE_NAME} and node_modules`
         );
 
         this.ctx.outputService.log(

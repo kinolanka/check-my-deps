@@ -17,7 +17,7 @@ import fs from 'fs-extra';
 
 import type { ServiceType } from '@/services/service';
 import Service from '@/services/service';
-import { PACKAGE_FILE_NAME } from '@/utils/constants';
+import { PACKAGE_FILE_NAME, PACKAGE_LOCK_FILE_NAME } from '@/utils/constants';
 import sanitizeFileName from '@/utils/helpers/sanitize-file-name';
 import type { PackageSpec } from '@/utils/types';
 
@@ -25,7 +25,7 @@ import type { PackageJson } from 'type-fest';
 
 class PackageFileService extends Service {
   private packageFileName = PACKAGE_FILE_NAME;
-  private packageLockFileName = 'package-lock.json';
+  private packageLockFileName = PACKAGE_LOCK_FILE_NAME;
 
   private depsTypes = [
     'dependencies',
@@ -56,7 +56,7 @@ class PackageFileService extends Service {
 
     if (!fs.existsSync(packageLockPath)) {
       throw new Error(
-        'package-lock.json file not found. Please run "npm i --package-lock-only" to generate it first.'
+        `${PACKAGE_LOCK_FILE_NAME} file not found. Please run "npm i --package-lock-only" to generate it first.`
       );
     }
   }
