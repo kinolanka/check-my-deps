@@ -14,11 +14,11 @@
  * They also serve as documentation for the shape of data flowing through the system.
  */
 
-type GenericObject<T extends Record<string, unknown>> = Record<string, unknown> & T;
+/**
+ * Common types
+ */
 
-export type ExportFormat = 'excel' | 'json';
-
-export type PackageStatus = 'upToDate' | 'major' | 'minor' | 'patch';
+export type GenericObject<T extends Record<string, unknown>> = Record<string, unknown> & T;
 
 export type PackageVersionSpec = {
   version: string;
@@ -38,6 +38,8 @@ export type PackageSpec = {
   versionLastMinor?: PackageVersionSpec;
   versionLast?: PackageVersionSpec;
 };
+
+export type PackageStatus = 'upToDate' | 'major' | 'minor' | 'patch';
 
 export type NpmListDepItem = GenericObject<{
   version: string;
@@ -62,6 +64,12 @@ export type NpmViewData = GenericObject<{
   versionDeprecations?: Record<string, boolean>;
 }>;
 
+/**
+ * Export command specific types
+ */
+
+export type ExportFormat = 'excel' | 'json';
+
 export type SummaryStats = Record<PackageStatus | 'total' | 'deprecated', number>;
 
 export type SummaryTotals = SummaryStats & {
@@ -83,4 +91,19 @@ export type Summary = {
     info: string;
     urls: Array<{ label: string; url: string }>;
   };
+};
+
+/**
+ * Update command specific types
+ */
+
+export type UpdateLevel = 'latest' | 'minor' | 'patch';
+
+export type PackageUpdateInfo = {
+  packageName: string;
+  dependencyType: string;
+  currentVersion: string;
+  newVersion: string;
+  updateType: PackageStatus;
+  deprecated?: boolean;
 };

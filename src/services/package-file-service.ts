@@ -41,10 +41,11 @@ class PackageFileService extends Service {
 
     const packageJsonPath = path.resolve(this.ctx.cwd, this.packageFileName);
 
-    this.packageJson = fs.readJSONSync(packageJsonPath) as PackageJson;
-
-    // Check if package-lock.json exists
+    // First check if package-lock.json exists
     this.checkPackageLockExists();
+
+    // Read package.json
+    this.packageJson = fs.readJSONSync(packageJsonPath) as PackageJson;
   }
 
   /**
@@ -69,9 +70,14 @@ class PackageFileService extends Service {
     return this.packageJson.version || '0.0.0';
   }
 
+  /**
+   * Returns a list of all dependencies from package.json
+   * @returns An array of PackageSpec objects containing package name, dependency type, and required version
+   */
   public getPackages(): PackageSpec[] {
     const list: PackageSpec[] = [];
 
+    // Iterate over all dependency types (dependencies, devDependencies, peerDependencies, optionalDependencies)
     for (const depType of this.depsTypes) {
       const deps = this.packageJson[depType];
 

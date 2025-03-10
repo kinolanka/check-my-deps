@@ -20,16 +20,16 @@ import type PackageInfoService from '@/services/package-info-service';
 import type { ServiceType } from '@/services/service';
 import Service from '@/services/service';
 import { PACKAGE_FILE_NAME, PACKAGE_LOCK_FILE_NAME } from '@/utils/constants';
-import type { PackageStatus } from '@/utils/types';
+import type { PackageStatus, PackageUpdateInfo, UpdateLevel } from '@/utils/types';
 
 import type { PackageJson } from 'type-fest';
 
 class UpdateService extends Service {
   private packageInfoList: PackageInfoService[];
-  private updateLevel: string;
+  private updateLevel: UpdateLevel;
   private packageJsonPath: string;
 
-  constructor(packageInfoList: PackageInfoService[], updateLevel: string, ctx: ServiceType) {
+  constructor(packageInfoList: PackageInfoService[], updateLevel: UpdateLevel, ctx: ServiceType) {
     super(ctx);
 
     this.packageInfoList = packageInfoList;
@@ -100,24 +100,10 @@ class UpdateService extends Service {
   /**
    * Prepares the list of updates to be applied
    */
-  public prepareUpdates(): Array<{
-    packageName: string;
-    dependencyType: string;
-    currentVersion: string;
-    newVersion: string;
-    updateType: PackageStatus;
-    deprecated?: boolean;
-  }> {
+  public prepareUpdates(): Array<PackageUpdateInfo> {
     const updatablePackages = this.getUpdatablePackages();
 
-    const updates: Array<{
-      packageName: string;
-      dependencyType: string;
-      currentVersion: string;
-      newVersion: string;
-      updateType: PackageStatus;
-      deprecated?: boolean;
-    }> = [];
+    const updates: Array<PackageUpdateInfo> = [];
 
     for (const pkg of updatablePackages) {
       const packageInfo = pkg.getInfo();
