@@ -16,13 +16,13 @@
 
 import { Command } from 'commander';
 
-import ExcelService from '@/services/excel-service';
-import JsonService from '@/services/json-service';
+import ExcelService from '@/services/export/excel-service';
+import JsonService from '@/services/export/json-service';
+import SummaryService from '@/services/export/summary-service';
 import NpmService from '@/services/npm-service';
 import OutputService from '@/services/output-service';
 import PackageFileService from '@/services/package-file-service';
 import ServiceCtx from '@/services/service-ctx';
-import SummaryService from '@/services/summary-service';
 import { PACKAGE_FILE_NAME } from '@/utils/constants';
 import type { ExportFormat } from '@/utils/types';
 

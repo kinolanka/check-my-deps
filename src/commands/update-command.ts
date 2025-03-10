@@ -20,7 +20,7 @@ import NpmService from '@/services/npm-service';
 import OutputService from '@/services/output-service';
 import PackageFileService from '@/services/package-file-service';
 import ServiceCtx from '@/services/service-ctx';
-import UpdateService from '@/services/update-service';
+import UpdateService from '@/services/udpate/update-service';
 import { PACKAGE_FILE_NAME } from '@/utils/constants';
 import type { UpdateLevel } from '@/utils/types';
 
