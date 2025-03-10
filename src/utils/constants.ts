@@ -12,26 +12,31 @@
  */
 
 /**
- * Website URL for the package
+ * Website URL for the current package
  */
-export const WEBSITE_URL = 'https://checkmydeps.com';
+export const THIS_PACKAGE_WEBSITE_URL = 'https://checkmydeps.com';
 
 /**
- * NPM URL for the package
+ * NPM URL for the current package
  */
-export const NPM_URL = 'https://www.npmjs.com/package/@kinolanka/check-my-deps';
+export const THIS_PACKAGE_NPM_URL = 'https://www.npmjs.com/package/@kinolanka/check-my-deps';
 
 /**
- * GitHub URL for the package
+ * GitHub URL for the current package
  */
-export const GITHUB_URL = 'https://github.com/kinolanka/check-my-deps';
+export const THIS_PACKAGE_GITHUB_URL = 'https://github.com/kinolanka/check-my-deps';
 
 /**
- * Package name
+ * Package name for the current package
  */
-export const PACKAGE_NAME = '@kinolanka/check-my-deps';
+export const THIS_PACKAGE_NAME = '@kinolanka/check-my-deps';
 
 /**
  * Name of the package file
  */
 export const PACKAGE_FILE_NAME = 'package.json';
+
+/**
+ * Name of the package lock file
+ */
+export const PACKAGE_LOCK_FILE_NAME = 'package-lock.json';

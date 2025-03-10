@@ -21,15 +21,16 @@ import OutputService from '@/services/output-service';
 import PackageFileService from '@/services/package-file-service';
 import ServiceCtx from '@/services/service-ctx';
 import UpdateService from '@/services/update-service';
+import { PACKAGE_FILE_NAME } from '@/utils/constants';
 
 import type { OptionValues } from 'commander';
 
 const updateCommand = new Command()
   .name('update')
-  .description('Update package.json dependencies according to specified semver rules')
+  .description(`Update ${PACKAGE_FILE_NAME} dependencies according to specified semver rules`)
   .option(
     '-c, --cwd <cwd>',
-    'The working directory where package.json is located. Defaults to the current directory.'
+    `The working directory where ${PACKAGE_FILE_NAME} is located. Defaults to the current directory.`
   )
   .option('-s, --silent', 'Prevent any output to the terminal.', false)
   .option(
@@ -39,7 +40,7 @@ const updateCommand = new Command()
   )
   .option(
     '-d, --dry-run',
-    'Show what would be updated without making actual changes to package.json.',
+    `Show what would be updated without making actual changes to ${PACKAGE_FILE_NAME}.`,
     false
   )
   .action(async (options: OptionValues) => {
@@ -56,7 +57,7 @@ const updateCommand = new Command()
         throw new Error('Invalid update level. Must be one of: latest, minor, patch');
       }
 
-      outputService.updateLoadingText('Reading package.json...');
+      outputService.updateLoadingText(`Reading ${PACKAGE_FILE_NAME}...`);
 
       // Create service context
       const ctx = new ServiceCtx({

@@ -23,6 +23,7 @@ import OutputService from '@/services/output-service';
 import PackageFileService from '@/services/package-file-service';
 import ServiceCtx from '@/services/service-ctx';
 import SummaryService from '@/services/summary-service';
+import { PACKAGE_FILE_NAME } from '@/utils/constants';
 import type { ExportFormat } from '@/utils/types';
 
 import type { OptionValues } from 'commander';
@@ -30,11 +31,11 @@ import type { OptionValues } from 'commander';
 const exportCommand = new Command()
   .name('export')
   .description(
-    'Analyze dependencies in package.json and export a detailed report with version information'
+    `Analyze dependencies in ${PACKAGE_FILE_NAME} and export a detailed report with version information`
   )
   .option(
     '-c, --cwd <cwd>',
-    'The working directory where package.json is located. Defaults to the current directory.'
+    `The working directory where ${PACKAGE_FILE_NAME} is located. Defaults to the current directory.`
   )
   .option(
     '-o, --output-dir <outputDir>',
@@ -54,7 +55,7 @@ const exportCommand = new Command()
     outputService.startLoading('Analyzing dependencies...');
 
     try {
-      outputService.updateLoadingText('Reading package.json...');
+      outputService.updateLoadingText(`Reading ${PACKAGE_FILE_NAME}...`);
 
       // Initialize service context
       const ctx = new ServiceCtx({
