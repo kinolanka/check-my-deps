@@ -64,6 +64,27 @@ class SummaryService extends Service {
     this.init();
   }
 
+  /**
+   * Generates information about the source package that created this report
+   */
+  public generateSourceInfo(): void {
+    this.summary.sourceInfo = {
+      info: `This report was created using npm package ${THIS_PACKAGE_NAME}`,
+      urls: [
+        { label: 'Website', url: THIS_PACKAGE_WEBSITE_URL },
+        { label: 'NPM', url: THIS_PACKAGE_NPM_URL },
+        { label: 'GitHub', url: THIS_PACKAGE_GITHUB_URL },
+      ],
+    };
+  }
+
+  /**
+   * Returns the calculated summary statistics
+   */
+  public getSummary(): Summary {
+    return this.summary;
+  }
+
   private init() {
     this.calculateSummaryByType();
 
@@ -165,24 +186,6 @@ class SummaryService extends Service {
       projectName,
       projectVersion,
     };
-  }
-
-  public generateSourceInfo(): void {
-    this.summary.sourceInfo = {
-      info: `This report was created using npm package ${THIS_PACKAGE_NAME}`,
-      urls: [
-        { label: 'Website', url: THIS_PACKAGE_WEBSITE_URL },
-        { label: 'NPM', url: THIS_PACKAGE_NPM_URL },
-        { label: 'GitHub', url: THIS_PACKAGE_GITHUB_URL },
-      ],
-    };
-  }
-
-  /**
-   * Returns the calculated summary statistics
-   */
-  public getSummary(): Summary {
-    return this.summary;
   }
 }
 
