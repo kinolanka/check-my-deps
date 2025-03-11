@@ -43,6 +43,22 @@ class ExcelService extends ExportService {
     this.init();
   }
 
+  /**
+   * Returns the file extension for Excel files
+   * @returns The file extension including the dot (e.g., '.xlsx')
+   */
+  public getFileExtension(): string {
+    return '.xlsx';
+  }
+
+  public async saveToFile(filePath: string): Promise<void> {
+    const fullFilePath = `${filePath}${this.getFileExtension()}`;
+
+    await this.workbook.xlsx.writeFile(fullFilePath);
+
+    this.ctx.outputService.successMsg(`Excel file created at ${fullFilePath}`);
+  }
+
   private init() {
     this.handleSummaryWorksheet();
 
@@ -430,22 +446,6 @@ class ExcelService extends ExportService {
         }
       }
     }
-  }
-
-  /**
-   * Returns the file extension for Excel files
-   * @returns The file extension including the dot (e.g., '.xlsx')
-   */
-  public getFileExtension(): string {
-    return '.xlsx';
-  }
-
-  public async saveToFile(filePath: string): Promise<void> {
-    const fullFilePath = `${filePath}${this.getFileExtension()}`;
-
-    await this.workbook.xlsx.writeFile(fullFilePath);
-
-    this.ctx.outputService.successMsg(`Excel file created at ${fullFilePath}`);
   }
 }
 

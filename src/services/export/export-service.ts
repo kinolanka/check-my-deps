@@ -18,6 +18,7 @@ import Service from '@/services/service';
 
 abstract class ExportService extends Service {
   protected list: PackageInfoService[];
+
   protected summary: SummaryService;
 
   constructor(list: PackageInfoService[], summary: SummaryService, ctx: ServiceType) {

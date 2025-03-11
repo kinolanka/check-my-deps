@@ -36,6 +36,12 @@ class NpmService extends Service {
     this.init();
   }
 
+  public async getList(): Promise<PackageInfoService[]> {
+    await this.setDependenciesList();
+
+    return this.list;
+  }
+
   private init() {
     this.setNpmListData();
   }
@@ -233,12 +239,6 @@ class NpmService extends Service {
       },
       5
     );
-  }
-
-  public async getList(): Promise<PackageInfoService[]> {
-    await this.setDependenciesList();
-
-    return this.list;
   }
 }
 

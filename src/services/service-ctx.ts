@@ -25,9 +25,13 @@ export type ServiceCtxType = {
 
 class ServiceCtx {
   private _cwd: string;
+
   private _outputService: ServiceCtxType['outputService'];
+
   private _outputDir: string;
+
   private _silent: boolean;
+
   private _forceOverwrite: boolean;
 
   constructor({
