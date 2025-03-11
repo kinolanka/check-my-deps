@@ -18,7 +18,12 @@ import type { ServiceCtxType } from '@/services/service-ctx';
 import { NPM_REGISTRY_HOST } from '@/utils/constants';
 import formatDate from '@/utils/helpers/format-date';
 import getNpmPackageUrl from '@/utils/helpers/get-npm-package-url';
-import type { NpmListDepItem, NpmViewData, PackageSpec, PackageVersionSpec } from '@/utils/types';
+import type {
+  NpmListDepItem,
+  NpmRegistryPackageData,
+  PackageSpec,
+  PackageVersionSpec,
+} from '@/utils/types';
 
 class PackageInfoService extends Service {
   private packageName: string;
@@ -41,13 +46,13 @@ class PackageInfoService extends Service {
 
   private npmListDepItem?: NpmListDepItem;
 
-  private npmViewData: NpmViewData;
+  private npmRegistryData: NpmRegistryPackageData;
 
   constructor(
     args: {
       package: PackageSpec;
       npmListDepItem?: NpmListDepItem;
-      npmViewData: NpmViewData;
+      npmRegistryData: NpmRegistryPackageData;
     },
     ctx: ServiceCtxType
   ) {
@@ -61,7 +66,7 @@ class PackageInfoService extends Service {
 
     this.npmListDepItem = args.npmListDepItem;
 
-    this.npmViewData = args.npmViewData;
+    this.npmRegistryData = args.npmRegistryData;
 
     this.setInstalledVersion();
 
@@ -69,7 +74,7 @@ class PackageInfoService extends Service {
 
     this.setLatestVersion();
 
-    this.setSource();
+    this.setRegistrySource();
 
     this.setPackageStatus();
 
@@ -108,53 +113,17 @@ class PackageInfoService extends Service {
     return packageSpec;
   }
 
-  private setPackageStatus() {
-    if (!this.versionInstalled?.version || !this.versionLast?.version) {
-      return;
-    }
-
-    const [installedMajor, installedMinor, installedPatch] = this.versionInstalled.version
-      .split('.')
-      .map(Number);
-
-    const [latestMajor, latestMinor, latestPatch] = this.versionLast.version.split('.').map(Number);
-
-    if (
-      installedMajor === latestMajor &&
-      installedMinor === latestMinor &&
-      installedPatch === latestPatch
-    ) {
-      this.updateStatus = 'upToDate';
-    } else if (installedMajor === latestMajor && installedMinor === latestMinor) {
-      this.updateStatus = 'patch';
-    } else if (installedMajor === latestMajor) {
-      this.updateStatus = 'minor';
-    } else {
-      this.updateStatus = 'major';
-    }
-  }
-
   private setInstalledVersion() {
     const installedVersion = this.npmListDepItem?.version || '';
 
     if (installedVersion) {
       this.versionInstalled = {
         version: installedVersion,
-        releaseDate: formatDate(this.npmViewData.time?.[installedVersion] || ''),
+        releaseDate: formatDate(this.npmRegistryData.time?.[installedVersion] || ''),
         npmUrl: getNpmPackageUrl(this.packageName, installedVersion),
         deprecated: this.isVersionDeprecated(installedVersion),
       };
     }
-  }
-
-  private filterProductionVersions(versions: NpmViewData['versions']) {
-    // Handle the case where versions might not be an array
-    if (!Array.isArray(versions)) {
-      // If versions is an object, extract its keys as an array
-      return Object.keys(versions).filter((version: string) => !version.includes('-'));
-    }
-
-    return versions.filter((version: string) => !version.includes('-'));
   }
 
   private setLastMinorVersion() {
@@ -162,16 +131,20 @@ class PackageInfoService extends Service {
       return;
     }
 
-    const productionVersions = this.filterProductionVersions(this.npmViewData.versions);
+    const productionVersions = this.filterProductionVersions(this.npmRegistryData.versions);
 
+    // Extract major and minor version numbers from installed version
     const [major, minor] = this.versionInstalled.version.split('.').map(Number);
 
+    // Find the latest minor version that is greater than the installed minor version
     const lastMinorVersion = productionVersions
+      // filter versions that match the installed major version and have a greater minor version
       .filter((version: string) => {
         const [vMajor, vMinor] = version.split('.').map(Number);
 
         return vMajor === major && vMinor > minor;
       })
+      // Sort versions by semver
       .sort((a: string, b: string) => {
         const [aMajor, aMinor, aPatch] = a.split('.').map(Number);
 
@@ -188,7 +161,7 @@ class PackageInfoService extends Service {
     if (lastMinorVersion) {
       this.versionLastMinor = {
         version: lastMinorVersion,
-        releaseDate: formatDate(this.npmViewData.time?.[lastMinorVersion] || ''),
+        releaseDate: formatDate(this.npmRegistryData.time?.[lastMinorVersion] || ''),
         npmUrl: getNpmPackageUrl(this.packageName, lastMinorVersion),
         deprecated: this.isVersionDeprecated(lastMinorVersion),
       };
@@ -196,36 +169,35 @@ class PackageInfoService extends Service {
   }
 
   private setLatestVersion() {
-    const productionVersions = this.filterProductionVersions(this.npmViewData.versions);
+    const productionVersions = this.filterProductionVersions(this.npmRegistryData.versions);
 
-    const latestVersion = productionVersions.pop() || '';
+    // Sort versions by semver
+    const latestVersion = productionVersions
+      .sort((a, b) => {
+        const [aMajor, aMinor, aPatch] = a.split('.').map(Number);
 
+        const [bMajor, bMinor, bPatch] = b.split('.').map(Number);
+
+        if (aMajor !== bMajor) return aMajor - bMajor;
+
+        if (aMinor !== bMinor) return aMinor - bMinor;
+
+        return aPatch - bPatch;
+      })
+      .pop();
+
+    // Set the versionLast property
     if (latestVersion) {
       this.versionLast = {
         version: latestVersion,
-        releaseDate: formatDate(this.npmViewData.time?.[latestVersion] || ''),
+        releaseDate: formatDate(this.npmRegistryData.time?.[latestVersion] || ''),
         npmUrl: getNpmPackageUrl(this.packageName, latestVersion),
         deprecated: this.isVersionDeprecated(latestVersion),
       };
     }
   }
 
-  /*
-    {
-      "dependencies": {
-        "lodash": "^4.17.21", // npm registry
-        "react": "18.2.0", // exact version
-        "private-repo": "github:user/private#main", // GitHub private repo
-        "utils": "file:../local-utils", // local directory
-        "moment": "https://registry.npmjs.org/moment/-/moment-2.29.1.tgz", // tarball
-        "forked-lib": "git+ssh://git@github.com:user/forked-lib.git#fix-bug", // SSH
-        "alpha-build": "npm:react@next", // alias
-        "@scope/pkg": "git+https://gitlab.com/scope/pkg.git#v2.0.0" // scoped GitLab
-      }
-    }
-  */
-
-  private setSource() {
+  private setRegistrySource() {
     try {
       const resolvedUrl = this.npmListDepItem?.resolved;
 
@@ -291,49 +263,53 @@ class PackageInfoService extends Service {
     }
   }
 
-  private setDeprecated() {
-    // Check if the entire package is deprecated
-    if (this.npmViewData.deprecated) {
-      this.deprecated = true;
-
+  private setPackageStatus() {
+    if (!this.versionInstalled?.version || !this.versionLast?.version) {
       return;
     }
 
-    // Check if the installed version is deprecated
-    if (this.versionInstalled?.version) {
-      this.deprecated = this.isVersionDeprecated(this.versionInstalled.version);
+    const [installedMajor, installedMinor, installedPatch] = this.versionInstalled.version
+      .split('.')
+      .map(Number);
+
+    const [latestMajor, latestMinor, latestPatch] = this.versionLast.version.split('.').map(Number);
+
+    if (
+      installedMajor === latestMajor &&
+      installedMinor === latestMinor &&
+      installedPatch === latestPatch
+    ) {
+      this.updateStatus = 'upToDate';
+    } else if (installedMajor === latestMajor && installedMinor === latestMinor) {
+      this.updateStatus = 'patch';
+    } else if (installedMajor === latestMajor) {
+      this.updateStatus = 'minor';
     } else {
-      this.deprecated = false;
+      this.updateStatus = 'major';
+    }
+  }
+
+  private setDeprecated() {
+    // Check if the package itself is deprecated
+    if (this.npmRegistryData.deprecated) {
+      this.deprecated = true;
     }
   }
 
   private isVersionDeprecated(version: string): boolean {
-    try {
-      // First check if we have pre-fetched version-specific deprecation status
-      if (this.npmViewData.versionDeprecations && version in this.npmViewData.versionDeprecations) {
-        return this.npmViewData.versionDeprecations[version];
-      }
+    // Check if the specific version is deprecated in the versions object
+    const versionData = this.npmRegistryData.versions[version];
 
-      // If the entire package is deprecated
-      if (this.npmViewData.deprecated) {
-        return true;
-      }
-
-      // Check if there's version-specific deprecation info in the versions object
-      // This is a fallback, as npm registry data structure might vary
-      const versionData = this.npmViewData.versions?.[version];
-
-      if (versionData && typeof versionData === 'object' && !!versionData.deprecated) {
-        return true;
-      }
-
-      // If we reach here, the version is not deprecated
-      return false;
-    } catch (error) {
-      this.ctx.outputService.error(error as Error);
-
-      return false;
+    if (versionData && typeof versionData === 'object' && 'deprecated' in versionData) {
+      return !!versionData.deprecated;
     }
+
+    return false;
+  }
+
+  private filterProductionVersions(versions: NpmRegistryPackageData['versions']) {
+    // Extract version keys from the versions object
+    return Object.keys(versions).filter((version: string) => !version.includes('-'));
   }
 }
 

@@ -3,8 +3,7 @@
  *
  * This module implements a service for fetching and processing npm package information with features including:
  * - Retrieving local dependency information using 'npm list'
- * - Fetching package metadata from npm registry using 'npm view'
- * - Checking deprecation status of specific package versions
+ * - Fetching package metadata directly from npm registry API
  * - Processing package data in parallel chunks for better performance
  * - Creating PackageInfoService instances with complete package information
  *
@@ -12,14 +11,15 @@
  * providing a comprehensive view of dependencies and their available versions.
  */
 
-import { execSync, exec } from 'child_process';
+import { execSync } from 'child_process';
 
 import PackageInfoService from '@/services/package-info-service';
 import type { ServiceType } from '@/services/service';
 import Service from '@/services/service';
 import { PACKAGE_FILE_NAME, PACKAGE_LOCK_FILE_NAME } from '@/utils/constants';
+import npmRegistryClient from '@/utils/helpers/npm-registry-client';
 import { processInChunks } from '@/utils/helpers/process-in-chunks';
-import type { NpmListData, NpmViewData, PackageSpec } from '@/utils/types';
+import type { NpmListData, NpmRegistryPackageData, PackageSpec } from '@/utils/types';
 
 class NpmService extends Service {
   // This parameter contains the list of packages to process
@@ -28,7 +28,7 @@ class NpmService extends Service {
   // This parameter contains the output of `npm list --json --package-lock-only`
   private npmListData: NpmListData | null = null;
 
-  // This parameter contains the list of the outputs of `npm view` for each package
+  // This parameter contains the list of the packages npm registry data
   private packagesOutputList: PackageInfoService[] = [];
 
   constructor(packagesInputList: PackageSpec[], ctx: ServiceType) {
@@ -91,153 +91,35 @@ class NpmService extends Service {
     });
 
     // Fetch npm view data in chunks of 5 using processInChunks
-    const npmViewDataResponses = await processInChunks(
+    const npmRegistryDataResponses = await processInChunks(
       packageDataList,
-      async ({ pkg }) => this.getNpmViewData(pkg.packageName),
+      async ({ pkg }) => this.getNpmRegistryData(pkg.packageName),
       5
     );
 
-    this.packagesOutputList = await processInChunks(
-      packageDataList,
-      async ({ pkg, npmListDepItem }, index) => {
-        const npmViewData = npmViewDataResponses[index];
+    this.packagesOutputList = packageDataList.map(({ pkg, npmListDepItem }, index) => {
+      const npmRegistryData = npmRegistryDataResponses[index];
 
-        // Initialize versionDeprecations object if it doesn't exist
-        if (!npmViewData.versionDeprecations) {
-          npmViewData.versionDeprecations = {};
-        }
-
-        // Create a temporary PackageInfoService to get version information
-        // This is needed to determine which versions we need to check for deprecation
-        const tempPackageInfo = new PackageInfoService(
-          {
-            package: pkg,
-            npmListDepItem,
-            npmViewData,
-          },
-          this.ctx
-        );
-
-        const tempInfo = tempPackageInfo.getInfo();
-
-        // Collect all versions that need deprecation status checks
-        const versionsToCheck = [];
-
-        // Check if the installed version needs deprecation status
-        if (
-          npmListDepItem?.version &&
-          !(npmListDepItem.version in npmViewData.versionDeprecations)
-        ) {
-          versionsToCheck.push({
-            version: npmListDepItem.version,
-            packageName: pkg.packageName,
-          });
-        }
-
-        // Check if last minor version needs deprecation status
-        if (
-          tempInfo.versionLastMinor?.version &&
-          !(tempInfo.versionLastMinor.version in npmViewData.versionDeprecations)
-        ) {
-          versionsToCheck.push({
-            version: tempInfo.versionLastMinor.version,
-            packageName: pkg.packageName,
-          });
-        }
-
-        // Check if latest version needs deprecation status
-        if (
-          tempInfo.versionLast?.version &&
-          !(tempInfo.versionLast.version in npmViewData.versionDeprecations)
-        ) {
-          versionsToCheck.push({
-            version: tempInfo.versionLast.version,
-            packageName: pkg.packageName,
-          });
-        }
-
-        // Run all deprecation checks in parallel
-        const deprecationChecks = versionsToCheck.map(({ version, packageName }) =>
-          this.getVersionDeprecationStatus(packageName, version).then((isDeprecated) => ({
-            version,
-            isDeprecated,
-          }))
-        );
-
-        const deprecationResults = await Promise.all(deprecationChecks);
-
-        // Update npmViewData with deprecation results
-        for (const { version, isDeprecated } of deprecationResults) {
-          npmViewData.versionDeprecations[version] = isDeprecated;
-        }
-
-        // Create the final PackageInfoService with complete deprecation information
-        return new PackageInfoService(
-          {
-            package: pkg,
-            npmListDepItem,
-            npmViewData,
-          },
-          this.ctx
-        );
-      },
-      5
-    );
-  }
-
-  private getNpmViewData(packageName: string): Promise<NpmViewData> {
-    return new Promise((resolve, reject) => {
-      exec(
-        `npm view ${packageName} versions time homepage repository deprecated --json`,
-        { cwd: this.ctx.cwd },
-        (error, stdout) => {
-          if (error) {
-            reject(error);
-          } else {
-            try {
-              const npmViewData = JSON.parse(stdout) as NpmViewData;
-
-              resolve(npmViewData);
-            } catch (parseError) {
-              reject(parseError);
-            }
-          }
-        }
+      // Create the final PackageInfoService with complete deprecation information
+      return new PackageInfoService(
+        {
+          package: pkg,
+          npmListDepItem,
+          npmRegistryData,
+        },
+        this.ctx
       );
     });
   }
 
-  private async getVersionDeprecationStatus(
-    packageName: string,
-    version: string
-  ): Promise<boolean> {
-    return new Promise((resolve) => {
-      exec(
-        `npm view ${packageName}@${version} deprecated --json`,
-        { cwd: this.ctx.cwd },
-        (error, stdout) => {
-          if (error) {
-            this.ctx.outputService.error(error);
+  private async getNpmRegistryData(packageName: string): Promise<NpmRegistryPackageData> {
+    try {
+      const registryData = await npmRegistryClient.getPackageData(packageName);
 
-            resolve(false);
-
-            return;
-          }
-
-          const result = stdout.toString().trim();
-
-          // If the result is empty or 'undefined', the version is not deprecated
-          if (!result || result === 'undefined') {
-            resolve(false);
-
-            return;
-          }
-
-          // Otherwise, the version is deprecated
-          resolve(true);
-        }
-      );
-    });
+      return registryData;
+    } catch (error) {
+      throw new Error(`Failed to fetch npm registry data for ${packageName}: ${error}`);
+    }
   }
 }
 
