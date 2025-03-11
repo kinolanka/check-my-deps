@@ -18,6 +18,7 @@ import type { ServiceCtxType } from '@/services/service-ctx';
 import { NPM_REGISTRY_HOST } from '@/utils/constants';
 import formatDate from '@/utils/helpers/format-date';
 import getNpmPackageUrl from '@/utils/helpers/get-npm-package-url';
+import isNpmRegistryUrl from '@/utils/helpers/is-npm-registry-url';
 import type {
   NpmListDepItem,
   NpmRegistryPackageData,
@@ -46,13 +47,13 @@ class PackageInfoService extends Service {
 
   private npmListDepItem?: NpmListDepItem;
 
-  private npmRegistryData: NpmRegistryPackageData;
+  private npmRegistryData?: NpmRegistryPackageData;
 
   constructor(
     args: {
       package: PackageSpec;
       npmListDepItem?: NpmListDepItem;
-      npmRegistryData: NpmRegistryPackageData;
+      npmRegistryData?: NpmRegistryPackageData;
     },
     ctx: ServiceCtxType
   ) {
@@ -119,7 +120,7 @@ class PackageInfoService extends Service {
     if (installedVersion) {
       this.versionInstalled = {
         version: installedVersion,
-        releaseDate: formatDate(this.npmRegistryData.time?.[installedVersion] || ''),
+        releaseDate: formatDate(this.npmRegistryData?.time?.[installedVersion] || ''),
         npmUrl: getNpmPackageUrl(this.packageName, installedVersion),
         deprecated: this.isVersionDeprecated(installedVersion),
       };
@@ -127,7 +128,7 @@ class PackageInfoService extends Service {
   }
 
   private setLastMinorVersion() {
-    if (!this.versionInstalled?.version) {
+    if (!this.versionInstalled?.version || !this.npmRegistryData) {
       return;
     }
 
@@ -169,6 +170,10 @@ class PackageInfoService extends Service {
   }
 
   private setLatestVersion() {
+    if (!this.npmRegistryData) {
+      return;
+    }
+
     const productionVersions = this.filterProductionVersions(this.npmRegistryData.versions);
 
     // Sort versions by semver
@@ -206,10 +211,7 @@ class PackageInfoService extends Service {
       }
 
       // Handle different package source types
-      if (
-        resolvedUrl.startsWith(`https://${NPM_REGISTRY_HOST}/`) ||
-        resolvedUrl.startsWith(`http://${NPM_REGISTRY_HOST}/`)
-      ) {
+      if (isNpmRegistryUrl(resolvedUrl)) {
         // Standard npm registry URL
         // Format: https://registry.npmjs.org/package-name/-/package-name-1.0.0.tgz
         const packagePath = resolvedUrl.split('/-/')[0];
@@ -291,12 +293,16 @@ class PackageInfoService extends Service {
 
   private setDeprecated() {
     // Check if the package itself is deprecated
-    if (this.npmRegistryData.deprecated) {
+    if (this.npmRegistryData && this.npmRegistryData.deprecated) {
       this.deprecated = true;
     }
   }
 
   private isVersionDeprecated(version: string): boolean {
+    if (!this.npmRegistryData) {
+      return false;
+    }
+
     // Check if the specific version is deprecated in the versions object
     const versionData = this.npmRegistryData.versions[version];
 

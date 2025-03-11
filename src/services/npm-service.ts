@@ -17,6 +17,7 @@ import PackageInfoService from '@/services/package-info-service';
 import type { ServiceType } from '@/services/service';
 import Service from '@/services/service';
 import { PACKAGE_FILE_NAME, PACKAGE_LOCK_FILE_NAME } from '@/utils/constants';
+import isNpmRegistryUrl from '@/utils/helpers/is-npm-registry-url';
 import npmRegistryClient from '@/utils/helpers/npm-registry-client';
 import { processInChunks } from '@/utils/helpers/process-in-chunks';
 import type { NpmListData, NpmRegistryPackageData, PackageSpec } from '@/utils/types';
@@ -93,7 +94,14 @@ class NpmService extends Service {
     // Fetch npm view data in chunks of 5 using processInChunks
     const npmRegistryDataResponses = await processInChunks(
       packageDataList,
-      async ({ pkg }) => this.getNpmRegistryData(pkg.packageName),
+      ({ pkg, npmListDepItem }) => {
+        // Do not call npm registry API if package is not installed from npm registry
+        if (!isNpmRegistryUrl(npmListDepItem?.resolved)) {
+          return Promise.resolve(undefined);
+        }
+
+        return this.getNpmRegistryData(pkg.packageName);
+      },
       5
     );
 
