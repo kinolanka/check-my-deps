@@ -1,4 +1,4 @@
-import getNpmPackageUrl from './get-npm-package-url';
+import getNpmPackageUrl from '@/utils/helpers/get-npm-package-url';
 
 describe('getNpmPackageUrl', () => {
   describe('normal cases', () => {

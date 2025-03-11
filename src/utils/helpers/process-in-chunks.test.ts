@@ -1,4 +1,4 @@
-import { processInChunks } from './process-in-chunks';
+import { processInChunks } from '@/utils/helpers/process-in-chunks';
 
 describe('processInChunks', () => {
   // Mock async function that returns the input after a delay
