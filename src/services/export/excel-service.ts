@@ -40,7 +40,9 @@ class ExcelService extends ExportService {
 
     this.summaryData = summary.getSummary();
 
-    this.init();
+    this.handleSummaryWorksheet();
+
+    this.handleDependenciesWorksheet();
   }
 
   /**
@@ -57,12 +59,6 @@ class ExcelService extends ExportService {
     await this.workbook.xlsx.writeFile(fullFilePath);
 
     this.ctx.outputService.successMsg(`Excel file created at ${fullFilePath}`);
-  }
-
-  private init() {
-    this.handleSummaryWorksheet();
-
-    this.handleDependenciesWorksheet();
   }
 
   private getCellBgColorConfig(color: string): ExcelJS.FillPattern {

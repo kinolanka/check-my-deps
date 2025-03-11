@@ -42,64 +42,6 @@ class UpdateService extends Service {
   }
 
   /**
-   * Gets the list of packages that need to be updated based on the specified update level
-   */
-  public getUpdatablePackages(): PackageInfoService[] {
-    return this.packageInfoList.filter((pkg) => {
-      const info = pkg.getInfo();
-
-      // Skip packages without version info (might be missing from npm registry data)
-      if (!info.updateStatus || !info.versionInstalled) {
-        return false;
-      }
-
-      // For non-npm registry packages (like git, file, etc.), we need to check if they have valid version data
-      // If they have valid version data and update status, we should consider them for updates
-      if (info.registrySource && !info.registrySource.includes(NPM_REGISTRY_HOST)) {
-        // For git/file dependencies, only update if we have valid version data and it's not up to date
-        if (info.versionLast?.version || info.versionLastMinor?.version) {
-          // Continue with normal update logic below
-        } else {
-          return false; // Skip if we don't have valid version data
-        }
-      }
-
-      // Skip deprecated packages unless they have a non-deprecated newer version
-      if (info.deprecated) {
-        // If the package is deprecated but has a newer version that's not deprecated, allow the update
-        let targetVersionDeprecated = true;
-
-        if (this.updateLevel === 'latest' && info.versionLast) {
-          targetVersionDeprecated = !!info.versionLast.deprecated;
-        } else if (this.updateLevel === 'minor' && info.versionLastMinor) {
-          targetVersionDeprecated = !!info.versionLastMinor.deprecated;
-        } else if (this.updateLevel === 'patch' && info.versionInstalled) {
-          targetVersionDeprecated = !!info.versionInstalled.deprecated;
-        }
-
-        if (targetVersionDeprecated) {
-          return false; // Skip if the target version is also deprecated
-        }
-      }
-
-      const status = info.updateStatus;
-
-      if (this.updateLevel === 'latest') {
-        // For latest, update any package that's not up to date
-        return status !== 'upToDate';
-      } else if (this.updateLevel === 'minor') {
-        // For minor, only update packages with minor or patch updates
-        return status === 'minor' || status === 'patch';
-      } else if (this.updateLevel === 'patch') {
-        // For patch, only update packages with patch updates
-        return status === 'patch';
-      }
-
-      return false;
-    });
-  }
-
-  /**
    * Prepares the list of updates to be applied
    */
   public prepareUpdates(): Array<PackageUpdateInfo> {
@@ -241,6 +183,81 @@ class UpdateService extends Service {
     // Output the JSON string to the terminal
     // Force parameter ensures the JSON is always displayed even in silent mode
     this.ctx.outputService.msg(JSON.stringify(jsonOutput, null, 2), true);
+  }
+
+  /**
+   * Gets the list of packages that need to be updated based on the specified update level
+   */
+  private getUpdatablePackages(): PackageInfoService[] {
+    // const input = [];
+
+    const result = this.packageInfoList.filter((pkg) => {
+      const info = pkg.getInfo();
+
+      // input.push(info);
+
+      // Skip packages without version info (might be missing from npm registry data)
+      if (!info.updateStatus || !info.versionInstalled) {
+        return false;
+      }
+
+      // For non-npm registry packages (like git, file, etc.), we need to check if they have valid version data
+      // If they have valid version data and update status, we should consider them for updates
+      if (info.registrySource && !info.registrySource.includes(NPM_REGISTRY_HOST)) {
+        // For git/file dependencies, only update if we have valid version data and it's not up to date
+        if (info.versionLast?.version || info.versionLastMinor?.version) {
+          // Continue with normal update logic below
+        } else {
+          return false; // Skip if we don't have valid version data
+        }
+      }
+
+      // Skip deprecated packages unless they have a non-deprecated newer version
+      if (info.deprecated) {
+        // If the package is deprecated but has a newer version that's not deprecated, allow the update
+        let targetVersionDeprecated = true;
+
+        if (this.updateLevel === 'latest' && info.versionLast) {
+          targetVersionDeprecated = !!info.versionLast.deprecated;
+        } else if (this.updateLevel === 'minor' && info.versionLastMinor) {
+          targetVersionDeprecated = !!info.versionLastMinor.deprecated;
+        } else if (this.updateLevel === 'patch' && info.versionInstalled) {
+          targetVersionDeprecated = !!info.versionInstalled.deprecated;
+        }
+
+        if (targetVersionDeprecated) {
+          return false; // Skip if the target version is also deprecated
+        }
+      }
+
+      const status = info.updateStatus;
+
+      if (this.updateLevel === 'latest') {
+        // For latest, update any package that's not up to date
+        return status !== 'upToDate';
+      } else if (this.updateLevel === 'minor') {
+        // For minor, only update packages with minor or patch updates
+        return status === 'minor' || status === 'patch';
+      } else if (this.updateLevel === 'patch') {
+        // For patch, only update packages with patch updates
+        return status === 'patch';
+      }
+
+      return false;
+    });
+
+    // console.log('input', JSON.stringify(input, null, 2));
+
+    // console.log(
+    //   'result',
+    //   JSON.stringify(
+    //     result.map((p) => p.getInfo()),
+    //     null,
+    //     2
+    //   )
+    // );
+
+    return result;
   }
 
   /**
