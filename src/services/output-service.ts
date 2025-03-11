@@ -13,21 +13,88 @@
 
 class OutputService {
   private silent: boolean;
+
   private loadingInterval: ReturnType<typeof setTimeout> | null = null;
+
   private loadingChars = ['⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏'];
+
   private loadingIndex = 0;
+
   private currentLoadingText = '';
+
   private startTime: number = 0;
 
   constructor(silent = false) {
     this.silent = silent;
   }
 
-  private logToConsole(message: string, force = false): void {
-    if (force || !this.silent) {
-      // eslint-disable-next-line no-console
-      console.log(message);
+  public startLoading(text: string): void {
+    if (this.silent) return;
+
+    this.stopLoading();
+
+    this.currentLoadingText = text;
+
+    this.startTime = Date.now();
+
+    // Hide cursor
+    process.stdout.write('\u001B[?25l');
+
+    // Initial render
+    this.renderLoading();
+
+    this.loadingInterval = setInterval(() => {
+      this.loadingIndex = (this.loadingIndex + 1) % this.loadingChars.length;
+
+      this.renderLoading();
+    }, 80);
+  }
+
+  public updateLoadingText(text: string): void {
+    if (this.silent || !this.loadingInterval) return;
+
+    // Log the previous step as completed
+    if (this.currentLoadingText) {
+      this.clearLine();
+
+      this.logToConsole(
+        `✓ ${this.currentLoadingText} ${`[${((Date.now() - this.startTime) / 1000).toFixed(1)}s]`}`
+      );
     }
+
+    // Update the text for the next step
+    this.currentLoadingText = text;
+
+    this.startTime = Date.now(); // Reset timer for the new step
+
+    // Render the new loading state
+    this.renderLoading();
+  }
+
+  public stopLoading(finalMessage?: string): void {
+    if (this.loadingInterval) {
+      clearInterval(this.loadingInterval);
+
+      this.loadingInterval = null;
+
+      // Clear current line
+      this.clearLine();
+
+      // Show cursor again
+      process.stdout.write('\u001B[?25h');
+
+      if (finalMessage) {
+        this.logToConsole(finalMessage);
+      }
+    }
+  }
+
+  public stopLoadingSuccess(message: string): void {
+    this.stopLoading(`✓ ${message}`);
+  }
+
+  public stopLoadingError(message: string): void {
+    this.stopLoading(`✗ ${message}`);
   }
 
   public msg(message: string, force = false): void {
@@ -103,6 +170,13 @@ class OutputService {
     }
   }
 
+  private logToConsole(message: string, force = false): void {
+    if (force || !this.silent) {
+      // eslint-disable-next-line no-console
+      console.log(message);
+    }
+  }
+
   private clearLine(): void {
     process.stdout.write('\r\u001B[K');
   }
@@ -116,75 +190,6 @@ class OutputService {
     this.clearLine();
 
     process.stdout.write(`${spinner} ${this.currentLoadingText} ${`[${elapsedTime}s]`}`);
-  }
-
-  public startLoading(text: string): void {
-    if (this.silent) return;
-
-    this.stopLoading();
-
-    this.currentLoadingText = text;
-
-    this.startTime = Date.now();
-
-    // Hide cursor
-    process.stdout.write('\u001B[?25l');
-
-    // Initial render
-    this.renderLoading();
-
-    this.loadingInterval = setInterval(() => {
-      this.loadingIndex = (this.loadingIndex + 1) % this.loadingChars.length;
-
-      this.renderLoading();
-    }, 80);
-  }
-
-  public updateLoadingText(text: string): void {
-    if (this.silent || !this.loadingInterval) return;
-
-    // Log the previous step as completed
-    if (this.currentLoadingText) {
-      this.clearLine();
-
-      this.logToConsole(
-        `✓ ${this.currentLoadingText} ${`[${((Date.now() - this.startTime) / 1000).toFixed(1)}s]`}`
-      );
-    }
-
-    // Update the text for the next step
-    this.currentLoadingText = text;
-
-    this.startTime = Date.now(); // Reset timer for the new step
-
-    // Render the new loading state
-    this.renderLoading();
-  }
-
-  public stopLoading(finalMessage?: string): void {
-    if (this.loadingInterval) {
-      clearInterval(this.loadingInterval);
-
-      this.loadingInterval = null;
-
-      // Clear current line
-      this.clearLine();
-
-      // Show cursor again
-      process.stdout.write('\u001B[?25h');
-
-      if (finalMessage) {
-        this.logToConsole(finalMessage);
-      }
-    }
-  }
-
-  public stopLoadingSuccess(message: string): void {
-    this.stopLoading(`✓ ${message}`);
-  }
-
-  public stopLoadingError(message: string): void {
-    this.stopLoading(`✗ ${message}`);
   }
 }
 

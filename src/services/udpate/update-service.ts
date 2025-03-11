@@ -26,7 +26,9 @@ import type { PackageJson } from 'type-fest';
 
 class UpdateService extends Service {
   private packageInfoList: PackageInfoService[];
+
   private updateLevel: UpdateLevel;
+
   private packageJsonPath: string;
 
   constructor(packageInfoList: PackageInfoService[], updateLevel: UpdateLevel, ctx: ServiceType) {

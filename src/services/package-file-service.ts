@@ -25,6 +25,7 @@ import type { PackageJson } from 'type-fest';
 
 class PackageFileService extends Service {
   private packageFileName = PACKAGE_FILE_NAME;
+
   private packageLockFileName = PACKAGE_LOCK_FILE_NAME;
 
   private depsTypes = [
@@ -46,20 +47,6 @@ class PackageFileService extends Service {
 
     // Read package.json
     this.packageJson = fs.readJSONSync(packageJsonPath) as PackageJson;
-  }
-
-  /**
-   * Checks if package-lock.json exists in the project directory
-   * @throws Error if package-lock.json doesn't exist
-   */
-  private checkPackageLockExists(): void {
-    const packageLockPath = path.resolve(this.ctx.cwd, this.packageLockFileName);
-
-    if (!fs.existsSync(packageLockPath)) {
-      throw new Error(
-        `${PACKAGE_LOCK_FILE_NAME} file not found. Please run "npm i --package-lock-only" to generate it first.`
-      );
-    }
   }
 
   public getName(): string {
@@ -155,6 +142,20 @@ class PackageFileService extends Service {
     }
 
     return filePath;
+  }
+
+  /**
+   * Checks if package-lock.json exists in the project directory
+   * @throws Error if package-lock.json doesn't exist
+   */
+  private checkPackageLockExists(): void {
+    const packageLockPath = path.resolve(this.ctx.cwd, this.packageLockFileName);
+
+    if (!fs.existsSync(packageLockPath)) {
+      throw new Error(
+        `${PACKAGE_LOCK_FILE_NAME} file not found. Please run "npm i --package-lock-only" to generate it first.`
+      );
+    }
   }
 }
 

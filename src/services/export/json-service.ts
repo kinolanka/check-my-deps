@@ -40,20 +40,6 @@ class JsonService extends ExportService {
   }
 
   /**
-   * Prepares the data for JSON export
-   * @returns Object containing the dependencies list and summary
-   */
-  private prepareData() {
-    // Convert the list of PackageInfoService instances to plain objects
-    const dependencies = this.list.map((packageInfo) => packageInfo.getInfo());
-
-    return {
-      dependencies,
-      summary: this.summaryData,
-    };
-  }
-
-  /**
    * Saves the JSON data to a file
    * @param filePath The path where the file should be saved (without extension)
    */
@@ -73,6 +59,20 @@ class JsonService extends ExportService {
     await fs.promises.writeFile(fullPath, JSON.stringify(data, null, 2), 'utf8');
 
     this.ctx.outputService.successMsg(`JSON file created at ${fullPath}`);
+  }
+
+  /**
+   * Prepares the data for JSON export
+   * @returns Object containing the dependencies list and summary
+   */
+  private prepareData() {
+    // Convert the list of PackageInfoService instances to plain objects
+    const dependencies = this.list.map((packageInfo) => packageInfo.getInfo());
+
+    return {
+      dependencies,
+      summary: this.summaryData,
+    };
   }
 }
 

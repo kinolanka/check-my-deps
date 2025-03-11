@@ -66,6 +66,38 @@ class PackageInfoService extends Service {
     this.init();
   }
 
+  public getInfo(): PackageSpec {
+    const packageSpec: PackageSpec = {
+      packageName: this.packageName,
+      dependencyType: this.dependencyType,
+      versionRequired: this.versionRequired,
+      versionInstalled: this.versionInstalled,
+      versionLastMinor: this.versionLastMinor,
+      registrySource: this.registrySource,
+      updateStatus: this.updateStatus,
+      deprecated: this.deprecated,
+    };
+
+    // Check if installed version is the same as latest version
+    const isSameVersion =
+      this.versionInstalled?.version &&
+      this.versionLast?.version &&
+      this.versionInstalled.version === this.versionLast.version;
+
+    // Check if last minor version is the same as latest version
+    const isLastMinorSameAsLast =
+      this.versionLastMinor?.version &&
+      this.versionLast?.version &&
+      this.versionLastMinor.version === this.versionLast.version;
+
+    // Only include versionLast if it's different from both versionInstalled AND versionLastMinor
+    if (!isSameVersion && !isLastMinorSameAsLast) {
+      packageSpec.versionLast = this.versionLast;
+    }
+
+    return packageSpec;
+  }
+
   private init() {
     this.setInstalledVersion();
 
@@ -306,38 +338,6 @@ class PackageInfoService extends Service {
 
       return false;
     }
-  }
-
-  public getInfo(): PackageSpec {
-    const packageSpec: PackageSpec = {
-      packageName: this.packageName,
-      dependencyType: this.dependencyType,
-      versionRequired: this.versionRequired,
-      versionInstalled: this.versionInstalled,
-      versionLastMinor: this.versionLastMinor,
-      registrySource: this.registrySource,
-      updateStatus: this.updateStatus,
-      deprecated: this.deprecated,
-    };
-
-    // Check if installed version is the same as latest version
-    const isSameVersion =
-      this.versionInstalled?.version &&
-      this.versionLast?.version &&
-      this.versionInstalled.version === this.versionLast.version;
-
-    // Check if last minor version is the same as latest version
-    const isLastMinorSameAsLast =
-      this.versionLastMinor?.version &&
-      this.versionLast?.version &&
-      this.versionLastMinor.version === this.versionLast.version;
-
-    // Only include versionLast if it's different from both versionInstalled AND versionLastMinor
-    if (!isSameVersion && !isLastMinorSameAsLast) {
-      packageSpec.versionLast = this.versionLast;
-    }
-
-    return packageSpec;
   }
 }
 
