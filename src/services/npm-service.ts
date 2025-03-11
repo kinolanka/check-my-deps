@@ -22,28 +22,27 @@ import { processInChunks } from '@/utils/helpers/process-in-chunks';
 import type { NpmListData, NpmViewData, PackageSpec } from '@/utils/types';
 
 class NpmService extends Service {
-  private packages: PackageSpec[];
+  // This parameter contains the list of packages to process
+  private packagesInputList: PackageSpec[];
 
+  // This parameter contains the output of `npm list --json --package-lock-only`
   private npmListData: NpmListData | null = null;
 
-  private list: PackageInfoService[] = [];
+  // This parameter contains the list of the outputs of `npm view` for each package
+  private packagesOutputList: PackageInfoService[] = [];
 
-  constructor(packages: PackageSpec[], ctx: ServiceType) {
+  constructor(packagesInputList: PackageSpec[], ctx: ServiceType) {
     super(ctx);
 
-    this.packages = packages;
+    this.packagesInputList = packagesInputList;
 
-    this.init();
+    this.setNpmListData();
   }
 
   public async getList(): Promise<PackageInfoService[]> {
-    await this.setDependenciesList();
+    await this.setPackagesOutputList();
 
-    return this.list;
-  }
-
-  private init() {
-    this.setNpmListData();
+    return this.packagesOutputList;
   }
 
   private setNpmListData() {
@@ -83,64 +82,9 @@ class NpmService extends Service {
     }
   }
 
-  private getNpmViewData(packageName: string): Promise<NpmViewData> {
-    return new Promise((resolve, reject) => {
-      exec(
-        `npm view ${packageName} versions time homepage repository deprecated --json`,
-        { cwd: this.ctx.cwd },
-        (error, stdout) => {
-          if (error) {
-            reject(error);
-          } else {
-            try {
-              const npmViewData = JSON.parse(stdout) as NpmViewData;
-
-              resolve(npmViewData);
-            } catch (parseError) {
-              reject(parseError);
-            }
-          }
-        }
-      );
-    });
-  }
-
-  private async getVersionDeprecationStatus(
-    packageName: string,
-    version: string
-  ): Promise<boolean> {
-    return new Promise((resolve) => {
-      exec(
-        `npm view ${packageName}@${version} deprecated --json`,
-        { cwd: this.ctx.cwd },
-        (error, stdout) => {
-          if (error) {
-            this.ctx.outputService.error(error);
-
-            resolve(false);
-
-            return;
-          }
-
-          const result = stdout.toString().trim();
-
-          // If the result is empty or 'undefined', the version is not deprecated
-          if (!result || result === 'undefined') {
-            resolve(false);
-
-            return;
-          }
-
-          // Otherwise, the version is deprecated
-          resolve(true);
-        }
-      );
-    });
-  }
-
-  private async setDependenciesList() {
+  private async setPackagesOutputList() {
     // Create a structure to hold package data for processing
-    const packageDataList = this.packages.map((pkg) => {
+    const packageDataList = this.packagesInputList.map((pkg) => {
       const npmListDepItem = this.npmListData?.dependencies[pkg.packageName];
 
       return { pkg, npmListDepItem };
@@ -153,7 +97,7 @@ class NpmService extends Service {
       5
     );
 
-    this.list = await processInChunks(
+    this.packagesOutputList = await processInChunks(
       packageDataList,
       async ({ pkg, npmListDepItem }, index) => {
         const npmViewData = npmViewDataResponses[index];
@@ -239,6 +183,61 @@ class NpmService extends Service {
       },
       5
     );
+  }
+
+  private getNpmViewData(packageName: string): Promise<NpmViewData> {
+    return new Promise((resolve, reject) => {
+      exec(
+        `npm view ${packageName} versions time homepage repository deprecated --json`,
+        { cwd: this.ctx.cwd },
+        (error, stdout) => {
+          if (error) {
+            reject(error);
+          } else {
+            try {
+              const npmViewData = JSON.parse(stdout) as NpmViewData;
+
+              resolve(npmViewData);
+            } catch (parseError) {
+              reject(parseError);
+            }
+          }
+        }
+      );
+    });
+  }
+
+  private async getVersionDeprecationStatus(
+    packageName: string,
+    version: string
+  ): Promise<boolean> {
+    return new Promise((resolve) => {
+      exec(
+        `npm view ${packageName}@${version} deprecated --json`,
+        { cwd: this.ctx.cwd },
+        (error, stdout) => {
+          if (error) {
+            this.ctx.outputService.error(error);
+
+            resolve(false);
+
+            return;
+          }
+
+          const result = stdout.toString().trim();
+
+          // If the result is empty or 'undefined', the version is not deprecated
+          if (!result || result === 'undefined') {
+            resolve(false);
+
+            return;
+          }
+
+          // Otherwise, the version is deprecated
+          resolve(true);
+        }
+      );
+    });
   }
 }
 

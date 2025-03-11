@@ -63,7 +63,17 @@ class PackageInfoService extends Service {
 
     this.npmViewData = args.npmViewData;
 
-    this.init();
+    this.setInstalledVersion();
+
+    this.setLastMinorVersion();
+
+    this.setLatestVersion();
+
+    this.setSource();
+
+    this.setPackageStatus();
+
+    this.setDeprecated();
   }
 
   public getInfo(): PackageSpec {
@@ -96,20 +106,6 @@ class PackageInfoService extends Service {
     }
 
     return packageSpec;
-  }
-
-  private init() {
-    this.setInstalledVersion();
-
-    this.setLastMinorVersion();
-
-    this.setLatestVersion();
-
-    this.setSource();
-
-    this.setPackageStatus();
-
-    this.setDeprecated();
   }
 
   private setPackageStatus() {

@@ -61,7 +61,13 @@ class SummaryService extends Service {
 
     this.packageFileService = packageFileService;
 
-    this.init();
+    this.calculateSummaryByType();
+
+    this.calculateTotals();
+
+    this.generateReportInfo();
+
+    this.generateSourceInfo();
   }
 
   /**
@@ -83,16 +89,6 @@ class SummaryService extends Service {
    */
   public getSummary(): Summary {
     return this.summary;
-  }
-
-  private init() {
-    this.calculateSummaryByType();
-
-    this.calculateTotals();
-
-    this.generateReportInfo();
-
-    this.generateSourceInfo();
   }
 
   private calculateSummaryByType() {
