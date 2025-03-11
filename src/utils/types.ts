@@ -53,15 +53,22 @@ export type NpmListData = GenericObject<{
   dependencies: Record<string, NpmListDepItem>;
 }>;
 
-// npm view <packagename> --json
-export type NpmViewData = GenericObject<{
-  versions: string[] & Record<string, { deprecated?: string | boolean }>;
+// Direct npm registry API response type
+export type NpmRegistryPackageData = GenericObject<{
+  name: string;
+  description?: string;
+  'dist-tags': Record<string, string>;
+  versions: GenericObject<{
+    version: string;
+    deprecated?: string | boolean;
+    description?: string;
+    homepage?: string;
+    repository?: string | { type: string; url: string };
+  }>;
   time: Record<string, string>;
-  homepage: string;
-  repository: string | GenericObject<{ url: string }>;
-  deprecated?: boolean | string;
-  // Custom property to store version-specific deprecation status
-  versionDeprecations?: Record<string, boolean>;
+  homepage?: string;
+  repository?: string | { type: string; url: string };
+  deprecated?: string | boolean;
 }>;
 
 /**
