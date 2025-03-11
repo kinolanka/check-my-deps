@@ -114,6 +114,90 @@ const tsConfig = {
     '@typescript-eslint/no-unsafe-member-access': 'warn',
     '@typescript-eslint/no-unsafe-argument': 'warn',
     '@typescript-eslint/no-unsafe-call': 'warn',
+    '@typescript-eslint/member-ordering': [
+      'error',
+      {
+        default: {
+          memberTypes: [
+            // Index signature
+            'signature',
+            'call-signature',
+
+            // Fields (parameters)
+            'public-static-field',
+            'protected-static-field',
+            'private-static-field',
+            '#private-static-field',
+
+            'public-decorated-field',
+            'protected-decorated-field',
+            'private-decorated-field',
+
+            'public-instance-field',
+            'protected-instance-field',
+            'private-instance-field',
+            '#private-instance-field',
+
+            'public-abstract-field',
+            'protected-abstract-field',
+
+            'public-field',
+            'protected-field',
+            'private-field',
+            '#private-field',
+
+            'static-field',
+            'instance-field',
+            'abstract-field',
+
+            'decorated-field',
+
+            'field',
+
+            // Static initialization
+            'static-initialization',
+
+            // Constructors
+            'public-constructor',
+            'protected-constructor',
+            'private-constructor',
+
+            'constructor',
+
+            // Public Methods
+            'public-static-method',
+            'public-decorated-method',
+            'public-instance-method',
+            'public-abstract-method',
+            'public-method',
+
+            // Protected Methods
+            'protected-static-method',
+            'protected-decorated-method',
+            'protected-instance-method',
+            'protected-abstract-method',
+            'protected-method',
+
+            // Private Methods
+            'private-static-method',
+            '#private-static-method',
+            'private-decorated-method',
+            'private-instance-method',
+            '#private-instance-method',
+            'private-method',
+            '#private-method',
+
+            // Remaining method categories
+            'static-method',
+            'instance-method',
+            'abstract-method',
+            'decorated-method',
+            'method',
+          ],
+          order: 'as-written',
+        },
+      },
+    ],
     // Disable the base rule as it can report incorrect errors in TypeScript files
     'no-unused-vars': 'off',
     // Use the TypeScript-specific rule instead
