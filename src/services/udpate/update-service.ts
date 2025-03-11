@@ -212,24 +212,6 @@ class UpdateService extends Service {
         }
       }
 
-      // Skip deprecated packages unless they have a non-deprecated newer version
-      if (info.deprecated) {
-        // If the package is deprecated but has a newer version that's not deprecated, allow the update
-        let targetVersionDeprecated = true;
-
-        if (this.updateLevel === 'latest' && info.versionLast) {
-          targetVersionDeprecated = !!info.versionLast.deprecated;
-        } else if (this.updateLevel === 'minor' && info.versionLastMinor) {
-          targetVersionDeprecated = !!info.versionLastMinor.deprecated;
-        } else if (this.updateLevel === 'patch' && info.versionInstalled) {
-          targetVersionDeprecated = !!info.versionInstalled.deprecated;
-        }
-
-        if (targetVersionDeprecated) {
-          return false; // Skip if the target version is also deprecated
-        }
-      }
-
       const status = info.updateStatus;
 
       if (this.updateLevel === 'latest') {
