@@ -72,6 +72,7 @@ const baseConfig = {
     eqeqeq: ['error', 'always'],
     'prefer-const': 'error',
     'no-var': 'error',
+    'lines-between-class-members': ['error', 'always', { exceptAfterSingleLine: false }],
     'padding-line-between-statements': [
       'error',
       { blankLine: 'always', prev: '*', next: '*' },
