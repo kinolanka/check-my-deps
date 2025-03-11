@@ -1,4 +1,4 @@
-import extractRootDomain from './extract-root-domain';
+import extractRootDomain from '@/utils/helpers/extract-root-domain';
 
 describe('extractRootDomain', () => {
   it('should extract the root domain from a valid URL', () => {

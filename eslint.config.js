@@ -147,8 +147,6 @@ const testConfig = {
     'no-console': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/unbound-method': 'off',
-    // Disable the no-restricted-imports rule for test files
-    'no-restricted-imports': 'off',
   },
 };
 

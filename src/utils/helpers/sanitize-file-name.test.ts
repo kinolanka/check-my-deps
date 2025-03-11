@@ -1,4 +1,4 @@
-import sanitizeFileName from './sanitize-file-name';
+import sanitizeFileName from '@/utils/helpers/sanitize-file-name';
 
 describe('sanitizeFileName', () => {
   it('should convert the name to lowercase', () => {

@@ -1,4 +1,4 @@
-import formatDate from './format-date';
+import formatDate from '@/utils/helpers/format-date';
 
 describe('formatDate', () => {
   it('should format date string with time part correctly', () => {
