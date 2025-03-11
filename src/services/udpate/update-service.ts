@@ -57,8 +57,13 @@ class UpdateService extends Service {
       // Determine the target version based on update level
       let targetVersion: string | undefined;
 
-      if (this.updateLevel === 'latest' && packageInfo.versionLast?.version) {
-        targetVersion = packageInfo.versionLast.version;
+      if (this.updateLevel === 'latest') {
+        // For latest level, prioritize the latest version, but fall back to minor if available
+        if (packageInfo.versionLast?.version) {
+          targetVersion = packageInfo.versionLast.version;
+        } else if (packageInfo.versionLastMinor?.version) {
+          targetVersion = packageInfo.versionLastMinor.version;
+        }
       } else if (this.updateLevel === 'minor' && packageInfo.versionLastMinor?.version) {
         targetVersion = packageInfo.versionLastMinor.version;
       } else if (this.updateLevel === 'patch' && packageInfo.versionInstalled?.version) {
