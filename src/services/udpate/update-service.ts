@@ -86,7 +86,6 @@ class UpdateService extends Service {
         currentVersion: versionRequired,
         newVersion,
         updateType: updateStatus || 'patch',
-        deprecated: packageInfo.deprecated,
       });
     }
 

@@ -32,7 +32,6 @@ export type PackageSpec = {
   dependencyType: string;
   registrySource?: string;
   updateStatus?: PackageStatus;
-  deprecated?: boolean;
   versionRequired: string;
   versionInstalled?: PackageVersionSpec;
   versionLastMinor?: PackageVersionSpec;

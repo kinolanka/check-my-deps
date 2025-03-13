@@ -43,8 +43,6 @@ class PackageInfoService extends Service {
 
   private updateStatus: PackageSpec['updateStatus'] = 'upToDate';
 
-  private deprecated = false;
-
   private npmListDepItem?: NpmListDepItem;
 
   private npmRegistryData?: NpmRegistryPackageData;
@@ -78,8 +76,6 @@ class PackageInfoService extends Service {
     this.setRegistrySource();
 
     this.setPackageStatus();
-
-    this.setDeprecated();
   }
 
   public getInfo(): PackageSpec {
@@ -91,7 +87,6 @@ class PackageInfoService extends Service {
       versionLastMinor: this.versionLastMinor,
       registrySource: this.registrySource,
       updateStatus: this.updateStatus,
-      deprecated: this.deprecated,
     };
 
     // Check if installed version is the same as latest version
@@ -291,16 +286,9 @@ class PackageInfoService extends Service {
     }
   }
 
-  private setDeprecated() {
-    // Check if the package itself is deprecated
-    if (this.npmRegistryData && this.npmRegistryData.deprecated) {
-      this.deprecated = true;
-    }
-  }
-
-  private isVersionDeprecated(version: string): boolean {
+  private isVersionDeprecated(version: string): boolean | undefined {
     if (!this.npmRegistryData) {
-      return false;
+      return;
     }
 
     // Check if the specific version is deprecated in the versions object
