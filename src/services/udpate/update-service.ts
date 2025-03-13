@@ -19,8 +19,9 @@ import fs from 'fs-extra';
 import type PackageInfoService from '@/services/package-info-service';
 import type { ServiceType } from '@/services/service';
 import Service from '@/services/service';
-import { NPM_REGISTRY_HOST, PACKAGE_FILE_NAME, PACKAGE_LOCK_FILE_NAME } from '@/utils/constants';
-import type { PackageStatus, PackageUpdateInfo, UpdateLevel } from '@/utils/types';
+import { PACKAGE_FILE_NAME, PACKAGE_LOCK_FILE_NAME } from '@/utils/constants';
+import isNpmRegistryUrl from '@/utils/helpers/is-npm-registry-url';
+import type { PackageUpdateInfo, UpdateLevel } from '@/utils/types';
 
 import type { PackageJson } from 'type-fest';
 
@@ -98,14 +99,7 @@ class UpdateService extends Service {
    * @param dryRun If true, don't actually make changes
    * @returns Number of packages updated
    */
-  public applyUpdates(
-    updates: Array<{
-      packageName: string;
-      dependencyType: string;
-      newVersion: string;
-    }>,
-    dryRun = false
-  ): number {
+  public applyUpdates(updates: Array<PackageUpdateInfo>, dryRun = false): number {
     if (dryRun) {
       return updates.length;
     }
@@ -159,16 +153,7 @@ class UpdateService extends Service {
    * Displays the updates to be applied
    * @param updates The list of updates to display
    */
-  public displayUpdates(
-    updates: Array<{
-      packageName: string;
-      dependencyType: string;
-      currentVersion: string;
-      newVersion: string;
-      updateType: PackageStatus;
-      deprecated?: boolean;
-    }>
-  ): void {
+  public displayUpdates(updates: Array<PackageUpdateInfo>): void {
     // Create a structured JSON object
     const jsonOutput = {
       timestamp: new Date().toISOString(),
@@ -180,7 +165,7 @@ class UpdateService extends Service {
         currentVersion: update.currentVersion,
         newVersion: update.newVersion,
         updateType: update.updateType,
-        deprecated: update.deprecated || false,
+        deprecated: update.deprecated,
       })),
     };
 
@@ -195,55 +180,51 @@ class UpdateService extends Service {
   private getUpdatablePackages(): PackageInfoService[] {
     // const input = [];
 
-    const result = this.packageInfoList.filter((pkg) => {
-      const info = pkg.getInfo();
+    const filteredList = this.packageInfoList.filter((pkg) => {
+      const packageSpec = pkg.getInfo();
 
-      // input.push(info);
+      // input.push(packageSpec);
 
       // Skip packages without version info (might be missing from npm registry data)
-      if (!info.updateStatus || !info.versionInstalled) {
+      if (!packageSpec.updateStatus || !packageSpec.versionInstalled) {
         return false;
       }
 
-      // For non-npm registry packages (like git, file, etc.), we need to check if they have valid version data
-      // If they have valid version data and update status, we should consider them for updates
-      if (info.registrySource && !info.registrySource.includes(NPM_REGISTRY_HOST)) {
-        // For git/file dependencies, only update if we have valid version data and it's not up to date
-        if (info.versionLast?.version || info.versionLastMinor?.version) {
-          // Continue with normal update logic below
-        } else {
-          return false; // Skip if we don't have valid version data
-        }
+      // Skip non-npm registry packages (like git, file, etc.)
+      if (!packageSpec.registrySource || !isNpmRegistryUrl(packageSpec.registrySource)) {
+        return false;
       }
 
-      const status = info.updateStatus;
+      switch (this.updateLevel) {
+        case 'latest':
+          // For latest, update any package that's not up to date
+          return packageSpec.updateStatus !== 'upToDate';
 
-      if (this.updateLevel === 'latest') {
-        // For latest, update any package that's not up to date
-        return status !== 'upToDate';
-      } else if (this.updateLevel === 'minor') {
-        // For minor, only update packages with minor or patch updates
-        return status === 'minor' || status === 'patch';
-      } else if (this.updateLevel === 'patch') {
-        // For patch, only update packages with patch updates
-        return status === 'patch';
+        case 'minor':
+          // For minor, only update packages with minor or patch updates
+          return packageSpec.updateStatus === 'minor' || packageSpec.updateStatus === 'patch';
+
+        case 'patch':
+          // For patch, only update packages with patch updates
+          return packageSpec.updateStatus === 'patch';
+
+        default:
+          return false;
       }
-
-      return false;
     });
 
     // console.log('input', JSON.stringify(input, null, 2));
 
     // console.log(
-    //   'result',
+    //   'filteredList',
     //   JSON.stringify(
-    //     result.map((p) => p.getInfo()),
+    //     filteredList.map((p) => p.getInfo()),
     //     null,
     //     2
     //   )
     // );
 
-    return result;
+    return filteredList;
   }
 
   /**
@@ -251,19 +232,6 @@ class UpdateService extends Service {
    * e.g., "^1.2.3" returns "^", "~2.0.0" returns "~", "3.0.0" returns ""
    */
   private getVersionPrefix(versionRequired: string): string {
-    // Handle complex version requirements
-    if (
-      versionRequired.startsWith('http') ||
-      versionRequired.startsWith('git') ||
-      versionRequired.startsWith('file:') ||
-      versionRequired.startsWith('npm:') ||
-      versionRequired.includes(':') ||
-      versionRequired.includes('/')
-    ) {
-      // Non-semver version specifications (URLs, git repos, etc.)
-      return '';
-    }
-
     if (versionRequired.startsWith('^') || versionRequired.startsWith('~')) {
       return versionRequired.charAt(0);
     }
