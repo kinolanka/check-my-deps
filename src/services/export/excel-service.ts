@@ -99,7 +99,7 @@ class ExcelService extends ExportService {
     versionExists: boolean = true
   ) {
     // Only set value if the version exists
-    if (versionExists) {
+    if (versionExists && isDeprecated !== undefined) {
       cell.value = isDeprecated ? 'yes' : 'no';
 
       if (isDeprecated) {
