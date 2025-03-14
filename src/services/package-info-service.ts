@@ -4,7 +4,7 @@
  * This module implements a service for analyzing and enriching package data with features including:
  * - Parsing and normalizing package version information
  * - Determining update status (up-to-date, patch, minor, major)
- * - Identifying the latest versions available (latest, last minor)
+ * - Identifying the latest versions available (latest, last minor, last patch)
  * - Detecting package source/registry information
  * - Checking deprecation status of packages and specific versions
  * - Generating comprehensive package information objects
@@ -34,6 +34,8 @@ class PackageInfoService extends Service {
   private versionRequired: string;
 
   private versionInstalled?: PackageVersionSpec;
+
+  private versionLastPatch?: PackageVersionSpec;
 
   private versionLastMinor?: PackageVersionSpec;
 
@@ -69,6 +71,8 @@ class PackageInfoService extends Service {
 
     this.setInstalledVersion();
 
+    this.setLastPatchVersion();
+
     this.setLastMinorVersion();
 
     this.setLatestVersion();
@@ -84,6 +88,7 @@ class PackageInfoService extends Service {
       dependencyType: this.dependencyType,
       versionRequired: this.versionRequired,
       versionInstalled: this.versionInstalled,
+      versionLastPatch: this.versionLastPatch,
       versionLastMinor: this.versionLastMinor,
       registrySource: this.registrySource,
       updateStatus: this.updateStatus,
@@ -101,8 +106,14 @@ class PackageInfoService extends Service {
       this.versionLast?.version &&
       this.versionLastMinor.version === this.versionLast.version;
 
-    // Only include versionLast if it's different from both versionInstalled AND versionLastMinor
-    if (!isSameVersion && !isLastMinorSameAsLast) {
+    // Check if last patch version is the same as latest version
+    const isLastPatchSameAsLast =
+      this.versionLastPatch?.version &&
+      this.versionLast?.version &&
+      this.versionLastPatch.version === this.versionLast.version;
+
+    // Only include versionLast if it's different from both versionInstalled, versionLastMinor, AND versionLastPatch
+    if (!isSameVersion && !isLastMinorSameAsLast && !isLastPatchSameAsLast) {
       packageSpec.versionLast = this.versionLast;
     }
 
@@ -118,6 +129,48 @@ class PackageInfoService extends Service {
         releaseDate: formatDate(this.npmRegistryData?.time?.[installedVersion] || ''),
         npmUrl: getNpmPackageUrl(this.packageName, installedVersion),
         deprecated: this.isVersionDeprecated(installedVersion),
+      };
+    }
+  }
+
+  private setLastPatchVersion() {
+    if (!this.versionInstalled?.version || !this.npmRegistryData) {
+      return;
+    }
+
+    const productionVersions = this.filterProductionVersions(this.npmRegistryData.versions);
+
+    // Extract major, minor, and patch version numbers from installed version
+    const [major, minor, patch] = this.versionInstalled.version.split('.').map(Number);
+
+    // Find the latest patch version that is greater than the installed patch version
+    const lastPatchVersion = productionVersions
+      // filter versions that match the installed major and minor versions and have a greater patch version
+      .filter((version: string) => {
+        const [vMajor, vMinor, vPatch] = version.split('.').map(Number);
+
+        return vMajor === major && vMinor === minor && vPatch > patch;
+      })
+      // Sort versions by semver
+      .sort((a: string, b: string) => {
+        const [aMajor, aMinor, aPatch] = a.split('.').map(Number);
+
+        const [bMajor, bMinor, bPatch] = b.split('.').map(Number);
+
+        if (aMajor !== bMajor) return aMajor - bMajor;
+
+        if (aMinor !== bMinor) return aMinor - bMinor;
+
+        return aPatch - bPatch;
+      })
+      .pop();
+
+    if (lastPatchVersion) {
+      this.versionLastPatch = {
+        version: lastPatchVersion,
+        releaseDate: formatDate(this.npmRegistryData.time?.[lastPatchVersion] || ''),
+        npmUrl: getNpmPackageUrl(this.packageName, lastPatchVersion),
+        deprecated: this.isVersionDeprecated(lastPatchVersion),
       };
     }
   }
