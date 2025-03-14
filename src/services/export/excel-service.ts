@@ -323,6 +323,13 @@ class ExcelService extends ExportService {
         key: 'installDate',
         width: 15,
       },
+      { header: 'Latest Patch Version', key: 'latestPatch', width: 10 },
+      { header: 'Latest Patch Version Deprecated', key: 'latestPatchDeprecated', width: 10 },
+      {
+        header: 'Latest Patch Version Published Date',
+        key: 'latestPatchDate',
+        width: 15,
+      },
       { header: 'Latest Minor Version', key: 'latestMinor', width: 10 },
       { header: 'Latest Minor Version Deprecated', key: 'latestMinorDeprecated', width: 10 },
       {
@@ -361,6 +368,9 @@ class ExcelService extends ExportService {
         installedVersion: row.versionInstalled?.version,
         installedVersionDeprecated: '', // Will be set by handleDeprecatedStatus
         installDate: row.versionInstalled?.releaseDate,
+        latestPatch: row.versionLastPatch?.version,
+        latestPatchDeprecated: '', // Will be set by handleDeprecatedStatus
+        latestPatchDate: row.versionLastPatch?.releaseDate,
         latestMinor: row.versionLastMinor?.version,
         latestMinorDeprecated: '', // Will be set by handleDeprecatedStatus
         latestMinorDate: row.versionLastMinor?.releaseDate,
@@ -382,6 +392,14 @@ class ExcelService extends ExportService {
         installedDeprecatedCell,
         row.versionInstalled?.deprecated,
         !!row.versionInstalled
+      );
+
+      const latestPatchDeprecatedCell = newRow.getCell('latestPatchDeprecated');
+
+      this.handleDeprecatedStatus(
+        latestPatchDeprecatedCell,
+        row.versionLastPatch?.deprecated,
+        !!row.versionLastPatch
       );
 
       const latestMinorDeprecatedCell = newRow.getCell('latestMinorDeprecated');
@@ -408,6 +426,17 @@ class ExcelService extends ExportService {
           installedVersionCell,
           row.versionInstalled.version,
           row.versionInstalled.npmUrl
+        );
+      }
+
+      // Convert latest patch version cell to a hyperlink if URL is available
+      if (row.versionLastPatch?.version && row.versionLastPatch?.npmUrl) {
+        const latestPatchCell = newRow.getCell('latestPatch');
+
+        this.createUrlCell(
+          latestPatchCell,
+          row.versionLastPatch.version,
+          row.versionLastPatch.npmUrl
         );
       }
 

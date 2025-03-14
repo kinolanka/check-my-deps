@@ -3,7 +3,7 @@
  *
  * This module implements a service for creating structured JSON reports with features including:
  * - Converting package information objects to JSON-serializable format
- * - Including complete dependency details with version information
+ * - Including complete dependency details with version information (installed, last patch, last minor, latest)
  * - Incorporating summary statistics and metadata
  * - Saving formatted JSON to files with proper directory creation
  * - Providing user feedback on export operations

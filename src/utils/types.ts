@@ -34,6 +34,7 @@ export type PackageSpec = {
   updateStatus?: PackageStatus;
   versionRequired: string;
   versionInstalled?: PackageVersionSpec;
+  versionLastPatch?: PackageVersionSpec;
   versionLastMinor?: PackageVersionSpec;
   versionLast?: PackageVersionSpec;
 };
