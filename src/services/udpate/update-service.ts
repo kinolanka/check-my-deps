@@ -12,9 +12,8 @@
  * according to user-specified constraints and best practices.
  */
 
+import fs from 'fs';
 import path from 'path';
-
-import fs from 'fs-extra';
 
 import type PackageInfoService from '@/services/package-info-service';
 import type { ServiceType } from '@/services/service';
@@ -106,7 +105,7 @@ class UpdateService extends Service {
 
     try {
       // Read the current package.json
-      const packageJson = fs.readJSONSync(this.packageJsonPath) as PackageJson;
+      const packageJson = JSON.parse(fs.readFileSync(this.packageJsonPath, 'utf8')) as PackageJson;
 
       let updatedCount = 0;
 
@@ -127,7 +126,7 @@ class UpdateService extends Service {
 
       if (updatedCount > 0) {
         // Write the updated package.json back to disk
-        fs.writeJSONSync(this.packageJsonPath, packageJson, { spaces: 2 });
+        fs.writeFileSync(this.packageJsonPath, JSON.stringify(packageJson, null, 2), 'utf8');
 
         // Log a message suggesting to run npm install
         this.ctx.outputService.log(`Package versions have been updated in ${PACKAGE_FILE_NAME}`);
