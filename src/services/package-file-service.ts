@@ -11,9 +11,8 @@
  * and is used by other services to retrieve dependency specifications.
  */
 
+import fs from 'fs';
 import path from 'path';
-
-import fs from 'fs-extra';
 
 import type { ServiceType } from '@/services/service';
 import Service from '@/services/service';
@@ -46,7 +45,7 @@ class PackageFileService extends Service {
     this.checkPackageLockExists();
 
     // Read package.json
-    this.packageJson = fs.readJSONSync(packageJsonPath) as PackageJson;
+    this.packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8')) as PackageJson;
   }
 
   public getName(): string {

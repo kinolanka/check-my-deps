@@ -12,9 +12,8 @@
  * providing a machine-readable format that can be consumed by other tools or processes.
  */
 
+import fs from 'fs';
 import path from 'path';
-
-import fs from 'fs-extra';
 
 import ExportService from '@/services/export/export-service';
 import type SummaryService from '@/services/export/summary-service';
