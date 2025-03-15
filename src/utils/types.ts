@@ -20,11 +20,15 @@
 
 export type GenericObject<T extends Record<string, unknown>> = Record<string, unknown> & T;
 
+export type TimeUnit = 'days' | 'months' | 'years';
+
 export type PackageVersionSpec = {
   version: string;
   releaseDate: string;
   npmUrl: string;
   deprecated?: boolean;
+  timeSinceRelease?: number;
+  timeUnit?: TimeUnit;
 };
 
 export type PackageSpec = {
