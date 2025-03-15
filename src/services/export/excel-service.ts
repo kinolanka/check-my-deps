@@ -202,12 +202,14 @@ class ExcelService extends ExportService {
     worksheetSum.columns = [
       { width: 20 }, // A - Dependency Type / Report labels
       { width: 10 }, // B - Total / Report values
-      { width: 15 }, // C - Up-to-Date
-      { width: 15 }, // D - Outdated
-      { width: 10 }, // E - Major
-      { width: 10 }, // F - Minor
-      { width: 10 }, // G - Patch
-      { width: 10 }, // H - Deprecated
+      { width: 15 }, // C - From npm Registry
+      { width: 15 }, // D - Not From npm Registry
+      { width: 15 }, // E - Up-to-Date
+      { width: 15 }, // F - Outdated
+      { width: 10 }, // G - Major
+      { width: 10 }, // H - Minor
+      { width: 10 }, // I - Patch
+      { width: 10 }, // J - Deprecated
     ];
 
     // Get report info from summary service
@@ -229,6 +231,8 @@ class ExcelService extends ExportService {
     worksheetSum.addRow([
       'Dependency Type',
       'Total',
+      'From npm Registry',
+      'Not From npm Registry',
       'Up-to-Date',
       'Outdated',
       'Major',
@@ -244,13 +248,13 @@ class ExcelService extends ExportService {
 
     // Add summary data for each dependency type
     for (const [depType, stats] of Object.entries(this.summaryData.byType)) {
-      const outdatedCount = stats.major + stats.minor + stats.patch;
-
       worksheetSum.addRow([
         depType,
         stats.total,
+        stats.fromNpmRegistry,
+        stats.notFromNpmRegistry,
         stats.upToDate,
-        outdatedCount,
+        stats.outdated,
         stats.major,
         stats.minor,
         stats.patch,
@@ -268,6 +272,8 @@ class ExcelService extends ExportService {
     const totalRow = worksheetSum.addRow([
       'Total',
       totals.total,
+      totals.fromNpmRegistry,
+      totals.notFromNpmRegistry,
       totals.upToDate,
       totals.outdated,
       totals.major,
@@ -294,7 +300,7 @@ class ExcelService extends ExportService {
       const infoRow = worksheetSum.addRow([sourceInfoRows.info]);
 
       // Merge cells for the info text and apply styling
-      worksheetSum.mergeCells(infoRow.number, 1, infoRow.number, 8);
+      worksheetSum.mergeCells(infoRow.number, 1, infoRow.number, 10);
 
       const infoCell = infoRow.getCell(1);
 

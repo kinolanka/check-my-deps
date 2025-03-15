@@ -24,6 +24,7 @@ import {
   THIS_PACKAGE_GITHUB_URL,
 } from '@/utils/constants';
 import formatDate from '@/utils/helpers/format-date';
+import isNpmRegistryUrl from '@/utils/helpers/is-npm-registry-url';
 import type { Summary, SummaryStats, SummaryTotals } from '@/utils/types';
 
 class SummaryService extends Service {
@@ -35,12 +36,14 @@ class SummaryService extends Service {
     byType: {},
     totals: {
       total: 0,
+      fromNpmRegistry: 0,
+      notFromNpmRegistry: 0,
       upToDate: 0,
+      outdated: 0,
       major: 0,
       minor: 0,
       patch: 0,
       deprecated: 0,
-      outdated: 0,
     },
     reportInfo: {
       date: '',
@@ -100,7 +103,10 @@ class SummaryService extends Service {
       if (!summaryByType[row.dependencyType]) {
         summaryByType[row.dependencyType] = {
           total: 0,
+          fromNpmRegistry: 0,
+          notFromNpmRegistry: 0,
           upToDate: 0,
+          outdated: 0,
           patch: 0,
           minor: 0,
           major: 0,
@@ -119,6 +125,20 @@ class SummaryService extends Service {
       if (row.versionInstalled?.deprecated) {
         summaryByType[row.dependencyType].deprecated += 1;
       }
+
+      // Count packages from npm registry and not from npm registry
+      const registrySource = row.registrySource || '';
+
+      if (isNpmRegistryUrl(registrySource)) {
+        summaryByType[row.dependencyType].fromNpmRegistry += 1;
+      } else if (registrySource) {
+        summaryByType[row.dependencyType].notFromNpmRegistry += 1;
+      }
+    }
+
+    // Calculate outdated count for each dependency type
+    for (const stats of Object.values(summaryByType)) {
+      stats.outdated = stats.major + stats.minor + stats.patch;
     }
 
     this.summary.byType = summaryByType;
@@ -130,12 +150,14 @@ class SummaryService extends Service {
   private calculateTotals() {
     const totals: SummaryTotals = {
       total: 0,
+      fromNpmRegistry: 0,
+      notFromNpmRegistry: 0,
       upToDate: 0,
+      outdated: 0,
       major: 0,
       minor: 0,
       patch: 0,
       deprecated: 0,
-      outdated: 0,
     };
 
     for (const stats of Object.values(this.summary.byType)) {
@@ -150,10 +172,13 @@ class SummaryService extends Service {
       totals.patch += stats.patch;
 
       totals.deprecated += stats.deprecated;
-    }
 
-    // Calculate outdated as sum of major, minor, and patch
-    totals.outdated = totals.major + totals.minor + totals.patch;
+      totals.fromNpmRegistry += stats.fromNpmRegistry;
+
+      totals.notFromNpmRegistry += stats.notFromNpmRegistry;
+
+      totals.outdated += stats.outdated;
+    }
 
     this.summary.totals = totals;
   }
