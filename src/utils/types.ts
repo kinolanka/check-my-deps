@@ -77,11 +77,13 @@ export type NpmRegistryPackageData = GenericObject<{
 
 export type ExportFormat = 'excel' | 'json';
 
-export type SummaryStats = Record<PackageStatus | 'total' | 'deprecated', number>;
-
-export type SummaryTotals = SummaryStats & {
+export type SummaryStats = Record<PackageStatus | 'total' | 'deprecated', number> & {
+  fromNpmRegistry: number;
+  notFromNpmRegistry: number;
   outdated: number; // Sum of major, minor, and patch
 };
+
+export type SummaryTotals = SummaryStats;
 
 export type ReportInfo = {
   date: string;

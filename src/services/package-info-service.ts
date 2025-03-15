@@ -43,7 +43,7 @@ class PackageInfoService extends Service {
 
   private registrySource?: string;
 
-  private updateStatus: PackageSpec['updateStatus'] = 'upToDate';
+  private updateStatus?: PackageSpec['updateStatus'];
 
   private npmListDepItem?: NpmListDepItem;
 
