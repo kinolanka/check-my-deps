@@ -16,6 +16,7 @@
 import Service from '@/services/service';
 import type { ServiceCtxType } from '@/services/service-ctx';
 import { NPM_REGISTRY_HOST } from '@/utils/constants';
+import calculateTimeSinceRelease from '@/utils/helpers/calculate-time-since-release';
 import formatDate from '@/utils/helpers/format-date';
 import getNpmPackageUrl from '@/utils/helpers/get-npm-package-url';
 import isNpmRegistryUrl from '@/utils/helpers/is-npm-registry-url';
@@ -24,6 +25,7 @@ import type {
   NpmRegistryPackageData,
   PackageSpec,
   PackageVersionSpec,
+  TimeUnit,
 } from '@/utils/types';
 
 class PackageInfoService extends Service {
@@ -48,6 +50,8 @@ class PackageInfoService extends Service {
   private npmListDepItem?: NpmListDepItem;
 
   private npmRegistryData?: NpmRegistryPackageData;
+
+  private timeUnit: TimeUnit = 'months'; // Default time unit
 
   constructor(
     args: {
@@ -82,6 +86,18 @@ class PackageInfoService extends Service {
     this.setPackageStatus();
   }
 
+  /**
+   * Gets the package specification
+   * @returns The package specification object
+   */
+  public getSpec(): PackageSpec {
+    return this.getInfo();
+  }
+
+  /**
+   * Gets the package information
+   * @returns The package information object
+   */
   public getInfo(): PackageSpec {
     const packageSpec: PackageSpec = {
       packageName: this.packageName,
@@ -120,15 +136,81 @@ class PackageInfoService extends Service {
     return packageSpec;
   }
 
+  /**
+   * Sets the time unit for time since release calculations
+   * @param unit The time unit to use ('days', 'months', or 'years')
+   */
+  public setTimeUnit(unit: TimeUnit): void {
+    this.timeUnit = unit;
+
+    // Recalculate time since release for all versions with the new unit
+    this.updateTimeSinceRelease();
+  }
+
+  /**
+   * Updates the time since release values for all versions based on the current time unit
+   */
+  private updateTimeSinceRelease(): void {
+    // Update installed version
+    if (this.versionInstalled) {
+      const releaseDate = this.npmRegistryData?.time?.[this.versionInstalled.version] || '';
+
+      this.versionInstalled.timeSinceRelease = calculateTimeSinceRelease(
+        releaseDate,
+        this.timeUnit
+      );
+
+      this.versionInstalled.timeUnit = this.timeUnit;
+    }
+
+    // Update latest patch version
+    if (this.versionLastPatch) {
+      const releaseDate = this.npmRegistryData?.time?.[this.versionLastPatch.version] || '';
+
+      this.versionLastPatch.timeSinceRelease = calculateTimeSinceRelease(
+        releaseDate,
+        this.timeUnit
+      );
+
+      this.versionLastPatch.timeUnit = this.timeUnit;
+    }
+
+    // Update latest minor version
+    if (this.versionLastMinor) {
+      const releaseDate = this.npmRegistryData?.time?.[this.versionLastMinor.version] || '';
+
+      this.versionLastMinor.timeSinceRelease = calculateTimeSinceRelease(
+        releaseDate,
+        this.timeUnit
+      );
+
+      this.versionLastMinor.timeUnit = this.timeUnit;
+    }
+
+    // Update latest version
+    if (this.versionLast) {
+      const releaseDate = this.npmRegistryData?.time?.[this.versionLast.version] || '';
+
+      this.versionLast.timeSinceRelease = calculateTimeSinceRelease(releaseDate, this.timeUnit);
+
+      this.versionLast.timeUnit = this.timeUnit;
+    }
+  }
+
   private setInstalledVersion() {
     const installedVersion = this.npmListDepItem?.version || '';
 
     if (installedVersion) {
+      const releaseDate = this.npmRegistryData?.time?.[installedVersion] || '';
+
       this.versionInstalled = {
         version: installedVersion,
-        releaseDate: formatDate(this.npmRegistryData?.time?.[installedVersion] || ''),
+        releaseDate: formatDate(releaseDate),
         npmUrl: getNpmPackageUrl(this.packageName, installedVersion),
         deprecated: this.isVersionDeprecated(installedVersion),
+
+        timeSinceRelease: calculateTimeSinceRelease(releaseDate, this.timeUnit),
+        timeUnit: this.timeUnit,
       };
     }
   }
@@ -166,11 +248,16 @@ class PackageInfoService extends Service {
       .pop();
 
     if (lastPatchVersion) {
+      const releaseDate = this.npmRegistryData.time?.[lastPatchVersion] || '';
+
       this.versionLastPatch = {
         version: lastPatchVersion,
-        releaseDate: formatDate(this.npmRegistryData.time?.[lastPatchVersion] || ''),
+        releaseDate: formatDate(releaseDate),
         npmUrl: getNpmPackageUrl(this.packageName, lastPatchVersion),
         deprecated: this.isVersionDeprecated(lastPatchVersion),
+
+        timeSinceRelease: calculateTimeSinceRelease(releaseDate, this.timeUnit),
+        timeUnit: this.timeUnit,
       };
     }
   }
@@ -208,11 +295,16 @@ class PackageInfoService extends Service {
       .pop();
 
     if (lastMinorVersion) {
+      const releaseDate = this.npmRegistryData.time?.[lastMinorVersion] || '';
+
       this.versionLastMinor = {
         version: lastMinorVersion,
-        releaseDate: formatDate(this.npmRegistryData.time?.[lastMinorVersion] || ''),
+        releaseDate: formatDate(releaseDate),
         npmUrl: getNpmPackageUrl(this.packageName, lastMinorVersion),
         deprecated: this.isVersionDeprecated(lastMinorVersion),
+
+        timeSinceRelease: calculateTimeSinceRelease(releaseDate, this.timeUnit),
+        timeUnit: this.timeUnit,
       };
     }
   }
@@ -241,11 +333,16 @@ class PackageInfoService extends Service {
 
     // Set the versionLast property
     if (latestVersion) {
+      const releaseDate = this.npmRegistryData.time?.[latestVersion] || '';
+
       this.versionLast = {
         version: latestVersion,
-        releaseDate: formatDate(this.npmRegistryData.time?.[latestVersion] || ''),
+        releaseDate: formatDate(releaseDate),
         npmUrl: getNpmPackageUrl(this.packageName, latestVersion),
         deprecated: this.isVersionDeprecated(latestVersion),
+
+        timeSinceRelease: calculateTimeSinceRelease(releaseDate, this.timeUnit),
+        timeUnit: this.timeUnit,
       };
     }
   }

@@ -318,8 +318,19 @@ class ExcelService extends ExportService {
   private handleDependenciesWorksheet() {
     const worksheetDeps = this.workbook.addWorksheet('Dependencies');
 
+    // Get the first package info to determine the time unit
+    const firstPackage = this.list[0];
+
+    // Access timeUnit through the public getSpec() method
+    const firstPackageSpec = firstPackage?.getSpec();
+
+    const timeUnit = firstPackageSpec?.versionInstalled?.timeUnit || 'months';
+
+    const timeUnitCapitalized = timeUnit.charAt(0).toUpperCase() + timeUnit.slice(1);
+
     worksheetDeps.columns = [
       { header: 'Package Name', key: 'packageName', width: 30 },
+      { header: 'Dependency Type', key: 'dependencyType', width: 15 },
       { header: 'Update Status', key: 'updateStatus', width: 10 },
       { header: 'Required Version', key: 'versionRequired', width: 10 },
       { header: 'Installed Version', key: 'installedVersion', width: 10 },
@@ -329,11 +340,21 @@ class ExcelService extends ExportService {
         key: 'installDate',
         width: 15,
       },
+      {
+        header: `Installed Version Time Since Release (${timeUnitCapitalized})`,
+        key: 'installedTimeSinceRelease',
+        width: 15,
+      },
       { header: 'Latest Patch Version', key: 'latestPatch', width: 10 },
       { header: 'Latest Patch Version Deprecated', key: 'latestPatchDeprecated', width: 10 },
       {
         header: 'Latest Patch Version Published Date',
         key: 'latestPatchDate',
+        width: 15,
+      },
+      {
+        header: `Latest Patch Version Time Since Release (${timeUnitCapitalized})`,
+        key: 'latestPatchTimeSinceRelease',
         width: 15,
       },
       { header: 'Latest Minor Version', key: 'latestMinor', width: 10 },
@@ -343,6 +364,11 @@ class ExcelService extends ExportService {
         key: 'latestMinorDate',
         width: 15,
       },
+      {
+        header: `Latest Minor Version Time Since Release (${timeUnitCapitalized})`,
+        key: 'latestMinorTimeSinceRelease',
+        width: 15,
+      },
       { header: 'Latest Available Version', key: 'latestVersion', width: 15 },
       { header: 'Latest Available Version Deprecated', key: 'latestVersionDeprecated', width: 10 },
       {
@@ -350,8 +376,12 @@ class ExcelService extends ExportService {
         key: 'latestVersionDate',
         width: 15,
       },
+      {
+        header: `Latest Version Time Since Release (${timeUnitCapitalized})`,
+        key: 'latestVersionTimeSinceRelease',
+        width: 15,
+      },
       { header: 'Registry Source', key: 'registrySource', width: 20 },
-      { header: 'Dependency Type', key: 'dependencyType', width: 20 },
     ];
 
     // Make the header row bold
@@ -370,20 +400,24 @@ class ExcelService extends ExportService {
       const newRow = worksheetDeps.addRow({
         packageName: row.packageName,
         dependencyType: row.dependencyType,
+        updateStatus: row.updateStatus,
         versionRequired: row.versionRequired,
         installedVersion: row.versionInstalled?.version,
         installedVersionDeprecated: '', // Will be set by handleDeprecatedStatus
         installDate: row.versionInstalled?.releaseDate,
+        installedTimeSinceRelease: row.versionInstalled?.timeSinceRelease,
         latestPatch: row.versionLastPatch?.version,
         latestPatchDeprecated: '', // Will be set by handleDeprecatedStatus
         latestPatchDate: row.versionLastPatch?.releaseDate,
+        latestPatchTimeSinceRelease: row.versionLastPatch?.timeSinceRelease,
         latestMinor: row.versionLastMinor?.version,
         latestMinorDeprecated: '', // Will be set by handleDeprecatedStatus
         latestMinorDate: row.versionLastMinor?.releaseDate,
+        latestMinorTimeSinceRelease: row.versionLastMinor?.timeSinceRelease,
         latestVersion: row.versionLast?.version,
         latestVersionDeprecated: '', // Will be set by handleDeprecatedStatus
         latestVersionDate: row.versionLast?.releaseDate,
-        updateStatus: row.updateStatus,
+        latestVersionTimeSinceRelease: row.versionLast?.timeSinceRelease,
         registrySource: row.registrySource,
       });
 
