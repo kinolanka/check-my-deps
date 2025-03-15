@@ -58,17 +58,17 @@ class UpdateService extends Service {
       // Determine the target version based on update level
       let targetVersion: string | undefined;
 
+      // Prioritize the latest version available, fall back to minor or patch if available
       if (this.updateLevel === 'latest') {
-        // For latest level, prioritize the latest version, but fall back to minor if available
-        if (packageInfo.versionLast?.version) {
-          targetVersion = packageInfo.versionLast.version;
-        } else if (packageInfo.versionLastMinor?.version) {
-          targetVersion = packageInfo.versionLastMinor.version;
-        }
-      } else if (this.updateLevel === 'minor' && packageInfo.versionLastMinor?.version) {
-        targetVersion = packageInfo.versionLastMinor.version;
-      } else if (this.updateLevel === 'patch' && packageInfo.versionInstalled?.version) {
-        targetVersion = packageInfo.versionInstalled.version;
+        targetVersion =
+          packageInfo.versionLast?.version ||
+          packageInfo.versionLastMinor?.version ||
+          packageInfo.versionLastPatch?.version;
+      } else if (this.updateLevel === 'minor') {
+        targetVersion =
+          packageInfo.versionLastMinor?.version || packageInfo.versionLastPatch?.version;
+      } else if (this.updateLevel === 'patch' && packageInfo.versionLastPatch?.version) {
+        targetVersion = packageInfo.versionLastPatch?.version;
       }
 
       if (!targetVersion) {
@@ -185,8 +185,8 @@ class UpdateService extends Service {
 
       // input.push(packageSpec);
 
-      // Skip packages without version info (might be missing from npm registry data)
-      if (!packageSpec.updateStatus || !packageSpec.versionInstalled) {
+      // Skip packages without version info
+      if (!packageSpec.versionInstalled) {
         return false;
       }
 
@@ -195,22 +195,7 @@ class UpdateService extends Service {
         return false;
       }
 
-      switch (this.updateLevel) {
-        case 'latest':
-          // For latest, update any package that's not up to date
-          return packageSpec.updateStatus !== 'upToDate';
-
-        case 'minor':
-          // For minor, only update packages with minor or patch updates
-          return packageSpec.updateStatus === 'minor' || packageSpec.updateStatus === 'patch';
-
-        case 'patch':
-          // For patch, only update packages with patch updates
-          return packageSpec.updateStatus === 'patch';
-
-        default:
-          return false;
-      }
+      return true;
     });
 
     // console.log('input', JSON.stringify(input, null, 2));
