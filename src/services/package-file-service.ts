@@ -120,6 +120,64 @@ class PackageFileService extends Service {
     baseFileName: string,
     fileExtension: string
   ): string {
+    // First check if the base file exists
+    const filePath = path.resolve(outputDir, baseFileName);
+
+    const fullFilePath = `${filePath}${fileExtension}`;
+
+    // Define the regex to match files with numeric suffixes
+    const fileRegex = new RegExp(`^${baseFileName}-(\\d+)${fileExtension.replace(/\./g, '\\.')}$`);
+
+    let highestSuffix = 0;
+
+    try {
+      // Read the directory contents
+      const files = fs.readdirSync(outputDir);
+
+      // Find all files that match our pattern and get the highest suffix
+      for (const file of files) {
+        const match = file.match(fileRegex);
+
+        if (match && match[1]) {
+          const suffixNum = parseInt(match[1], 10);
+
+          if (!isNaN(suffixNum) && suffixNum > highestSuffix) {
+            highestSuffix = suffixNum;
+          }
+        }
+      }
+
+      // If there are no files with suffixes and the base file doesn't exist, return the base file path
+      if (highestSuffix === 0 && !fs.existsSync(fullFilePath)) {
+        return filePath;
+      }
+
+      // If there are files with suffixes or the base file exists, create a new file with the next suffix
+      const nextSuffix = highestSuffix + 1;
+
+      return path.resolve(outputDir, `${baseFileName}-${nextSuffix}`);
+    } catch (error) {
+      // If there's an error reading the directory, fall back to the original counter method
+      this.ctx.outputService.log(
+        `Error reading directory: ${error instanceof Error ? error.message : String(error)}`
+      );
+
+      return this.getFallbackUniqueFilePath(outputDir, baseFileName, fileExtension);
+    }
+  }
+
+  /**
+   * Fallback method to generate a unique file path if directory reading fails
+   * @param outputDir The directory where the file will be saved
+   * @param baseFileName The base file name without extension
+   * @param fileExtension The file extension to check for (including the dot, e.g., '.xlsx')
+   * @returns A unique file path that doesn't exist yet (without the extension)
+   */
+  private getFallbackUniqueFilePath(
+    outputDir: string,
+    baseFileName: string,
+    fileExtension: string
+  ): string {
     let suffix = '';
 
     let counter = 1;
