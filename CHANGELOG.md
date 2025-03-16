@@ -1,5 +1,11 @@
 # @kinolanka/check-my-deps
 
+## 1.0.0
+
+### Major Changes
+
+- ae9dad4: Basic implementation for export and update commands.
+
 ## 0.1.0
 
 ### Minor Changes
