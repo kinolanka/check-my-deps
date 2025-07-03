@@ -309,27 +309,52 @@ class PackageInfoService extends Service {
     }
   }
 
+  /**
+   * Sets the latest production version using npm's dist-tags.latest as the authoritative source.
+   * Falls back to numerically highest version if dist-tags.latest is unavailable or invalid.
+   *
+   * This approach ensures we get the actual latest production version as intended by package
+   * maintainers, rather than potentially mistaken high version numbers (e.g., nx@9999.0.1).
+   */
   private setLatestVersion() {
     if (!this.npmRegistryData) {
       return;
     }
 
-    const productionVersions = this.filterProductionVersions(this.npmRegistryData.versions);
+    let latestVersion: string | undefined;
 
-    // Sort versions by semver
-    const latestVersion = productionVersions
-      .sort((a, b) => {
-        const [aMajor, aMinor, aPatch] = a.split('.').map(Number);
+    // First, try to use the dist-tags.latest as the authoritative latest version
+    if (this.npmRegistryData['dist-tags']?.latest) {
+      const distTagLatest = this.npmRegistryData['dist-tags'].latest;
 
-        const [bMajor, bMinor, bPatch] = b.split('.').map(Number);
+      // Ensure the dist-tags.latest version is a production version (not pre-release)
+      if (!distTagLatest.includes('-')) {
+        // Verify the version exists in the versions object
+        if (this.npmRegistryData.versions[distTagLatest]) {
+          latestVersion = distTagLatest;
+        }
+      }
+    }
 
-        if (aMajor !== bMajor) return aMajor - bMajor;
+    // Fallback to numeric sorting if dist-tags.latest is not available or invalid
+    if (!latestVersion) {
+      const productionVersions = this.filterProductionVersions(this.npmRegistryData.versions);
 
-        if (aMinor !== bMinor) return aMinor - bMinor;
+      // Sort versions by semver
+      latestVersion = productionVersions
+        .sort((a, b) => {
+          const [aMajor, aMinor, aPatch] = a.split('.').map(Number);
 
-        return aPatch - bPatch;
-      })
-      .pop();
+          const [bMajor, bMinor, bPatch] = b.split('.').map(Number);
+
+          if (aMajor !== bMajor) return aMajor - bMajor;
+
+          if (aMinor !== bMinor) return aMinor - bMinor;
+
+          return aPatch - bPatch;
+        })
+        .pop();
+    }
 
     // Set the versionLast property
     if (latestVersion) {
