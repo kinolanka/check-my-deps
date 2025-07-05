@@ -29,11 +29,11 @@ import type {
 } from '@/utils/types';
 
 class PackageInfoService extends Service {
-  private packageName: string;
+  private packageName: PackageSpec['packageName'];
 
-  private dependencyType: string;
+  private dependencyType: PackageSpec['dependencyType'];
 
-  private versionRequired: string;
+  private versionRequired: PackageSpec['versionRequired'];
 
   private versionInstalled?: PackageVersionSpec;
 
@@ -43,7 +43,7 @@ class PackageInfoService extends Service {
 
   private versionLast?: PackageVersionSpec;
 
-  private registrySource?: string;
+  private registrySource?: PackageSpec['registrySource'];
 
   private updateStatus?: PackageSpec['updateStatus'];
 
@@ -234,17 +234,7 @@ class PackageInfoService extends Service {
         return vMajor === major && vMinor === minor && vPatch > patch;
       })
       // Sort versions by semver
-      .sort((a: string, b: string) => {
-        const [aMajor, aMinor, aPatch] = a.split('.').map(Number);
-
-        const [bMajor, bMinor, bPatch] = b.split('.').map(Number);
-
-        if (aMajor !== bMajor) return aMajor - bMajor;
-
-        if (aMinor !== bMinor) return aMinor - bMinor;
-
-        return aPatch - bPatch;
-      })
+      .sort(this.compareSemverVersions)
       .pop();
 
     if (lastPatchVersion) {
@@ -281,17 +271,7 @@ class PackageInfoService extends Service {
         return vMajor === major && vMinor > minor;
       })
       // Sort versions by semver
-      .sort((a: string, b: string) => {
-        const [aMajor, aMinor, aPatch] = a.split('.').map(Number);
-
-        const [bMajor, bMinor, bPatch] = b.split('.').map(Number);
-
-        if (aMajor !== bMajor) return aMajor - bMajor;
-
-        if (aMinor !== bMinor) return aMinor - bMinor;
-
-        return aPatch - bPatch;
-      })
+      .sort(this.compareSemverVersions)
       .pop();
 
     if (lastMinorVersion) {
@@ -313,47 +293,112 @@ class PackageInfoService extends Service {
    * Sets the latest production version using npm's dist-tags.latest as the authoritative source.
    * Falls back to numerically highest version if dist-tags.latest is unavailable or invalid.
    *
+   * TODO: Future enhancement - add separate status types for beta/alpha updates (betaUpdate,
+   * alphaUpdate, rcUpdate, stableAvailable) to provide more granular pre-release information
+   *
    * This approach ensures we get the actual latest production version as intended by package
    * maintainers, rather than potentially mistaken high version numbers (e.g., nx@9999.0.1).
+   *
+   * For pre-release versions, intelligently compares within the same major.minor range before
+   * falling back to production versions.
    */
   private setLatestVersion() {
     if (!this.npmRegistryData) {
       return;
     }
 
-    let latestVersion: string | undefined;
+    let latestVersion: PackageVersionSpec['version'] | undefined;
+
+    // Check if installed version is a pre-release
+    const installedVersion = this.versionInstalled?.version;
+
+    const isInstalledPreRelease = installedVersion && this.isPreReleaseVersion(installedVersion);
+
+    // Get the latest production version first
+    let productionVersion: PackageVersionSpec['version'] | undefined;
 
     // First, try to use the dist-tags.latest as the authoritative latest version
     if (this.npmRegistryData['dist-tags']?.latest) {
       const distTagLatest = this.npmRegistryData['dist-tags'].latest;
 
       // Ensure the dist-tags.latest version is a production version (not pre-release)
-      if (!distTagLatest.includes('-')) {
+      if (!this.isPreReleaseVersion(distTagLatest)) {
         // Verify the version exists in the versions object
         if (this.npmRegistryData.versions[distTagLatest]) {
-          latestVersion = distTagLatest;
+          productionVersion = distTagLatest;
         }
       }
     }
 
     // Fallback to numeric sorting if dist-tags.latest is not available or invalid
-    if (!latestVersion) {
+    if (!productionVersion) {
       const productionVersions = this.filterProductionVersions(this.npmRegistryData.versions);
 
       // Sort versions by semver
-      latestVersion = productionVersions
-        .sort((a, b) => {
-          const [aMajor, aMinor, aPatch] = a.split('.').map(Number);
+      productionVersion = productionVersions.sort(this.compareSemverVersions).pop();
+    }
 
-          const [bMajor, bMinor, bPatch] = b.split('.').map(Number);
+    if (isInstalledPreRelease) {
+      // For pre-release installations, look for newer pre-releases in the same major.minor range
+      const baseVersion = this.parseBaseVersion(installedVersion);
 
-          if (aMajor !== bMajor) return aMajor - bMajor;
+      const allVersions = Object.keys(this.npmRegistryData.versions);
 
-          if (aMinor !== bMinor) return aMinor - bMinor;
+      const higherPreRelease = this.findHighestPreReleaseInRange(baseVersion, allVersions);
 
-          return aPatch - bPatch;
-        })
-        .pop();
+      // Only use the higher pre-release if it's actually higher than the installed version
+      let usePreRelease = false;
+
+      if (higherPreRelease && higherPreRelease !== installedVersion) {
+        const higherBase = this.parseBaseVersion(higherPreRelease);
+
+        const installedBase = this.parseBaseVersion(installedVersion);
+
+        const [higherMajor, higherMinor, higherPatch] = higherBase.split('.').map(Number);
+
+        const [installedMajor, installedMinor, installedPatch] = installedBase
+          .split('.')
+          .map(Number);
+
+        // Check if the higher pre-release is actually higher
+        if (
+          higherMajor > installedMajor ||
+          (higherMajor === installedMajor && higherMinor > installedMinor) ||
+          (higherMajor === installedMajor &&
+            higherMinor === installedMinor &&
+            higherPatch > installedPatch) ||
+          (higherBase === installedBase && higherPreRelease > installedVersion)
+        ) {
+          usePreRelease = true;
+        }
+      }
+
+      if (usePreRelease && higherPreRelease && productionVersion) {
+        // Compare pre-release base version with production version to decide which to use
+        const preReleaseBase = this.parseBaseVersion(higherPreRelease);
+
+        const [preMajor, preMinor, prePatch] = preReleaseBase.split('.').map(Number);
+
+        const [prodMajor, prodMinor, prodPatch] = productionVersion.split('.').map(Number);
+
+        // Use production version if it's higher than the pre-release base
+        if (
+          prodMajor > preMajor ||
+          (prodMajor === preMajor && prodMinor > preMinor) ||
+          (prodMajor === preMajor && prodMinor === preMinor && prodPatch > prePatch)
+        ) {
+          latestVersion = productionVersion;
+        } else {
+          latestVersion = higherPreRelease;
+        }
+      } else if (usePreRelease && higherPreRelease) {
+        latestVersion = higherPreRelease;
+      } else if (productionVersion) {
+        latestVersion = productionVersion;
+      }
+    } else {
+      // For production installations, use production version
+      latestVersion = productionVersion;
     }
 
     // Set the versionLast property
@@ -435,24 +480,64 @@ class PackageInfoService extends Service {
     }
   }
 
+  /**
+   * Sets the package update status by comparing installed version with latest version.
+   * Enhanced to handle pre-release versions intelligently by comparing base versions
+   * when both are pre-releases, or treating pre-release increments as patch-level updates.
+   *
+   * TODO: Future enhancement - consider dedicated pre-release status types for more
+   * granular beta/alpha update information
+   */
   private setPackageStatus() {
     if (!this.versionInstalled?.version || !this.versionLast?.version) {
       return;
     }
 
-    const [installedMajor, installedMinor, installedPatch] = this.versionInstalled.version
-      .split('.')
-      .map(Number);
+    const installedVersion = this.versionInstalled.version;
 
-    const [latestMajor, latestMinor, latestPatch] = this.versionLast.version.split('.').map(Number);
+    const latestVersion = this.versionLast.version;
 
-    if (
-      installedMajor === latestMajor &&
-      installedMinor === latestMinor &&
-      installedPatch === latestPatch
-    ) {
+    // Check if both are the same version (including pre-release identifiers)
+    if (installedVersion === latestVersion) {
       this.updateStatus = 'upToDate';
-    } else if (installedMajor === latestMajor && installedMinor === latestMinor) {
+
+      return;
+    }
+
+    // For pre-release comparisons, use base versions for semantic comparison
+    const installedIsPreRelease = this.isPreReleaseVersion(installedVersion);
+
+    const latestIsPreRelease = this.isPreReleaseVersion(latestVersion);
+
+    let installedBase: string;
+
+    let latestBase: string;
+
+    if (installedIsPreRelease) {
+      installedBase = this.parseBaseVersion(installedVersion);
+    } else {
+      installedBase = installedVersion;
+    }
+
+    if (latestIsPreRelease) {
+      latestBase = this.parseBaseVersion(latestVersion);
+    } else {
+      latestBase = latestVersion;
+    }
+
+    // If both have the same base version, treat as patch-level update
+    if (installedBase === latestBase) {
+      this.updateStatus = 'patch';
+
+      return;
+    }
+
+    // Compare base versions using semver logic
+    const [installedMajor, installedMinor] = installedBase.split('.').map(Number);
+
+    const [latestMajor, latestMinor] = latestBase.split('.').map(Number);
+
+    if (installedMajor === latestMajor && installedMinor === latestMinor) {
       this.updateStatus = 'patch';
     } else if (installedMajor === latestMajor) {
       this.updateStatus = 'minor';
@@ -476,9 +561,135 @@ class PackageInfoService extends Service {
     return false;
   }
 
+  /**
+   * Helper function to check if a version is a pre-release version
+   * @param version The version string to check
+   * @returns True if the version contains pre-release identifiers (contains '-')
+   */
+  private isPreReleaseVersion(version: string): boolean {
+    return version.includes('-');
+  }
+
+  /**
+   * Helper function to extract the base version from a pre-release version
+   * @param version The version string (e.g., "5.0.0-beta.26")
+   * @returns The base version without pre-release identifiers (e.g., "5.0.0")
+   */
+  private parseBaseVersion(version: string): string {
+    return version.split('-')[0];
+  }
+
+  /**
+   * Helper function to compare semantic versions
+   * @param a First version string (e.g., "1.2.3")
+   * @param b Second version string (e.g., "1.2.4")
+   * @returns Comparison result (-1, 0, 1)
+   */
+  private compareSemverVersions = (a: string, b: string): number => {
+    const [aMajor, aMinor, aPatch] = a.split('.').map(Number);
+
+    const [bMajor, bMinor, bPatch] = b.split('.').map(Number);
+
+    if (aMajor !== bMajor) return aMajor - bMajor;
+
+    if (aMinor !== bMinor) return aMinor - bMinor;
+
+    return aPatch - bPatch;
+  };
+
+  /**
+   * Helper function to properly compare pre-release identifiers
+   * @param a First pre-release identifier (e.g., "beta.29")
+   * @param b Second pre-release identifier (e.g., "beta.9")
+   * @returns Comparison result (-1, 0, 1)
+   */
+  private comparePreReleaseIdentifiers(a: string, b: string): number {
+    const aParts = a.split('.');
+
+    const bParts = b.split('.');
+
+    const maxLength = Math.max(aParts.length, bParts.length);
+
+    for (let i = 0; i < maxLength; i++) {
+      const aPart = aParts[i] || '';
+
+      const bPart = bParts[i] || '';
+
+      // Try to parse as numbers
+      const aNum = parseInt(aPart, 10);
+
+      const bNum = parseInt(bPart, 10);
+
+      // If both are numbers, compare numerically
+      if (!isNaN(aNum) && !isNaN(bNum)) {
+        if (aNum !== bNum) {
+          return aNum - bNum;
+        }
+      } else {
+        // Compare lexically if not both numbers
+        const result = aPart.localeCompare(bPart);
+
+        if (result !== 0) {
+          return result;
+        }
+      }
+    }
+
+    return 0;
+  }
+
+  /**
+   * Helper function to find the highest pre-release version in the same major.minor range
+   * @param baseVersion The base version to match (e.g., "5.0.0")
+   * @param allVersions All available versions
+   * @returns The highest pre-release version in the same range, or undefined if none found
+   */
+  private findHighestPreReleaseInRange(
+    baseVersion: string,
+    allVersions: string[]
+  ): string | undefined {
+    const [major, minor] = baseVersion.split('.').map(Number);
+
+    return allVersions
+      .filter((version) => {
+        // Only consider pre-release versions
+        if (!this.isPreReleaseVersion(version)) return false;
+
+        const versionBase = this.parseBaseVersion(version);
+
+        const [vMajor, vMinor] = versionBase.split('.').map(Number);
+
+        // Match same major.minor range AND must be newer than current base version
+        if (vMajor !== major || vMinor !== minor) return false;
+
+        // Include all versions in the same major.minor range
+        return true;
+      })
+      .sort((a, b) => {
+        // Sort by semver including pre-release identifiers
+        const aBase = this.parseBaseVersion(a);
+
+        const bBase = this.parseBaseVersion(b);
+
+        const aPre = a.substring(aBase.length + 1); // Get pre-release part
+
+        const bPre = b.substring(bBase.length + 1);
+
+        // Compare base versions first
+        const baseComparison = this.compareSemverVersions(aBase, bBase);
+
+        if (baseComparison !== 0) return baseComparison;
+
+        // For same base version, compare pre-release identifiers properly
+        // Handle numeric parts in pre-release identifiers (e.g., beta.29 vs beta.9)
+        return this.comparePreReleaseIdentifiers(aPre, bPre);
+      })
+      .pop(); // Get the highest version
+  }
+
   private filterProductionVersions(versions: NpmRegistryPackageData['versions']) {
     // Extract version keys from the versions object
-    return Object.keys(versions).filter((version: string) => !version.includes('-'));
+    return Object.keys(versions).filter((version: string) => !this.isPreReleaseVersion(version));
   }
 }
 

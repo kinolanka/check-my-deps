@@ -230,5 +230,220 @@ describe('PackageInfoService', () => {
 
       expect(spec.versionLast?.timeUnit).toBeDefined();
     });
+
+    describe('Pre-release version handling', () => {
+      const createMockListDepItem = (version: string) => ({
+        version,
+        resolved: `https://registry.npmjs.org/test-package/-/test-package-${version}.tgz`,
+      });
+
+      it('should find newer pre-release in same major.minor range when installed is pre-release', () => {
+        const mockPackage = createMockPackage('next-auth');
+
+        const mockNpmData = createMockNpmData({
+          'dist-tags': {
+            latest: '4.24.11', // Lower production version
+            beta: '5.0.0-beta.29',
+          },
+          versions: {
+            '4.24.11': { version: '4.24.11' },
+            '5.0.0-beta.26': { version: '5.0.0-beta.26' },
+            '5.0.0-beta.29': { version: '5.0.0-beta.29' },
+            '5.1.0-beta.2': { version: '5.1.0-beta.2' },
+          } as any,
+          time: {
+            '4.24.11': '2023-01-01T00:00:00.000Z',
+            '5.0.0-beta.26': '2023-02-01T00:00:00.000Z',
+            '5.0.0-beta.29': '2023-03-01T00:00:00.000Z',
+            '5.1.0-beta.2': '2023-04-01T00:00:00.000Z',
+          },
+        });
+
+        const mockListDepItem = createMockListDepItem('5.0.0-beta.26');
+
+        const service = new PackageInfoService(
+          { package: mockPackage, npmListDepItem: mockListDepItem, npmRegistryData: mockNpmData },
+          mockCtx
+        );
+
+        const spec = service.getSpec();
+
+        // Should find 5.0.0-beta.29 (same 5.0.x range) instead of 5.1.0-beta.2
+        expect(spec.versionLast?.version).toBe('5.0.0-beta.29');
+
+        expect(spec.updateStatus).toBe('patch'); // beta.26 → beta.29 treated as patch
+      });
+
+      it('should handle pre-release to production version comparison correctly', () => {
+        const mockPackage = createMockPackage('some-package');
+
+        const mockNpmData = createMockNpmData({
+          'dist-tags': {
+            latest: '6.0.0', // Higher production version
+          },
+          versions: {
+            '5.0.0-beta.26': { version: '5.0.0-beta.26' },
+            '6.0.0': { version: '6.0.0' },
+          } as any,
+          time: {
+            '5.0.0-beta.26': '2023-02-01T00:00:00.000Z',
+            '6.0.0': '2023-03-01T00:00:00.000Z',
+          },
+        });
+
+        const mockListDepItem = createMockListDepItem('5.0.0-beta.26');
+
+        const service = new PackageInfoService(
+          { package: mockPackage, npmListDepItem: mockListDepItem, npmRegistryData: mockNpmData },
+          mockCtx
+        );
+
+        const spec = service.getSpec();
+
+        // Should use production version 6.0.0 since it's higher
+        expect(spec.versionLast?.version).toBe('6.0.0');
+
+        expect(spec.updateStatus).toBe('major'); // 5.x → 6.x is major
+      });
+
+      it('should treat same base version pre-release updates as patch', () => {
+        const mockPackage = createMockPackage('test-package');
+
+        const mockNpmData = createMockNpmData({
+          'dist-tags': {
+            latest: '2.0.0',
+            beta: '3.0.0-beta.5',
+          },
+          versions: {
+            '2.0.0': { version: '2.0.0' },
+            '3.0.0-beta.3': { version: '3.0.0-beta.3' },
+            '3.0.0-beta.5': { version: '3.0.0-beta.5' },
+          } as any,
+          time: {
+            '2.0.0': '2023-01-01T00:00:00.000Z',
+            '3.0.0-beta.3': '2023-02-01T00:00:00.000Z',
+            '3.0.0-beta.5': '2023-03-01T00:00:00.000Z',
+          },
+        });
+
+        const mockListDepItem = createMockListDepItem('3.0.0-beta.3');
+
+        const service = new PackageInfoService(
+          { package: mockPackage, npmListDepItem: mockListDepItem, npmRegistryData: mockNpmData },
+          mockCtx
+        );
+
+        const spec = service.getSpec();
+
+        expect(spec.versionLast?.version).toBe('3.0.0-beta.5');
+
+        expect(spec.updateStatus).toBe('patch'); // Same base version (3.0.0), different pre-release
+      });
+
+      it('should handle cross-minor pre-release versions correctly', () => {
+        const mockPackage = createMockPackage('test-package');
+
+        const mockNpmData = createMockNpmData({
+          'dist-tags': {
+            latest: '2.0.0',
+          },
+          versions: {
+            '2.0.0': { version: '2.0.0' },
+            '5.0.0-beta.26': { version: '5.0.0-beta.26' },
+            '5.1.0-beta.2': { version: '5.1.0-beta.2' },
+          } as any,
+          time: {
+            '2.0.0': '2023-01-01T00:00:00.000Z',
+            '5.0.0-beta.26': '2023-02-01T00:00:00.000Z',
+            '5.1.0-beta.2': '2023-03-01T00:00:00.000Z',
+          },
+        });
+
+        const mockListDepItem = createMockListDepItem('5.0.0-beta.26');
+
+        const service = new PackageInfoService(
+          { package: mockPackage, npmListDepItem: mockListDepItem, npmRegistryData: mockNpmData },
+          mockCtx
+        );
+
+        const spec = service.getSpec();
+
+        // Should NOT find 5.1.0-beta.2 since it's different minor version
+        // Should fall back to production version 2.0.0
+        expect(spec.versionLast?.version).toBe('2.0.0');
+
+        expect(spec.updateStatus).toBe('major'); // 5.x → 2.x is major (downgrade)
+      });
+
+      it('should handle production to pre-release installation correctly', () => {
+        const mockPackage = createMockPackage('test-package');
+
+        const mockNpmData = createMockNpmData({
+          'dist-tags': {
+            latest: '2.1.0',
+          },
+          versions: {
+            '1.0.0': { version: '1.0.0' },
+            '2.1.0': { version: '2.1.0' },
+            '2.2.0-beta.1': { version: '2.2.0-beta.1' },
+          } as any,
+          time: {
+            '1.0.0': '2023-01-01T00:00:00.000Z',
+            '2.1.0': '2023-02-01T00:00:00.000Z',
+            '2.2.0-beta.1': '2023-03-01T00:00:00.000Z',
+          },
+        });
+
+        const mockListDepItem = createMockListDepItem('1.0.0'); // Production installation
+
+        const service = new PackageInfoService(
+          { package: mockPackage, npmListDepItem: mockListDepItem, npmRegistryData: mockNpmData },
+          mockCtx
+        );
+
+        const spec = service.getSpec();
+
+        // Should use latest production version, not pre-release
+        expect(spec.versionLast?.version).toBe('2.1.0');
+
+        expect(spec.updateStatus).toBe('major'); // 1.0 → 2.1 is major
+      });
+
+      it('should correctly sort pre-release versions with numeric identifiers', () => {
+        const mockPackage = createMockPackage('next-auth');
+
+        const mockNpmData = createMockNpmData({
+          'dist-tags': {
+            latest: '4.24.11', // Lower production version
+          },
+          versions: {
+            '4.24.11': { version: '4.24.11' },
+            '5.0.0-beta.9': { version: '5.0.0-beta.9' },
+            '5.0.0-beta.29': { version: '5.0.0-beta.29' },
+            '5.0.0-beta.26': { version: '5.0.0-beta.26' },
+          } as any,
+          time: {
+            '4.24.11': '2023-01-01T00:00:00.000Z',
+            '5.0.0-beta.9': '2023-02-01T00:00:00.000Z',
+            '5.0.0-beta.26': '2023-03-01T00:00:00.000Z',
+            '5.0.0-beta.29': '2023-04-01T00:00:00.000Z',
+          },
+        });
+
+        const mockListDepItem = createMockListDepItem('5.0.0-beta.26');
+
+        const service = new PackageInfoService(
+          { package: mockPackage, npmListDepItem: mockListDepItem, npmRegistryData: mockNpmData },
+          mockCtx
+        );
+
+        const spec = service.getSpec();
+
+        // Should find 5.0.0-beta.29 (highest beta), not 5.0.0-beta.9
+        expect(spec.versionLast?.version).toBe('5.0.0-beta.29');
+
+        expect(spec.updateStatus).toBe('patch'); // beta.26 → beta.29 treated as patch
+      });
+    });
   });
 });
