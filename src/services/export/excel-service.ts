@@ -321,8 +321,8 @@ class ExcelService extends ExportService {
     // Get the first package info to determine the time unit
     const firstPackage = this.list[0];
 
-    // Access timeUnit through the public getSpec() method
-    const firstPackageSpec = firstPackage?.getSpec();
+    // Access timeUnit through the public getInfo() method
+    const firstPackageSpec = firstPackage?.getInfo();
 
     const timeUnit = firstPackageSpec?.versionInstalled?.timeUnit || 'months';
 
@@ -414,10 +414,10 @@ class ExcelService extends ExportService {
         latestMinorDeprecated: '', // Will be set by handleDeprecatedStatus
         latestMinorDate: row.versionLastMinor?.releaseDate,
         latestMinorTimeSinceRelease: row.versionLastMinor?.timeSinceRelease,
-        latestVersion: row.versionLast?.version,
+        latestVersion: row.versionLastMajor?.version,
         latestVersionDeprecated: '', // Will be set by handleDeprecatedStatus
-        latestVersionDate: row.versionLast?.releaseDate,
-        latestVersionTimeSinceRelease: row.versionLast?.timeSinceRelease,
+        latestVersionDate: row.versionLastMajor?.releaseDate,
+        latestVersionTimeSinceRelease: row.versionLastMajor?.timeSinceRelease,
         registrySource: row.registrySource,
       });
 
@@ -454,8 +454,8 @@ class ExcelService extends ExportService {
 
       this.handleDeprecatedStatus(
         latestVersionDeprecatedCell,
-        row.versionLast?.deprecated,
-        !!row.versionLast
+        row.versionLastMajor?.deprecated,
+        !!row.versionLastMajor
       );
 
       // Convert installed version cell to a hyperlink if URL is available
@@ -492,10 +492,14 @@ class ExcelService extends ExportService {
       }
 
       // Convert latest version cell to a hyperlink if URL is available
-      if (row.versionLast?.version && row.versionLast?.npmUrl) {
+      if (row.versionLastMajor?.version && row.versionLastMajor?.npmUrl) {
         const latestVersionCell = newRow.getCell('latestVersion');
 
-        this.createUrlCell(latestVersionCell, row.versionLast.version, row.versionLast.npmUrl);
+        this.createUrlCell(
+          latestVersionCell,
+          row.versionLastMajor.version,
+          row.versionLastMajor.npmUrl
+        );
       }
 
       // Handle registrySource - check if it's a valid URL and make it clickable if it is

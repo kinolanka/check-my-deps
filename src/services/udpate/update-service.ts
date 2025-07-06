@@ -60,7 +60,7 @@ class UpdateService extends Service {
       // Prioritize the latest version available, fall back to minor or patch if available
       if (this.updateLevel === 'latest') {
         targetVersion =
-          packageInfo.versionLast?.version ||
+          packageInfo.versionLastMajor?.version ||
           packageInfo.versionLastMinor?.version ||
           packageInfo.versionLastPatch?.version;
       } else if (this.updateLevel === 'minor') {

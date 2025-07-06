@@ -34,13 +34,13 @@ export type PackageVersionSpec = {
 export type PackageSpec = {
   packageName: string;
   dependencyType: string;
-  registrySource?: string;
-  updateStatus?: PackageStatus;
   versionRequired: string;
   versionInstalled?: PackageVersionSpec;
   versionLastPatch?: PackageVersionSpec;
   versionLastMinor?: PackageVersionSpec;
-  versionLast?: PackageVersionSpec;
+  versionLastMajor?: PackageVersionSpec;
+  registrySource?: string;
+  updateStatus?: PackageStatus;
 };
 
 export type PackageStatus = 'upToDate' | 'major' | 'minor' | 'patch';

@@ -61,10 +61,10 @@ describe('PackageInfoService', () => {
         mockCtx
       );
 
-      const spec = service.getSpec();
+      const spec = service.getInfo();
 
       // Should use dist-tags.latest (2.1.0) instead of numerically highest (9999.0.1)
-      expect(spec.versionLast?.version).toBe('2.1.0');
+      expect(spec.versionLastMajor?.version).toBe('2.1.0');
     });
 
     it('should fallback to numeric sorting when dist-tags.latest is missing', () => {
@@ -79,10 +79,10 @@ describe('PackageInfoService', () => {
         mockCtx
       );
 
-      const spec = service.getSpec();
+      const spec = service.getInfo();
 
       // Should fallback to numerically highest (9999.0.1)
-      expect(spec.versionLast?.version).toBe('9999.0.1');
+      expect(spec.versionLastMajor?.version).toBe('9999.0.1');
     });
 
     it('should fallback to numeric sorting when dist-tags.latest is a pre-release version', () => {
@@ -111,10 +111,10 @@ describe('PackageInfoService', () => {
         mockCtx
       );
 
-      const spec = service.getSpec();
+      const spec = service.getInfo();
 
       // Should fallback to numerically highest production version (9999.0.1)
-      expect(spec.versionLast?.version).toBe('9999.0.1');
+      expect(spec.versionLastMajor?.version).toBe('9999.0.1');
     });
 
     it('should fallback to numeric sorting when dist-tags.latest version does not exist in versions object', () => {
@@ -136,10 +136,10 @@ describe('PackageInfoService', () => {
         mockCtx
       );
 
-      const spec = service.getSpec();
+      const spec = service.getInfo();
 
       // Should fallback to numerically highest (9999.0.1)
-      expect(spec.versionLast?.version).toBe('9999.0.1');
+      expect(spec.versionLastMajor?.version).toBe('9999.0.1');
     });
 
     it('should handle cases where no npm registry data is available', () => {
@@ -150,10 +150,10 @@ describe('PackageInfoService', () => {
         mockCtx
       );
 
-      const spec = service.getSpec();
+      const spec = service.getInfo();
 
-      // Should not have versionLast when no registry data
-      expect(spec.versionLast).toBeUndefined();
+      // Should not have versionLastMajor when no registry data
+      expect(spec.versionLastMajor).toBeUndefined();
     });
 
     it('should handle malformed dist-tags gracefully', () => {
@@ -168,10 +168,10 @@ describe('PackageInfoService', () => {
         mockCtx
       );
 
-      const spec = service.getSpec();
+      const spec = service.getInfo();
 
       // Should fallback to numeric sorting
-      expect(spec.versionLast?.version).toBe('9999.0.1');
+      expect(spec.versionLastMajor?.version).toBe('9999.0.1');
     });
 
     it('should work correctly with real-world nx package scenario', () => {
@@ -198,10 +198,10 @@ describe('PackageInfoService', () => {
         mockCtx
       );
 
-      const spec = service.getSpec();
+      const spec = service.getInfo();
 
       // Should use dist-tags.latest (21.2.2) instead of numerically highest (9999.0.1)
-      expect(spec.versionLast?.version).toBe('21.2.2');
+      expect(spec.versionLastMajor?.version).toBe('21.2.2');
     });
 
     it('should properly set all version properties when using dist-tags.latest', () => {
@@ -214,21 +214,21 @@ describe('PackageInfoService', () => {
         mockCtx
       );
 
-      const spec = service.getSpec();
+      const spec = service.getInfo();
 
-      expect(spec.versionLast).toBeDefined();
+      expect(spec.versionLastMajor).toBeDefined();
 
-      expect(spec.versionLast?.version).toBe('2.1.0');
+      expect(spec.versionLastMajor?.version).toBe('2.1.0');
 
-      expect(spec.versionLast?.releaseDate).toBeDefined();
+      expect(spec.versionLastMajor?.releaseDate).toBeDefined();
 
-      expect(spec.versionLast?.npmUrl).toContain('npm');
+      expect(spec.versionLastMajor?.npmUrl).toContain('npm');
 
-      expect(spec.versionLast?.deprecated).toBeDefined();
+      expect(spec.versionLastMajor?.deprecated).toBeDefined();
 
-      expect(spec.versionLast?.timeSinceRelease).toBeDefined();
+      expect(spec.versionLastMajor?.timeSinceRelease).toBeDefined();
 
-      expect(spec.versionLast?.timeUnit).toBeDefined();
+      expect(spec.versionLastMajor?.timeUnit).toBeDefined();
     });
 
     describe('Pre-release version handling', () => {
@@ -266,10 +266,10 @@ describe('PackageInfoService', () => {
           mockCtx
         );
 
-        const spec = service.getSpec();
+        const spec = service.getInfo();
 
-        // versionLast should be the latest production version
-        expect(spec.versionLast?.version).toBe('4.24.11');
+        // versionLastMajor should be the latest production version
+        expect(spec.versionLastMajor?.version).toBe('4.24.11');
 
         // versionLastPatch should find 5.0.0-beta.29 (same 5.0.x range) instead of 5.1.0-beta.2
         expect(spec.versionLastPatch?.version).toBe('5.0.0-beta.29');
@@ -301,10 +301,10 @@ describe('PackageInfoService', () => {
           mockCtx
         );
 
-        const spec = service.getSpec();
+        const spec = service.getInfo();
 
         // Should use production version 6.0.0 since it's higher
-        expect(spec.versionLast?.version).toBe('6.0.0');
+        expect(spec.versionLastMajor?.version).toBe('6.0.0');
 
         expect(spec.updateStatus).toBe('major'); // 5.x → 6.x is major
       });
@@ -336,10 +336,10 @@ describe('PackageInfoService', () => {
           mockCtx
         );
 
-        const spec = service.getSpec();
+        const spec = service.getInfo();
 
-        // versionLast should be the latest production version
-        expect(spec.versionLast?.version).toBe('2.0.0');
+        // versionLastMajor should be the latest production version
+        expect(spec.versionLastMajor?.version).toBe('2.0.0');
 
         // versionLastPatch should find 3.0.0-beta.5 (newer pre-release)
         expect(spec.versionLastPatch?.version).toBe('3.0.0-beta.5');
@@ -373,11 +373,11 @@ describe('PackageInfoService', () => {
           mockCtx
         );
 
-        const spec = service.getSpec();
+        const spec = service.getInfo();
 
         // Should NOT find 5.1.0-beta.2 since it's different minor version
         // Should fall back to production version 2.0.0
-        expect(spec.versionLast?.version).toBe('2.0.0');
+        expect(spec.versionLastMajor?.version).toBe('2.0.0');
 
         expect(spec.updateStatus).toBe('major'); // 5.x → 2.x is major (downgrade)
       });
@@ -408,10 +408,10 @@ describe('PackageInfoService', () => {
           mockCtx
         );
 
-        const spec = service.getSpec();
+        const spec = service.getInfo();
 
         // Should use latest production version, not pre-release
-        expect(spec.versionLast?.version).toBe('2.1.0');
+        expect(spec.versionLastMajor?.version).toBe('2.1.0');
 
         expect(spec.updateStatus).toBe('major'); // 1.0 → 2.1 is major
       });
@@ -444,10 +444,10 @@ describe('PackageInfoService', () => {
           mockCtx
         );
 
-        const spec = service.getSpec();
+        const spec = service.getInfo();
 
-        // versionLast should be the latest production version
-        expect(spec.versionLast?.version).toBe('4.24.11');
+        // versionLastMajor should be the latest production version
+        expect(spec.versionLastMajor?.version).toBe('4.24.11');
 
         // versionLastPatch should find 5.0.0-beta.29 (highest beta), not 5.0.0-beta.9
         expect(spec.versionLastPatch?.version).toBe('5.0.0-beta.29');
@@ -487,10 +487,10 @@ describe('PackageInfoService', () => {
           mockCtx
         );
 
-        const spec = service.getSpec();
+        const spec = service.getInfo();
 
-        // versionLast should be the latest production version
-        expect(spec.versionLast?.version).toBe('1.0.0');
+        // versionLastMajor should be the latest production version
+        expect(spec.versionLastMajor?.version).toBe('1.0.0');
 
         // versionLastPatch should find 2.0.0-rc (latest by publication date), not canary.5 (highest numerically)
         expect(spec.versionLastPatch?.version).toBe('2.0.0-rc');

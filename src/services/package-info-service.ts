@@ -29,6 +29,12 @@ import type {
 } from '@/utils/types';
 
 class PackageInfoService extends Service {
+  private npmListDepItem?: NpmListDepItem;
+
+  private npmRegistryData?: NpmRegistryPackageData;
+
+  private timeUnit: TimeUnit = 'months'; // Default time unit
+
   private packageName: PackageSpec['packageName'];
 
   private dependencyType: PackageSpec['dependencyType'];
@@ -41,17 +47,11 @@ class PackageInfoService extends Service {
 
   private versionLastMinor?: PackageVersionSpec;
 
-  private versionLast?: PackageVersionSpec;
+  private versionLastMajor?: PackageVersionSpec;
 
   private registrySource?: PackageSpec['registrySource'];
 
   private updateStatus?: PackageSpec['updateStatus'];
-
-  private npmListDepItem?: NpmListDepItem;
-
-  private npmRegistryData?: NpmRegistryPackageData;
-
-  private timeUnit: TimeUnit = 'months'; // Default time unit
 
   constructor(
     args: {
@@ -63,35 +63,27 @@ class PackageInfoService extends Service {
   ) {
     super(ctx);
 
+    this.npmListDepItem = args.npmListDepItem;
+
+    this.npmRegistryData = args.npmRegistryData;
+
     this.packageName = args.package.packageName;
 
     this.dependencyType = args.package.dependencyType;
 
     this.versionRequired = args.package.versionRequired;
 
-    this.npmListDepItem = args.npmListDepItem;
+    this.versionInstalled = this.getInstalledVersionSpec();
 
-    this.npmRegistryData = args.npmRegistryData;
+    this.versionLastPatch = this.getLastPatchVersionSpec();
 
-    this.setInstalledVersion();
+    this.versionLastMinor = this.getLastMinorVersionSpec();
 
-    this.setLastPatchVersion();
+    this.versionLastMajor = this.getLastMajorVersionSpec();
 
-    this.setLastMinorVersion();
+    this.registrySource = this.getRegistrySource();
 
-    this.setLatestVersion();
-
-    this.setRegistrySource();
-
-    this.setPackageStatus();
-  }
-
-  /**
-   * Gets the package specification
-   * @returns The package specification object
-   */
-  public getSpec(): PackageSpec {
-    return this.getInfo();
+    this.updateStatus = this.getPackageStatus();
   }
 
   /**
@@ -99,128 +91,42 @@ class PackageInfoService extends Service {
    * @returns The package information object
    */
   public getInfo(): PackageSpec {
-    const packageSpec: PackageSpec = {
+    return {
       packageName: this.packageName,
       dependencyType: this.dependencyType,
       versionRequired: this.versionRequired,
       versionInstalled: this.versionInstalled,
       versionLastPatch: this.versionLastPatch,
       versionLastMinor: this.versionLastMinor,
+      versionLastMajor: this.versionLastMajor,
       registrySource: this.registrySource,
       updateStatus: this.updateStatus,
     };
-
-    // Check if installed version is the same as latest version
-    const isSameVersion =
-      this.versionInstalled?.version &&
-      this.versionLast?.version &&
-      this.versionInstalled.version === this.versionLast.version;
-
-    // Check if last minor version is the same as latest version
-    const isLastMinorSameAsLast =
-      this.versionLastMinor?.version &&
-      this.versionLast?.version &&
-      this.versionLastMinor.version === this.versionLast.version;
-
-    // Check if last patch version is the same as latest version
-    const isLastPatchSameAsLast =
-      this.versionLastPatch?.version &&
-      this.versionLast?.version &&
-      this.versionLastPatch.version === this.versionLast.version;
-
-    // Only include versionLast if it's different from both versionInstalled, versionLastMinor, AND versionLastPatch
-    if (!isSameVersion && !isLastMinorSameAsLast && !isLastPatchSameAsLast) {
-      packageSpec.versionLast = this.versionLast;
-    }
-
-    return packageSpec;
   }
 
-  /**
-   * Sets the time unit for time since release calculations
-   * @param unit The time unit to use ('days', 'months', or 'years')
-   */
-  public setTimeUnit(unit: TimeUnit): void {
-    this.timeUnit = unit;
-
-    // Recalculate time since release for all versions with the new unit
-    this.updateTimeSinceRelease();
-  }
-
-  /**
-   * Updates the time since release values for all versions based on the current time unit
-   */
-  private updateTimeSinceRelease(): void {
-    // Update installed version
-    if (this.versionInstalled) {
-      const releaseDate = this.npmRegistryData?.time?.[this.versionInstalled.version] || '';
-
-      this.versionInstalled.timeSinceRelease = calculateTimeSinceRelease(
-        releaseDate,
-        this.timeUnit
-      );
-
-      this.versionInstalled.timeUnit = this.timeUnit;
-    }
-
-    // Update latest patch version
-    if (this.versionLastPatch) {
-      const releaseDate = this.npmRegistryData?.time?.[this.versionLastPatch.version] || '';
-
-      this.versionLastPatch.timeSinceRelease = calculateTimeSinceRelease(
-        releaseDate,
-        this.timeUnit
-      );
-
-      this.versionLastPatch.timeUnit = this.timeUnit;
-    }
-
-    // Update latest minor version
-    if (this.versionLastMinor) {
-      const releaseDate = this.npmRegistryData?.time?.[this.versionLastMinor.version] || '';
-
-      this.versionLastMinor.timeSinceRelease = calculateTimeSinceRelease(
-        releaseDate,
-        this.timeUnit
-      );
-
-      this.versionLastMinor.timeUnit = this.timeUnit;
-    }
-
-    // Update latest version
-    if (this.versionLast) {
-      const releaseDate = this.npmRegistryData?.time?.[this.versionLast.version] || '';
-
-      this.versionLast.timeSinceRelease = calculateTimeSinceRelease(releaseDate, this.timeUnit);
-
-      this.versionLast.timeUnit = this.timeUnit;
-    }
-  }
-
-  private setInstalledVersion() {
-    const installedVersion = this.npmListDepItem?.version || '';
+  private getInstalledVersionSpec(): PackageVersionSpec | undefined {
+    const installedVersion = this.getInstalledVersion();
 
     if (installedVersion) {
-      const releaseDate = this.npmRegistryData?.time?.[installedVersion] || '';
+      const releaseDate = this.getReleaseDate(installedVersion);
 
-      this.versionInstalled = {
+      return {
         version: installedVersion,
         releaseDate: formatDate(releaseDate),
         npmUrl: getNpmPackageUrl(this.packageName, installedVersion),
         deprecated: this.isVersionDeprecated(installedVersion),
-
         timeSinceRelease: calculateTimeSinceRelease(releaseDate, this.timeUnit),
         timeUnit: this.timeUnit,
       };
     }
   }
 
-  private setLastPatchVersion() {
-    if (!this.versionInstalled?.version || !this.npmRegistryData) {
+  private getLastPatchVersionSpec(): PackageVersionSpec | undefined {
+    const installedVersion = this.getInstalledVersion();
+
+    if (!installedVersion || !this.npmRegistryData) {
       return;
     }
-
-    const installedVersion = this.versionInstalled.version;
 
     const isInstalledPreRelease = this.isPreReleaseVersion(installedVersion);
 
@@ -241,12 +147,12 @@ class PackageInfoService extends Service {
         ? this.parseBaseVersion(installedVersion)
         : installedVersion;
 
-      const [major, minor, patch] = versionToCompare.split('.').map(Number);
+      const [major, minor, patch] = this.splitSemver(versionToCompare);
 
       // Find the latest patch version that is greater than the comparison version
       lastPatchVersion = productionVersions
         .filter((version: string) => {
-          const [vMajor, vMinor, vPatch] = version.split('.').map(Number);
+          const [vMajor, vMinor, vPatch] = this.splitSemver(version);
 
           return vMajor === major && vMinor === minor && vPatch > patch;
         })
@@ -255,35 +161,27 @@ class PackageInfoService extends Service {
     }
 
     if (lastPatchVersion) {
-      const releaseDate = this.npmRegistryData.time?.[lastPatchVersion] || '';
-
-      this.versionLastPatch = {
-        version: lastPatchVersion,
-        releaseDate: formatDate(releaseDate),
-        npmUrl: getNpmPackageUrl(this.packageName, lastPatchVersion),
-        deprecated: this.isVersionDeprecated(lastPatchVersion),
-
-        timeSinceRelease: calculateTimeSinceRelease(releaseDate, this.timeUnit),
-        timeUnit: this.timeUnit,
-      };
+      return this.getSpec(lastPatchVersion);
     }
   }
 
-  private setLastMinorVersion() {
-    if (!this.versionInstalled?.version || !this.npmRegistryData) {
+  private getLastMinorVersionSpec(): PackageVersionSpec | undefined {
+    const installedVersion = this.getInstalledVersion();
+
+    if (!installedVersion || !this.npmRegistryData) {
       return;
     }
 
     const productionVersions = this.filterProductionVersions(this.npmRegistryData.versions);
 
     // Extract major and minor version numbers from installed version
-    const [major, minor] = this.versionInstalled.version.split('.').map(Number);
+    const [major, minor] = this.splitSemver(installedVersion);
 
     // Find the latest minor version that is greater than the installed minor version
     const lastMinorVersion = productionVersions
       // filter versions that match the installed major version and have a greater minor version
       .filter((version: string) => {
-        const [vMajor, vMinor] = version.split('.').map(Number);
+        const [vMajor, vMinor] = this.splitSemver(version);
 
         return vMajor === major && vMinor > minor;
       })
@@ -292,17 +190,7 @@ class PackageInfoService extends Service {
       .pop();
 
     if (lastMinorVersion) {
-      const releaseDate = this.npmRegistryData.time?.[lastMinorVersion] || '';
-
-      this.versionLastMinor = {
-        version: lastMinorVersion,
-        releaseDate: formatDate(releaseDate),
-        npmUrl: getNpmPackageUrl(this.packageName, lastMinorVersion),
-        deprecated: this.isVersionDeprecated(lastMinorVersion),
-
-        timeSinceRelease: calculateTimeSinceRelease(releaseDate, this.timeUnit),
-        timeUnit: this.timeUnit,
-      };
+      return this.getSpec(lastMinorVersion);
     }
   }
 
@@ -315,7 +203,7 @@ class PackageInfoService extends Service {
    *
    * Pre-release versions are handled in setLastPatchVersion() for same-base-version updates.
    */
-  private setLatestVersion() {
+  private getLastMajorVersionSpec(): PackageVersionSpec | undefined {
     if (!this.npmRegistryData) {
       return;
     }
@@ -343,23 +231,13 @@ class PackageInfoService extends Service {
       latestVersion = productionVersions.sort(this.compareSemverVersions).pop();
     }
 
-    // Set the versionLast property
+    // Set the versionLastMajor property
     if (latestVersion) {
-      const releaseDate = this.npmRegistryData.time?.[latestVersion] || '';
-
-      this.versionLast = {
-        version: latestVersion,
-        releaseDate: formatDate(releaseDate),
-        npmUrl: getNpmPackageUrl(this.packageName, latestVersion),
-        deprecated: this.isVersionDeprecated(latestVersion),
-
-        timeSinceRelease: calculateTimeSinceRelease(releaseDate, this.timeUnit),
-        timeUnit: this.timeUnit,
-      };
+      return this.getSpec(latestVersion);
     }
   }
 
-  private setRegistrySource() {
+  private getRegistrySource(): PackageSpec['registrySource'] {
     try {
       const resolvedUrl = this.npmListDepItem?.resolved;
 
@@ -373,7 +251,7 @@ class PackageInfoService extends Service {
         // Format: https://registry.npmjs.org/package-name/-/package-name-1.0.0.tgz
         const packagePath = resolvedUrl.split('/-/')[0];
 
-        this.registrySource = packagePath;
+        return packagePath;
       } else if (resolvedUrl.startsWith('https://') || resolvedUrl.startsWith('http://')) {
         // Other HTTP/HTTPS URLs (custom registries, tarballs, etc.)
         if (
@@ -382,7 +260,7 @@ class PackageInfoService extends Service {
           resolvedUrl.includes('bitbucket.org')
         ) {
           // Git repository URLs
-          this.registrySource = resolvedUrl.split('#')[0]; // Remove commit/branch reference
+          return resolvedUrl.split('#')[0]; // Remove commit/branch reference
         } else {
           // Try to extract the package URL without version/tarball specifics
           const url = new URL(resolvedUrl);
@@ -391,51 +269,51 @@ class PackageInfoService extends Service {
 
           if (pathParts.length > 1) {
             // Registry URL with package path
-            this.registrySource = `${url.origin}${pathParts[0]}`;
+            return `${url.origin}${pathParts[0]}`;
           } else {
             // Other HTTP URL
-            this.registrySource = resolvedUrl;
+            return resolvedUrl;
           }
         }
       } else if (resolvedUrl.startsWith('git+')) {
         // Git URLs: git+https://, git+ssh://, etc.
         const gitUrl = resolvedUrl.substring(4).split('#')[0]; // Remove git+ prefix and fragment
 
-        this.registrySource = gitUrl;
+        return gitUrl;
       } else if (resolvedUrl.startsWith('file:')) {
         // Local file references
-        this.registrySource = resolvedUrl;
+        return resolvedUrl;
       } else if (resolvedUrl.startsWith('npm:')) {
         // npm alias packages
         const aliasedPackage = resolvedUrl.substring(4).split('@')[0];
 
-        this.registrySource = `https://${NPM_REGISTRY_HOST}/${aliasedPackage}`;
+        return `https://${NPM_REGISTRY_HOST}/${aliasedPackage}`;
       } else {
         // Any other format
-        this.registrySource = resolvedUrl;
+        return resolvedUrl;
       }
     } catch (error) {
       this.ctx.outputService.error(error as Error);
 
       // Fallback to the original behavior
-      this.registrySource = this.npmListDepItem?.resolved;
+      return this.npmListDepItem?.resolved;
     }
   }
 
   /**
    * Sets the package update status by comparing installed version with the most relevant update.
    * For pre-release installations, prioritizes comparison with newer pre-releases in the same range
-   * (found in versionLastPatch), falling back to production versions (versionLast) when appropriate.
+   * (found in versionLastPatch), falling back to production versions (versionLastMajor) when appropriate.
    *
    * TODO: Future enhancement - consider dedicated pre-release status types for more
    * granular beta/alpha update information
    */
-  private setPackageStatus() {
-    if (!this.versionInstalled?.version) {
+  private getPackageStatus(): PackageSpec['updateStatus'] {
+    const installedVersion = this.getInstalledVersion();
+
+    if (!installedVersion || !this.versionInstalled?.version) {
       return;
     }
-
-    const installedVersion = this.versionInstalled.version;
 
     const installedIsPreRelease = this.isPreReleaseVersion(installedVersion);
 
@@ -456,9 +334,9 @@ class PackageInfoService extends Service {
       }
     }
 
-    // Fall back to versionLast (production version) if no relevant pre-release patch found
-    if (!comparisonVersion && this.versionLast?.version) {
-      comparisonVersion = this.versionLast.version;
+    // Fall back to versionLastMajor (production version) if no relevant pre-release patch found
+    if (!comparisonVersion && this.versionLastMajor?.version) {
+      comparisonVersion = this.versionLastMajor.version;
     }
 
     // If no comparison version available, we can't determine status
@@ -468,9 +346,7 @@ class PackageInfoService extends Service {
 
     // Check if both are the same version (including pre-release identifiers)
     if (installedVersion === comparisonVersion) {
-      this.updateStatus = 'upToDate';
-
-      return;
+      return 'upToDate';
     }
 
     // For pre-release comparisons, use base versions for semantic comparison
@@ -494,23 +370,46 @@ class PackageInfoService extends Service {
 
     // If both have the same base version, treat as patch-level update
     if (installedBase === comparisonBase) {
-      this.updateStatus = 'patch';
-
-      return;
+      return 'patch';
     }
 
     // Compare base versions using semver logic
-    const [installedMajor, installedMinor] = installedBase.split('.').map(Number);
+    const [installedMajor, installedMinor] = this.splitSemver(installedBase);
 
-    const [comparisonMajor, comparisonMinor] = comparisonBase.split('.').map(Number);
+    const [comparisonMajor, comparisonMinor] = this.splitSemver(comparisonBase);
 
     if (installedMajor === comparisonMajor && installedMinor === comparisonMinor) {
-      this.updateStatus = 'patch';
+      return 'patch';
     } else if (installedMajor === comparisonMajor) {
-      this.updateStatus = 'minor';
+      return 'minor';
     } else {
-      this.updateStatus = 'major';
+      return 'major';
     }
+  }
+
+  private getSpec(version: string): PackageVersionSpec {
+    const releaseDate = this.getReleaseDate(version);
+
+    return {
+      version,
+      releaseDate: formatDate(releaseDate),
+      npmUrl: getNpmPackageUrl(this.packageName, version),
+      deprecated: this.isVersionDeprecated(version),
+      timeSinceRelease: calculateTimeSinceRelease(releaseDate, this.timeUnit),
+      timeUnit: this.timeUnit,
+    };
+  }
+
+  private getInstalledVersion(): string {
+    return this.npmListDepItem?.version || '';
+  }
+
+  private getReleaseDate(version: string): string {
+    return this.npmRegistryData?.time?.[version] || '';
+  }
+
+  private splitSemver(version: string): number[] {
+    return version.split('.').map(Number);
   }
 
   private isVersionDeprecated(version: string): boolean | undefined {
@@ -553,9 +452,9 @@ class PackageInfoService extends Service {
    * @returns Comparison result (-1, 0, 1)
    */
   private compareSemverVersions = (a: string, b: string): number => {
-    const [aMajor, aMinor, aPatch] = a.split('.').map(Number);
+    const [aMajor, aMinor, aPatch] = this.splitSemver(a);
 
-    const [bMajor, bMinor, bPatch] = b.split('.').map(Number);
+    const [bMajor, bMinor, bPatch] = this.splitSemver(b);
 
     if (aMajor !== bMajor) return aMajor - bMajor;
 
