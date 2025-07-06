@@ -444,6 +444,46 @@ describe('PackageInfoService', () => {
 
         expect(spec.updateStatus).toBe('patch'); // beta.26 → beta.29 treated as patch
       });
+
+      it('should use publication date for pre-release sorting regardless of tag format', () => {
+        const mockPackage = createMockPackage('test-package');
+
+        const mockNpmData = createMockNpmData({
+          'dist-tags': {
+            latest: '1.0.0',
+          },
+          versions: {
+            '1.0.0': { version: '1.0.0' },
+            '2.0.0-alpha': { version: '2.0.0-alpha' },
+            '2.0.0-canary.5': { version: '2.0.0-canary.5' },
+            '2.0.0-canary.1': { version: '2.0.0-canary.1' },
+            '2.0.0-beta': { version: '2.0.0-beta' },
+            '2.0.0-rc': { version: '2.0.0-rc' },
+          } as any,
+          time: {
+            '1.0.0': '2023-01-01T00:00:00.000Z',
+            '2.0.0-alpha': '2023-02-01T00:00:00.000Z',
+            '2.0.0-canary.5': '2023-02-15T00:00:00.000Z', // Note: canary.5 comes before canary.1 chronologically
+            '2.0.0-canary.1': '2023-03-01T00:00:00.000Z',
+            '2.0.0-beta': '2023-03-15T00:00:00.000Z',
+            '2.0.0-rc': '2023-04-01T00:00:00.000Z', // Latest by date
+          },
+        });
+
+        const mockListDepItem = createMockListDepItem('2.0.0-alpha');
+
+        const service = new PackageInfoService(
+          { package: mockPackage, npmListDepItem: mockListDepItem, npmRegistryData: mockNpmData },
+          mockCtx
+        );
+
+        const spec = service.getSpec();
+
+        // Should find 2.0.0-rc (latest by publication date), not canary.5 (highest numerically)
+        expect(spec.versionLast?.version).toBe('2.0.0-rc');
+
+        expect(spec.updateStatus).toBe('patch'); // Same base version (2.0.0)
+      });
     });
   });
 });

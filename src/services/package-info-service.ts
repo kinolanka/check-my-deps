@@ -598,47 +598,6 @@ class PackageInfoService extends Service {
   };
 
   /**
-   * Helper function to properly compare pre-release identifiers
-   * @param a First pre-release identifier (e.g., "beta.29")
-   * @param b Second pre-release identifier (e.g., "beta.9")
-   * @returns Comparison result (-1, 0, 1)
-   */
-  private comparePreReleaseIdentifiers(a: string, b: string): number {
-    const aParts = a.split('.');
-
-    const bParts = b.split('.');
-
-    const maxLength = Math.max(aParts.length, bParts.length);
-
-    for (let i = 0; i < maxLength; i++) {
-      const aPart = aParts[i] || '';
-
-      const bPart = bParts[i] || '';
-
-      // Try to parse as numbers
-      const aNum = parseInt(aPart, 10);
-
-      const bNum = parseInt(bPart, 10);
-
-      // If both are numbers, compare numerically
-      if (!isNaN(aNum) && !isNaN(bNum)) {
-        if (aNum !== bNum) {
-          return aNum - bNum;
-        }
-      } else {
-        // Compare lexically if not both numbers
-        const result = aPart.localeCompare(bPart);
-
-        if (result !== 0) {
-          return result;
-        }
-      }
-    }
-
-    return 0;
-  }
-
-  /**
    * Helper function to find the highest pre-release version in the same major.minor range
    * @param baseVersion The base version to match (e.g., "5.0.0")
    * @param allVersions All available versions
@@ -666,23 +625,22 @@ class PackageInfoService extends Service {
         return true;
       })
       .sort((a, b) => {
-        // Sort by semver including pre-release identifiers
+        // Sort by publication date - most reliable way to determine "latest" pre-release
+        const aTime = this.npmRegistryData?.time?.[a];
+
+        const bTime = this.npmRegistryData?.time?.[b];
+
+        // If both have timestamps, compare chronologically
+        if (aTime && bTime) {
+          return new Date(aTime).getTime() - new Date(bTime).getTime();
+        }
+
+        // Fallback to base version comparison if timestamps unavailable
         const aBase = this.parseBaseVersion(a);
 
         const bBase = this.parseBaseVersion(b);
 
-        const aPre = a.substring(aBase.length + 1); // Get pre-release part
-
-        const bPre = b.substring(bBase.length + 1);
-
-        // Compare base versions first
-        const baseComparison = this.compareSemverVersions(aBase, bBase);
-
-        if (baseComparison !== 0) return baseComparison;
-
-        // For same base version, compare pre-release identifiers properly
-        // Handle numeric parts in pre-release identifiers (e.g., beta.29 vs beta.9)
-        return this.comparePreReleaseIdentifiers(aPre, bPre);
+        return this.compareSemverVersions(aBase, bBase);
       })
       .pop(); // Get the highest version
   }
