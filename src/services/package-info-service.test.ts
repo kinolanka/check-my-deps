@@ -268,8 +268,11 @@ describe('PackageInfoService', () => {
 
         const spec = service.getSpec();
 
-        // Should find 5.0.0-beta.29 (same 5.0.x range) instead of 5.1.0-beta.2
-        expect(spec.versionLast?.version).toBe('5.0.0-beta.29');
+        // versionLast should be the latest production version
+        expect(spec.versionLast?.version).toBe('4.24.11');
+
+        // versionLastPatch should find 5.0.0-beta.29 (same 5.0.x range) instead of 5.1.0-beta.2
+        expect(spec.versionLastPatch?.version).toBe('5.0.0-beta.29');
 
         expect(spec.updateStatus).toBe('patch'); // beta.26 → beta.29 treated as patch
       });
@@ -335,7 +338,11 @@ describe('PackageInfoService', () => {
 
         const spec = service.getSpec();
 
-        expect(spec.versionLast?.version).toBe('3.0.0-beta.5');
+        // versionLast should be the latest production version
+        expect(spec.versionLast?.version).toBe('2.0.0');
+
+        // versionLastPatch should find 3.0.0-beta.5 (newer pre-release)
+        expect(spec.versionLastPatch?.version).toBe('3.0.0-beta.5');
 
         expect(spec.updateStatus).toBe('patch'); // Same base version (3.0.0), different pre-release
       });
@@ -439,8 +446,11 @@ describe('PackageInfoService', () => {
 
         const spec = service.getSpec();
 
-        // Should find 5.0.0-beta.29 (highest beta), not 5.0.0-beta.9
-        expect(spec.versionLast?.version).toBe('5.0.0-beta.29');
+        // versionLast should be the latest production version
+        expect(spec.versionLast?.version).toBe('4.24.11');
+
+        // versionLastPatch should find 5.0.0-beta.29 (highest beta), not 5.0.0-beta.9
+        expect(spec.versionLastPatch?.version).toBe('5.0.0-beta.29');
 
         expect(spec.updateStatus).toBe('patch'); // beta.26 → beta.29 treated as patch
       });
@@ -479,8 +489,11 @@ describe('PackageInfoService', () => {
 
         const spec = service.getSpec();
 
-        // Should find 2.0.0-rc (latest by publication date), not canary.5 (highest numerically)
-        expect(spec.versionLast?.version).toBe('2.0.0-rc');
+        // versionLast should be the latest production version
+        expect(spec.versionLast?.version).toBe('1.0.0');
+
+        // versionLastPatch should find 2.0.0-rc (latest by publication date), not canary.5 (highest numerically)
+        expect(spec.versionLastPatch?.version).toBe('2.0.0-rc');
 
         expect(spec.updateStatus).toBe('patch'); // Same base version (2.0.0)
       });
