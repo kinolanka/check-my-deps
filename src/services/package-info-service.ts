@@ -24,14 +24,19 @@ import type {
   NpmListDepItem,
   NpmRegistryPackageData,
   PackageSpec,
+  PackageStatus,
   PackageVersionSpec,
   TimeUnit,
 } from '@/utils/types';
 
 class PackageInfoService extends Service {
-  private npmListDepItem?: NpmListDepItem;
+  private npmListDepItem: NpmListDepItem;
 
-  private npmRegistryData?: NpmRegistryPackageData;
+  private npmRegistryData: NpmRegistryPackageData;
+
+  private lastVersion: string = '';
+
+  private lastVersionStatus: PackageStatus | '' = '';
 
   private timeUnit: TimeUnit = 'months'; // Default time unit
 
@@ -56,8 +61,8 @@ class PackageInfoService extends Service {
   constructor(
     args: {
       package: PackageSpec;
-      npmListDepItem?: NpmListDepItem;
-      npmRegistryData?: NpmRegistryPackageData;
+      npmListDepItem: NpmListDepItem;
+      npmRegistryData: NpmRegistryPackageData;
     },
     ctx: ServiceCtxType
   ) {
@@ -73,17 +78,23 @@ class PackageInfoService extends Service {
 
     this.versionRequired = args.package.versionRequired;
 
-    this.versionInstalled = this.getInstalledVersionSpec();
+    if (this.npmRegistryData) {
+      this.lastVersion = this.getLastVersion();
 
-    this.versionLastPatch = this.getLastPatchVersionSpec();
+      this.lastVersionStatus = this.getLastVersionStatus();
 
-    this.versionLastMinor = this.getLastMinorVersionSpec();
+      this.versionInstalled = this.getInstalledVersionSpec();
 
-    this.versionLastMajor = this.getLastMajorVersionSpec();
+      this.versionLastPatch = this.getLastPatchVersionSpec();
 
-    this.registrySource = this.getRegistrySource();
+      this.versionLastMinor = this.getLastMinorVersionSpec();
 
-    this.updateStatus = this.getPackageStatus();
+      this.versionLastMajor = this.getLastMajorVersionSpec();
+
+      this.registrySource = this.getRegistrySource();
+
+      this.updateStatus = this.lastVersionStatus;
+    }
   }
 
   /**
@@ -104,29 +115,22 @@ class PackageInfoService extends Service {
     };
   }
 
-  private getInstalledVersionSpec(): PackageVersionSpec | undefined {
+  private getInstalledVersionSpec(): PackageVersionSpec {
     const installedVersion = this.getInstalledVersion();
 
-    if (installedVersion) {
-      const releaseDate = this.getReleaseDate(installedVersion);
-
-      return {
-        version: installedVersion,
-        releaseDate: formatDate(releaseDate),
-        npmUrl: getNpmPackageUrl(this.packageName, installedVersion),
-        deprecated: this.isVersionDeprecated(installedVersion),
-        timeSinceRelease: calculateTimeSinceRelease(releaseDate, this.timeUnit),
-        timeUnit: this.timeUnit,
-      };
-    }
+    return this.getSpec(installedVersion);
   }
 
   private getLastPatchVersionSpec(): PackageVersionSpec | undefined {
-    const installedVersion = this.getInstalledVersion();
-
-    if (!installedVersion || !this.npmRegistryData) {
+    if (['upToDate'].includes(this.lastVersionStatus)) {
       return;
     }
+
+    if (this.lastVersionStatus === 'patch') {
+      return this.getSpec(this.lastVersion);
+    }
+
+    const installedVersion = this.getInstalledVersion();
 
     const isInstalledPreRelease = this.isPreReleaseVersion(installedVersion);
 
@@ -166,11 +170,15 @@ class PackageInfoService extends Service {
   }
 
   private getLastMinorVersionSpec(): PackageVersionSpec | undefined {
-    const installedVersion = this.getInstalledVersion();
-
-    if (!installedVersion || !this.npmRegistryData) {
+    if (['patch', 'upToDate'].includes(this.lastVersionStatus)) {
       return;
     }
+
+    if (this.lastVersionStatus === 'minor') {
+      return this.getSpec(this.lastVersion);
+    }
+
+    const installedVersion = this.getInstalledVersion();
 
     const productionVersions = this.filterProductionVersions(this.npmRegistryData.versions);
 
@@ -194,47 +202,12 @@ class PackageInfoService extends Service {
     }
   }
 
-  /**
-   * Sets the latest production version using npm's dist-tags.latest as the authoritative source.
-   * Falls back to numerically highest production version if dist-tags.latest is unavailable or invalid.
-   *
-   * This approach ensures we get the actual latest production version as intended by package
-   * maintainers, rather than potentially mistaken high version numbers (e.g., nx@9999.0.1).
-   *
-   * Pre-release versions are handled in setLastPatchVersion() for same-base-version updates.
-   */
   private getLastMajorVersionSpec(): PackageVersionSpec | undefined {
-    if (!this.npmRegistryData) {
+    if (['patch', 'minor', 'upToDate'].includes(this.lastVersionStatus)) {
       return;
     }
 
-    let latestVersion: PackageVersionSpec['version'] | undefined;
-
-    // First, try to use the dist-tags.latest as the authoritative latest version
-    if (this.npmRegistryData['dist-tags']?.latest) {
-      const distTagLatest = this.npmRegistryData['dist-tags'].latest;
-
-      // Ensure the dist-tags.latest version is a production version (not pre-release)
-      if (!this.isPreReleaseVersion(distTagLatest)) {
-        // Verify the version exists in the versions object
-        if (this.npmRegistryData.versions[distTagLatest]) {
-          latestVersion = distTagLatest;
-        }
-      }
-    }
-
-    // Fallback to numeric sorting if dist-tags.latest is not available or invalid
-    if (!latestVersion) {
-      const productionVersions = this.filterProductionVersions(this.npmRegistryData.versions);
-
-      // Sort versions by semver
-      latestVersion = productionVersions.sort(this.compareSemverVersions).pop();
-    }
-
-    // Set the versionLastMajor property
-    if (latestVersion) {
-      return this.getSpec(latestVersion);
-    }
+    return this.getSpec(this.lastVersion);
   }
 
   private getRegistrySource(): PackageSpec['registrySource'] {
@@ -300,90 +273,59 @@ class PackageInfoService extends Service {
     }
   }
 
-  /**
-   * Sets the package update status by comparing installed version with the most relevant update.
-   * For pre-release installations, prioritizes comparison with newer pre-releases in the same range
-   * (found in versionLastPatch), falling back to production versions (versionLastMajor) when appropriate.
-   *
-   * TODO: Future enhancement - consider dedicated pre-release status types for more
-   * granular beta/alpha update information
-   */
-  private getPackageStatus(): PackageSpec['updateStatus'] {
+  private getLastVersion(): string {
+    // First try to get the production version
+    let lastVersion: string | undefined = this.npmRegistryData['dist-tags'].latest;
+
+    // If no production version, get the last numeric version
+    if (!lastVersion) {
+      const productionVersions = this.filterProductionVersions(this.npmRegistryData.versions);
+
+      // Sort versions by semver
+      lastVersion = productionVersions.sort(this.compareSemverVersions).pop();
+    }
+
+    // If no numeric version found, get the latest version by publication date (may be a pre-release)
+    if (!lastVersion) {
+      const allVersions = Object.keys(this.npmRegistryData.versions);
+
+      lastVersion = allVersions
+        .sort((a, b) => {
+          const aTime = this.npmRegistryData.time?.[a];
+
+          const bTime = this.npmRegistryData.time?.[b];
+
+          if (aTime && bTime) {
+            return new Date(bTime).getTime() - new Date(aTime).getTime();
+          }
+
+          return 0;
+        })
+        .pop();
+    }
+
+    return lastVersion as string;
+  }
+
+  private getLastVersionStatus(): PackageStatus {
     const installedVersion = this.getInstalledVersion();
 
-    if (!installedVersion || !this.versionInstalled?.version) {
-      return;
-    }
+    const lastVersion = this.lastVersion;
 
-    const installedIsPreRelease = this.isPreReleaseVersion(installedVersion);
-
-    // Determine the most relevant comparison version
-    let comparisonVersion: string | undefined;
-
-    // For pre-release installations, prioritize versionLastPatch if it exists and is a pre-release update
-    if (installedIsPreRelease && this.versionLastPatch?.version) {
-      const patchVersion = this.versionLastPatch.version;
-
-      const installedBase = this.parseBaseVersion(installedVersion);
-
-      const patchBase = this.parseBaseVersion(patchVersion);
-
-      // If patch is a pre-release in the same base version range, use it for comparison
-      if (this.isPreReleaseVersion(patchVersion) && installedBase === patchBase) {
-        comparisonVersion = patchVersion;
-      }
-    }
-
-    // Fall back to versionLastMajor (production version) if no relevant pre-release patch found
-    if (!comparisonVersion && this.versionLastMajor?.version) {
-      comparisonVersion = this.versionLastMajor.version;
-    }
-
-    // If no comparison version available, we can't determine status
-    if (!comparisonVersion) {
-      return;
-    }
-
-    // Check if both are the same version (including pre-release identifiers)
-    if (installedVersion === comparisonVersion) {
+    if (installedVersion === lastVersion) {
       return 'upToDate';
     }
 
-    // For pre-release comparisons, use base versions for semantic comparison
-    const comparisonIsPreRelease = this.isPreReleaseVersion(comparisonVersion);
+    const [iMajor, iMinor] = this.splitSemver(this.parseBaseVersion(installedVersion));
 
-    let installedBase: string;
+    const [pMajor, pMinor] = this.splitSemver(this.parseBaseVersion(lastVersion));
 
-    let comparisonBase: string;
-
-    if (installedIsPreRelease) {
-      installedBase = this.parseBaseVersion(installedVersion);
-    } else {
-      installedBase = installedVersion;
-    }
-
-    if (comparisonIsPreRelease) {
-      comparisonBase = this.parseBaseVersion(comparisonVersion);
-    } else {
-      comparisonBase = comparisonVersion;
-    }
-
-    // If both have the same base version, treat as patch-level update
-    if (installedBase === comparisonBase) {
-      return 'patch';
-    }
-
-    // Compare base versions using semver logic
-    const [installedMajor, installedMinor] = this.splitSemver(installedBase);
-
-    const [comparisonMajor, comparisonMinor] = this.splitSemver(comparisonBase);
-
-    if (installedMajor === comparisonMajor && installedMinor === comparisonMinor) {
-      return 'patch';
-    } else if (installedMajor === comparisonMajor) {
+    if (iMajor !== pMajor) {
+      return 'major';
+    } else if (iMinor !== pMinor) {
       return 'minor';
     } else {
-      return 'major';
+      return 'patch';
     }
   }
 
@@ -401,7 +343,7 @@ class PackageInfoService extends Service {
   }
 
   private getInstalledVersion(): string {
-    return this.npmListDepItem?.version || '';
+    return this.npmListDepItem.version || '';
   }
 
   private getReleaseDate(version: string): string {
@@ -471,10 +413,6 @@ class PackageInfoService extends Service {
    * @returns The latest pre-release version in the same range, or undefined if none found
    */
   private findNewerPreReleaseInSameRange(installedVersion: string): string | undefined {
-    if (!this.npmRegistryData) {
-      return;
-    }
-
     const baseVersion = this.parseBaseVersion(installedVersion);
 
     const allVersions = Object.keys(this.npmRegistryData.versions);
